@@ -1,6 +1,8 @@
 """Pack the GLBs + pose transforms into cad/viewer/sitka_data.js (base64), so sitka_viewer.html opens
 from file:// with no server. Then bundle src/viewer.js (three r170) into sitka_viewer.bundle.js:
   npx esbuild cad/viewer/src/viewer.js --bundle --format=iife --minify --outfile=cad/viewer/sitka_viewer.bundle.js
+After any rebuild, bump window.SITKA_BUILD and the ?v= on the bundle <script> in sitka_viewer.html (cache-busting;
+the data files are fetched with the same ?v=, and the stamp shows at the bottom of the Details sheet).
 """
 import base64, json, os
 CAD = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

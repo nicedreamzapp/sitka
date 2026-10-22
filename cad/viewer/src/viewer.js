@@ -8,6 +8,8 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 let D = window.SITKA_DATA;
 const $ = id => document.getElementById(id);
 const ROOT = document.documentElement;
+// cache-busting: the page stamps its build; data files are fetched with ?v=<build> so phones never mix old and new
+const BUILD = window.SITKA_BUILD || '';
 // ---------- loading with progress (XHR so we can show %, script-tag fallback for file://) ----------
 const EST = { 'cad/viewer/sitka_data.js': 22.1e6, 'cad/viewer/sitka_anim.js': 21.3e6 };
 function showLoading(txt, frac) {
@@ -17,24 +19,24 @@ function showLoading(txt, frac) {
   $('ldSub').textContent = f == null ? 'preparing…' : Math.round(f * 100) + '%';
 }
 function hideLoading() { $('loading').style.display = 'none'; }
-function loadScript(src, txt, globalName) {
+function loadScript(src, txt, globalName, loud = () => true) {
   return new Promise((res, rej) => {
     if (window[globalName]) return res(window[globalName]);
     const viaTag = () => {
-      showLoading(txt, null);
-      const sc = document.createElement('script'); sc.src = src;
+      if (loud()) showLoading(txt, null);
+      const sc = document.createElement('script'); sc.src = src + (BUILD ? '?v=' + BUILD : '');
       sc.onload = () => res(window[globalName]); sc.onerror = rej; document.head.appendChild(sc);
     };
     if (location.protocol === 'file:') return viaTag();
-    const x = new XMLHttpRequest(); x.open('GET', src); x.responseType = 'text';
+    const x = new XMLHttpRequest(); x.open('GET', src + (BUILD ? '?v=' + BUILD : '')); x.responseType = 'text';
     x.onprogress = e => {
       const est = EST[src] || 2e7;
       const tot = e.lengthComputable && e.total >= e.loaded && e.total > est * 0.6 ? e.total : est;
-      showLoading(txt, Math.min(0.99, e.loaded / tot));
+      if (loud()) showLoading(txt, Math.min(0.99, e.loaded / tot));
     };
     x.onload = () => {
       if (x.status && x.status !== 200) return viaTag();
-      showLoading(txt, 1);
+      if (loud()) showLoading(txt, 1);
       const sc = document.createElement('script'); sc.text = x.responseText; document.head.appendChild(sc);
       res(window[globalName]);
     };
@@ -242,7 +244,7 @@ function layout() {
   ROOT.classList.toggle('compact', compact); ROOT.classList.toggle('land', land);
   if (mode !== lastMode) {
     // default: side cards open on a wide desktop, everything closed on phones/tablets
-    if (!lastMode || (lastMode === 'wide') !== (mode === 'wide')) ui.open = { ctl: mode === 'wide', info: mode === 'wide' };
+    if (!lastMode) ui.open = { ctl: false, info: false };
     if (!lastMode && Q.get('open')) { const o = Q.get('open'); ui.open = { ctl: o === 'ctl', info: o === 'info' }; }
     if (mode === 'port' && ui.open.ctl && ui.open.info) ui.open.info = false;
     lastMode = mode;
@@ -254,7 +256,7 @@ function syncSheets() {
   $('info').classList.toggle('closed', !ui.open.info);
   $('bCtl').classList.toggle('on', ui.open.ctl); $('bCtl').setAttribute('aria-expanded', ui.open.ctl);
   $('bInfo').classList.toggle('on', ui.open.info); $('bInfo').setAttribute('aria-pressed', ui.open.info);
-  $('peek').classList.toggle('hide', ui.open.ctl || ui.open.info);
+  $('peek').classList.toggle('hide', ROOT.classList.contains('compact') && !ROOT.classList.contains('land') && (ui.open.ctl || ui.open.info));
   ROOT.style.setProperty('--dockh', $('dock').offsetHeight + 'px');
   updateOffset();
 }
@@ -268,16 +270,18 @@ function toggleSheet(which, force) {
 // the part of the screen the model can use (between the bars, beside any open side card)
 function freeRect() {
   const W = innerWidth, H = innerHeight;
-  let l = 0, r = W, t = $('top').getBoundingClientRect().bottom + 6, b = $('dock').getBoundingClientRect().top - 6;
+  const shown = el => el && getComputedStyle(el).display !== 'none';
   const compact = ROOT.classList.contains('compact'), land = ROOT.classList.contains('land');
-  if (compact && !land) { const pk = $('peek'); if (getComputedStyle(pk).display !== 'none') b = pk.getBoundingClientRect().top - 6; }
-  else {
+  const touring = ROOT.classList.contains('touring');
+  let l = 0, r = W, t = $('top').getBoundingClientRect().bottom + 6, b = H;
+  if (touring && land) l = $('tour').getBoundingClientRect().right + 6;
+  else for (const id of touring ? ['tour'] : ['dock', 'peek']) if (shown($(id))) b = Math.min(b, $(id).getBoundingClientRect().top - 6);
+  if (!touring && !(compact && !land)) {
     if (ui.open.ctl) l = $('ctl').getBoundingClientRect().right + 6;
     if (ui.open.info) r = $('info').getBoundingClientRect().left - 6;
-    if (!land) b = H - 8 - ($('dock').offsetHeight + 8);
   }
   if (r - l < W * 0.35) { l = 0; r = W; }
-  if (b - t < H * 0.35) { t = 0; b = H; }
+  if (b - t < H * 0.3) { t = 0; b = H; }
   return { l, r, t, b, W, H };
 }
 // shift the projection so the orbit target sits in the middle of the free area
@@ -291,11 +295,14 @@ function updateOffset() {
 
 // ---------- views ----------
 const VIEWS = { front: [0, 0.08, 1], side: [1, 0.06, 0], back: [0, 0.10, -1], '34': [0.78, 0.30, 0.78], top: [0.2, 1.6, 0.4] };
+let framePoses = null;   // the tour can frame on several poses at once (e.g. standing + bent over)
 function bodyBox() {
-  const b = bodies[state.pose]; const box = new THREE.Box3();
-  if (b) box.setFromObject(b); else box.set(new THREE.Vector3(-0.4, 0, -0.4), new THREE.Vector3(0.4, 1.9, 0.4));
+  const box = new THREE.Box3();
+  for (const p of framePoses || [state.pose]) { const b = bodies[p]; if (b) { const v = b.visible; b.visible = true; box.expandByObject(b); b.visible = v; } }
+  if (box.isEmpty()) box.set(new THREE.Vector3(-0.4, 0, -0.4), new THREE.Vector3(0.4, 1.9, 0.4));
   return box;
 }
+let camTween = null;
 function setView(v, instant) {
   state.view = v;
   const box = bodyBox(); const c = box.getCenter(new THREE.Vector3()); const s = box.getSize(new THREE.Vector3());
@@ -307,11 +314,25 @@ function setView(v, instant) {
   const wide = (az * s.x + ax * s.z) * 1.04;                       // projected width for this view direction
   const tall = s.y * (0.15 + 0.85 * (1 - Math.abs(d.y))) + Math.abs(d.y) * Math.max(s.x, s.z);
   const dist = Math.max(tall * f.H / (2 * tn * fh), wide * f.H / (2 * tn * fw)) * 1.06 + Math.max(s.x, s.z) * 0.5;
-  controls.target.copy(c);
-  camera.position.copy(c).addScaledVector(d, dist);
-  updateOffset(); controls.update();
+  const pos = c.clone().addScaledVector(d, dist);
+  updateOffset();
+  if (instant || !ready) { camTween = null; controls.target.copy(c); camera.position.copy(pos); controls.update(); }
+  else camTween = { p0: camera.position.clone(), t0: controls.target.clone(), p1: pos, t1: c, k: 0 };
   updateButtons();
 }
+function tweenTick(dt) {
+  if (!camTween) return;
+  const tw = camTween; tw.k = Math.min(1, tw.k + dt / 0.9);
+  const e = tw.k < 0.5 ? 4 * tw.k ** 3 : 1 - Math.pow(-2 * tw.k + 2, 3) / 2;
+  // swing around the target rather than cutting through the model
+  const r0 = tw.p0.clone().sub(tw.t0), r1 = tw.p1.clone().sub(tw.t1);
+  const len = r0.length() + (r1.length() - r0.length()) * e;
+  const dir = r0.normalize().lerp(r1.normalize(), e).normalize();
+  controls.target.lerpVectors(tw.t0, tw.t1, e);
+  camera.position.copy(controls.target).addScaledVector(dir, len);
+  if (tw.k >= 1) camTween = null;
+}
+controls.addEventListener('start', () => { camTween = null; controls.autoRotate = false; });
 const camQ = Q.get('cam');
 function applyCamParam() {
   if (!camQ) return;
@@ -322,10 +343,26 @@ function applyCamParam() {
 // ---------- labels ----------
 const labelLayer = $('labels');
 const svg = $('leaders');
-// phones get only the major parts, with short names
-const SHORT = [[/^thigh_shell/, 'Thigh shell'], [/^knee_manifold/, 'Cam clutch'], [/^sit_leaf_[lr]$/, 'Sit leaf'], [/^seat_cup_[lr]$/, 'Seat cup'],
-  [/^strut_tube0/, 'Strut'], [/^back_panel$/, 'Back panel'], [/^m2_leaf$/, 'Lift leaf'], [/^hip_belt/, 'Hip belt'],
-  [/^t1_tendon/, 'Knee tendon'], [/^m3_band/, 'Hip band']];
+// plain names for visitors; the technical name lives in the tooltip / details small print
+const SHORT = [[/^thigh_shell/, 'Thigh shell'], [/^knee_manifold/, 'Knee lock'], [/^sit_leaf_[lr]$/, 'Knee spring'], [/^seat_cup_[lr]$/, 'Seat cup'],
+  [/^strut_tube0/, 'Seat pole'], [/^back_panel$/, 'Back panel'], [/^m2_leaf$/, 'Back tendon'], [/^hip_belt/, 'Hip belt'],
+  [/^t1_tendon/, 'Knee tendon'], [/^m3_band/, 'Hip band'], [/^ea_clutch/, 'Smart clutch (upgrade)']];
+const PLAIN = [
+  [/^(t1_tendon)/, 'Knee tendon'], [/^t3_tendon/, 'Back tendon'], [/^m3_band/, 'Hip band'], [/^crazycreek/, 'Lean-back strap'],
+  [/^hamstring_band/, 'Hamstring band'], [/^calf_band/, 'Calf band'], [/^running_band/, 'Running band'], [/^(harness|sternum_strap|panelstrap)/, 'Shoulder harness'],
+  [/^cupstrap/, 'Seat cup strap'], [/^m4_cable/, 'Ankle cable (upgrade)'], [/^m5_lever/, 'Shoulder support (upgrade)'],
+  [/liner/, 'Soft liner'], [/^thigh_shell/, 'Thigh shell'], [/^thigh_cuff/, 'Back-of-thigh cuff'], [/(strap|buckle)/, 'Strap'],
+  [/^(thigh|shin)_arm/, 'Knee hinge arm'], [/^(knee_manifold|mode_lever)/, 'Knee lock'], [/^tendon_fairlead/, 'Knee tendon guide'],
+  [/^sit_leaf/, 'Knee spring'], [/^ea_clutch/, 'Smart clutch (upgrade)'], [/^seat_cup/, 'Seat cup'], [/^strut/, 'Seat pole'],
+  [/^dring_cc/, 'Lean-back strap ring'], [/^dring/, 'Band ring'], [/^(knee_hub|condyle|knee_yoke)/, 'Knee hinge'],
+  [/^knee_arc/, 'Knee arc (artificial kneecap)'], [/^knee_guide/, 'Band guide'], [/^ptb_shell/, 'Below-knee pad'], [/^calf_cuff/, 'Calf pad'],
+  [/^shin_anchor/, 'Knee tendon anchor'], [/^runband_clip/, 'Running band clip'], [/^m4_/, 'Ankle spring (upgrade)'], [/^shoe/, 'Shoe'],
+  [/^(hip_belt|belt_)/, 'Hip belt'], [/^lumbar_plate/, 'Lower-back plate (hub)'], [/^(lumbar_standoff|panel_guide)/, 'Back tendon guide'],
+  [/^glute_guide/, 'Back tendon hip pulley'], [/^m3_standoff/, 'Hip band mount'], [/^back_panel/, 'Back panel'], [/^port_/, 'Cable port (hub)'],
+  [/^m2_leaf/, 'Back tendon spring'], [/^whiffletree/, 'Back tendon balancer (even left/right pull)'], [/^p1_battery/, 'Battery (motor upgrade)'],
+  [/^(p1_|bowden)/, 'Motor (optional upgrade)'], [/^m5_/, 'Shoulder support (upgrade)'],
+];
+const plainName = n => { for (const [re, t] of PLAIN) if (re.test(n)) return t; return null; };
 const shortName = n => { for (const [re, t] of SHORT) if (re.test(n)) return t; return null; };
 function drawLabels() {
   labelLayer.innerHTML = ''; svg.innerHTML = '';
@@ -409,11 +446,12 @@ function pick(cx, cy) {
   const objs = [partRoot, anim.on ? animRoot : cables[state.pose]].filter(Boolean);
   const hit = ray.intersectObjects(objs, true).find(h => isVis(h.object));
   if (!hit) return null;
-  let o = hit.object; let name = o.name; let ud = o.userData || {};
+  let o = hit.object; let ud = o.userData || {}; let name = ud.name || o.name;
   while (o && !parts[o.name] && o.parent && o.parent !== partRoot) o = o.parent;
   if (parts[o.name]) { name = o.name; ud = parts[o.name].meta; }
   if (ud.module === 'body' || /^(body|human)/i.test(name)) return null;
-  return { lbl: ud.label || ud.group || name, sub: `${ud.module || ''}${ud.state ? ' · ' + ud.state : ''}` };
+  const tech = ud.label || ud.group || name;
+  return { lbl: plainName(name) || tech, sub: `${tech}${ud.state ? ' · ' + ud.state : ''}` };
 }
 function showTip(h, x, y, touch) {
   if (!h) { tip.style.display = 'none'; return; }
@@ -445,17 +483,26 @@ function isVis(o) { while (o) { if (!o.visible) return false; o = o.parent; } re
 
 // ---------- UI ----------
 function btn(parent, text, on, cls = 'pill') { const b = document.createElement('button'); b.textContent = text; b.className = cls; b.onclick = on; parent.appendChild(b); return b; }
+const POSE_NAME = { stand: 'Standing', walk: 'Walking', run: 'Running', chair: 'Leaning back', stoop: 'Bending to lift' };
+const POSE_PLAIN = {
+  stand: 'Standing. Nothing is locked, so the frame moves freely with you.',
+  walk: 'Walking. No motor: elastic hip bands help swing each leg forward.',
+  run: 'Running. Every lock is open; a band between the shins and the hip bands do the work.',
+  chair: 'Leaning back. A light pole under each hip carries 69% of your weight, the knee lock holds with no power, and two straps hold your back like a camp chair.',
+  stoop: 'Bending to lift. The back tendon is loaded and gives the energy back as you stand up.',
+};
 function buildUI() {
+  $('ver').textContent = 'build ' + (BUILD || 'dev');
   const pr = $('poses');
   ui.poses = {};
-  for (const p of Object.keys(D.poses.poses)) ui.poses[p] = btn(pr, D.poses.poses[p].label.replace(/, mid-stance/, '').replace(/ deg /, '° '), () => { if (anim.on) stopAnim(); state.pose = p; apply(); });
+  for (const p of Object.keys(D.poses.poses)) ui.poses[p] = btn(pr, POSE_NAME[p] || D.poses.poses[p].label, () => { stopProgram(); if (anim.on) stopAnim(); state.pose = p; apply(); });
   const vr = $('views'); ui.views = {};
   for (const [k, t] of [['34', '3/4'], ['front', 'Front'], ['side', 'Side'], ['back', 'Back']]) ui.views[k] = btn(vr, t, () => setView(k));
   const mr = $('mods');
-  ui.basic = btn(mr, 'Basic (passive)', () => { state.basic = !state.basic; apply(); });
-  ui.coupling = btn(mr, 'Couplings', () => { state.coupling = !state.coupling; apply(); });
-  ui.upgrade = btn(mr, 'Upgrades: ghost', () => { state.upgrade = { off: 'ghost', ghost: 'on', on: 'off' }[state.upgrade]; apply(); });
-  ui.body = btn(mr, 'Body: on', () => { state.body = { on: 'ghost', ghost: 'off', off: 'on' }[state.body]; apply(); });
+  ui.basic = btn(mr, 'Core kit', () => { state.basic = !state.basic; apply(); });
+  ui.coupling = btn(mr, 'Linking bands', () => { state.coupling = !state.coupling; apply(); });
+  ui.upgrade = btn(mr, 'Upgrades', () => { state.upgrade = { off: 'ghost', ghost: 'on', on: 'off' }[state.upgrade]; apply(); });
+  ui.body = btn(mr, 'Body', () => { state.body = { on: 'ghost', ghost: 'off', off: 'on' }[state.body]; apply(); });
   ui.labels2 = btn(mr, 'Labels', () => toggleLabels());
   const ex = $('explode'); ex.value = state.explode;
   ex.oninput = () => { state.explode = parseFloat(ex.value); $('exVal').textContent = Math.round(state.explode * 100) + '%'; apply(); };
@@ -465,7 +512,7 @@ function buildUI() {
   $('bCtl').onclick = () => toggleSheet('ctl');
   $('ctlHd').onclick = () => toggleSheet('ctl', false);
   $('infoHd').onclick = () => toggleSheet('info', false);
-  $('peek').onclick = () => toggleSheet('info', true);
+  $('peek').onclick = () => toggleSheet('info');
   for (const id of ['ctl', 'info']) swipeClose($(id).querySelector('.hd'), id);
   if (!matchMedia('(hover: hover)').matches) $('hint').textContent = 'Drag to orbit · pinch to zoom · two fingers to pan · tap a part to name it';
   else $('hint').textContent = 'Drag to orbit · scroll to zoom · right-drag to pan · hover a part to name it';
@@ -481,16 +528,23 @@ function updateButtons() {
   for (const [p, b] of Object.entries(ui.poses)) b.classList.toggle('on', !anim.on && p === state.pose);
   for (const [v, b] of Object.entries(ui.views)) b.classList.toggle('on', v === state.view);
   ui.basic.classList.toggle('on', state.basic); ui.coupling.classList.toggle('on', state.coupling);
-  ui.upgrade.textContent = 'Upgrades: ' + state.upgrade; ui.upgrade.classList.toggle('on', state.upgrade !== 'off');
-  ui.body.textContent = 'Body: ' + state.body; ui.body.classList.toggle('on', state.body !== 'off');
+  ui.upgrade.textContent = 'Upgrades: ' + { off: 'off', ghost: 'preview', on: 'on' }[state.upgrade]; ui.upgrade.classList.toggle('on', state.upgrade !== 'off');
+  ui.body.textContent = 'Body: ' + { on: 'on', ghost: 'see-through', off: 'off' }[state.body]; ui.body.classList.toggle('on', state.body !== 'off');
   ui.labels2.classList.toggle('on', state.labels);
   $('bLabels').classList.toggle('on', state.labels); $('bLabels').setAttribute('aria-pressed', state.labels);
+  $('lblTxt').textContent = 'Labels: ' + (state.labels ? 'on' : 'off'); ui.labels2.textContent = 'Labels: ' + (state.labels ? 'on' : 'off');
+  const k = prog.cur && prog.cur.key;
+  for (const [id, key] of [['mWalk', 'walk'], ['mSit', 'sit'], ['mLift', 'lift']]) $(id).classList.toggle('on', k === key);
+  $('bCtl').classList.toggle('on', ui.open.ctl);
 }
+const esc = t => String(t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
 let infoKey = '';
-function setInfo(title, html, peek) {
+function setInfo(title, html) {
   const k = title + '|' + html; if (k === infoKey) return; infoKey = k;
   $('infoTitle').textContent = title; $('infoBody').innerHTML = html;
-  $('peekTxt').textContent = peek || title + ' · details';
+}
+function techBlock(rows, note) {
+  return `<div class="tech"><h5>Technical names (small print)</h5>${note ? `<div>${esc(note)}</div>` : ''}${rows.filter(r => r[1]).map(r => `<div class="row"><span>${esc(r[0])}</span><b>${esc(r[1])}</b></div>`).join('')}</div>`;
 }
 function updateReadout() {
   const P = D.poses.poses[state.pose];
@@ -498,30 +552,34 @@ function updateReadout() {
   const pick = (k) => (C[k + '_l'] || C[k] || {}).state || '';
   const rows = [
     ['Mode', P.mode],
-    ['Knee tendon T1', pick('t1_tendon')],
-    ['Lift tendon M2', pick('t3_tendon')],
-    ['Hip band M3', pick('m3_band')],
-    ['Strut', P.mode === 'SIT' ? 'deployed, 4° back, 9° out' : 'stowed along the thigh'],
-    ['Crazy Creek', pick('crazycreek')],
-    ['Hamstring band', state.coupling ? pick('hamstring_band') : 'not docked'],
+    ['Knee tendon (T1)', pick('t1_tendon')],
+    ['Back tendon (T3 / M2 lift leaf)', pick('t3_tendon')],
+    ['Hip band (M3)', pick('m3_band')],
+    ['Seat pole (strut)', P.mode === 'SIT' ? 'deployed, 4° back, 9° out' : 'stowed along the thigh'],
+    ['Lean-back straps (Crazy Creek)', pick('crazycreek')],
+    ['Hamstring band (coupling)', state.coupling ? pick('hamstring_band') : 'not docked'],
   ];
   if (C.running_band) rows.push(['Running band', C.running_band.state]);
-  const esc = t => String(t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
-  setInfo(P.label, rows.filter(r => r[1]).map(r => `<div class="row"><span>${esc(r[0])}</span><b>${esc(r[1])}</b></div>`).join(''));
+  setInfo(POSE_NAME[state.pose] || P.label, `<div class="cap">${esc(POSE_PLAIN[state.pose] || P.label)}</div>` + techBlock(rows, P.label));
 }
 
 // =====================================================================================
 // ANIMATION: walk / run cycles, sit-down, stand-up, stoop-lift (baked frames from Blender:
 // cad/viewer/sitka_anim.js) and a viewer-side "kit" sequence where the modules dock one by one.
 // =====================================================================================
-const SEQS = [['walk', 'Walk cycle'], ['run', 'Run cycle'], ['sitdown', 'Sit down'], ['standup', 'Stand up'], ['stoop', 'Stoop lift'], ['kit', 'Kit: modules dock']];
+const SEQS = [['walk', 'Walk'], ['run', 'Run'], ['sitdown', 'Sit down'], ['standup', 'Stand up'], ['stoop', 'Lift'], ['kit', 'Modules dock']];
 const SEQ_FPS = { walk: 28, run: 30, sitdown: 14, standup: 14, stoop: 14 };
 const anim = { on: false, seq: null, t: 0, playing: false, speed: 1, data: null, body: null, cables: {}, root: null };
 const animRoot = new THREE.Group(); animRoot.matrixAutoUpdate = false; animRoot.matrix.copy(ZUP); scene.add(animRoot);
 const GLOW = { load: new THREE.Color(0xff7a1a), ret: new THREE.Color(0x27e0c0), lock: new THREE.Color(0xff3344), gate: new THREE.Color(0x46a8ff), band: new THREE.Color(0x3fe0a8), strap: new THREE.Color(0xffc233) };
 
-function loadAnimData() {
-  return loadScript('cad/viewer/sitka_anim.js', 'Loading animation', 'SITKA_ANIM');
+// one download, shared: a quiet prefetch (during the tour's first step) turns loud if someone is waiting on it
+let animP = null, animLoud = false;
+function loadAnimData(quiet) {
+  if (!quiet) animLoud = true;
+  if (!animP) animP = loadScript('cad/viewer/sitka_anim.js', 'Loading animation', 'SITKA_ANIM', () => animLoud);
+  if (!quiet && !window.SITKA_ANIM) showLoading('Loading animation', null);
+  return animP;
 }
 function i16(b64) { const b = b64ToU8(b64); return new Int16Array(b.buffer, b.byteOffset, b.byteLength / 2); }
 function i8(b64) { const b = b64ToU8(b64); return new Int8Array(b.buffer, b.byteOffset, b.byteLength); }
@@ -636,6 +694,7 @@ function applyAnimFrame(seqName, tf) {
   }
   // engagement glow
   const st = S.states[fr < 0.5 ? i0 : i1] || {};
+  anim.st = st; anim.frame = fr < 0.5 ? i0 : i1; anim.n = n;
   glow(st);
   hud(seqName, st, i0, n);
 }
@@ -675,22 +734,51 @@ function glow(st) {
     }
   }
 }
+// technical captions: small print in the details sheet only
 const HUD_TXT = {
-  walk: 'Walking: no motor. Hip bands stretch in late stance and swing the leg; the stance clutch gates the knee leaf (smart tier); the hamstring band brakes late swing.',
+  walk: 'Walking: no motor. Hip bands (M3) stretch in late stance and swing the leg; the stance clutch gates the knee leaf (smart tier); the hamstring band brakes late swing.',
   run: 'Running: every clutch open. The shin-to-shin running band (−6.4%) and the hip bands do the work.',
-  sitdown: 'Sit down: the strut swings down and plants; the sit leaf loads 44 J through the 80 mm arc; the cam locks with no power; the Crazy Creek straps take the 10° recline.',
-  standup: 'Stand up: the cam opens, the sit leaf gives ~40 J back (28 Nm per knee), the strut retracts and stows along the thigh.',
-  stoop: 'Stoop lift: the lift tendon is slack until 35°, then loads the M2 leaf through the whiffletree (60 Nm, the box feels ~12 kg lighter) and gives it back on the lift.',
-  kit: 'Kit: everything docks to the hub. Dock → M1 knee/seat → M2 lift → M3 hip → couplings → upgrades.',
+  sitdown: 'Sit down: the strut swings down and plants; the sit leaf loads 44 J through the 80 mm arc; the cam clutch locks with no power; the Crazy Creek straps take the 10° recline.',
+  standup: 'Stand up: the cam clutch opens, the sit leaf gives ~40 J back (28 Nm per knee), the strut retracts and stows along the thigh.',
+  stoop: 'Stoop lift: the T3 lift tendon is slack until 35°, then loads the M2 lift leaf through the whiffletree (60 Nm) and gives it back on the lift.',
+  kit: 'Kit: Dock → M1 knee/seat → M2 lift → M3 hip → couplings → upgrades (EA clutches, P1 motor, M4 ankle, M5 shoulder).',
 };
-const HUD_ROWS = [['sit_leaf', 'Sit leaf loading'], ['sit_return', 'Sit leaf returning'], ['lock', 'Cam clutch LOCKED'], ['cc', 'Crazy Creek straps'],
-  ['t3_load', 'Lift tendon loading'], ['t3_return', 'Lift tendon returning'], ['m3_l', 'Hip band L'], ['m3_r', 'Hip band R'],
-  ['ea_l', 'Stance clutch L'], ['ea_r', 'Stance clutch R'], ['ham_l', 'Hamstring band L'], ['ham_r', 'Hamstring band R'], ['runband', 'Running band']];
-function hud(seqName, st, i, n) {
+// plain captions: the details sheet and the caption bar
+const HUD_PLAIN = {
+  walk: 'Walking with no motor: elastic hip bands swing each leg forward, and a hamstring band slows the knee before your heel lands.',
+  run: 'Running: every lock is open; a band linking the shins and the hip bands do the work.',
+  sitdown: 'Sitting down: the seat poles swing down and plant, the knee spring stores energy, and the knee lock holds you with no power.',
+  standup: 'Standing up: the knee lock opens, the knee spring gives the energy back, and the seat poles fold away.',
+  stoop: 'Lifting: the back tendon stays slack until you bend past about 35°, then stores energy and gives it back as you lift, so a 15 kg box feels about 12 kg lighter.',
+  kit: 'Every module docks into one hub, starting with the hip belt and back panel.',
+};
+const CAP_SHORT = {
+  walk: 'Walking, no motor: elastic hip bands swing each leg forward.',
+  run: 'Running: a band linking the shins and the hip bands do the work.',
+  sitdown: 'A pole under each hip takes 69% of your weight; the knee spring stores the energy.',
+  standup: 'The knee spring gives the energy back as you stand.',
+  stoop: 'The back tendon stores energy as you bend: a 15 kg box feels about 12 kg lighter.',
+  kit: 'Every module docks into one hub.',
+};
+const HUD_ROWS = [['sit_leaf', 'Knee spring storing'], ['sit_return', 'Knee spring giving back'], ['lock', 'Knee lock on'], ['cc', 'Lean-back straps'],
+  ['t3_load', 'Back tendon storing'], ['t3_return', 'Back tendon giving back'], ['m3_l', 'Hip band, left'], ['m3_r', 'Hip band, right'],
+  ['ea_l', 'Smart clutch, left (upgrade)'], ['ea_r', 'Smart clutch, right (upgrade)'], ['ham_l', 'Hamstring band, left'], ['ham_r', 'Hamstring band, right'], ['runband', 'Running band']];
+function hud(seqName, st) {
   const act = HUD_ROWS.filter(([k]) => st[k] > 0.01);
   const rows = act.map(([k, t]) => `<div class="hrow"><span>${t}</span><i><b style="width:${Math.round(10 * Math.min(1, st[k])) * 10}%"></b></i></div>`).join('');
   const ttl = SEQS.find(s => s[0] === seqName)[1];
-  setInfo(ttl, `<div class="cap">${HUD_TXT[seqName]}</div>${rows}`, act.length ? ttl + ' · ' + act[0][1] : ttl + ' · details');
+  setInfo(ttl, `<div class="cap">${esc(HUD_PLAIN[seqName])}</div>${rows}` + techBlock([], HUD_TXT[seqName]));
+}
+// what is happening right now, read from the same engagement states that drive the glow (so it can't drift)
+function phaseOf(seq) {
+  const st = anim.st || {}, f = anim.frame || 0, on = k => st[k] > 0.01;
+  if (seq === 'sitdown') return on('lock') ? 'Seated: the knee lock holds you, no power' : on('cc') ? 'Settling back: the straps take up' : on('sit_leaf') ? 'Sitting down: the knee spring stores energy' : 'The seat poles swing down';
+  if (seq === 'standup') return on('sit_return') ? 'Standing up: the knee spring gives energy back' : on('lock') ? 'Seated, about to stand' : 'Standing: the seat poles fold away';
+  if (seq === 'stoop') return on('t3_return') ? 'Lifting: the back tendon gives energy back' : on('t3_load') ? 'Bending: the back tendon stores energy' : f < 10 ? 'Bending: tendon slack until about 35°' : 'Standing tall again';
+  if (seq === 'walk') return on('ham_l') || on('ham_r') ? 'Walking: the hamstring band slows the knee' : 'Walking: a hip band swings the leg forward';
+  if (seq === 'run') return 'Running: the shin band and hip bands work';
+  if (seq === 'kit') return KIT_PLAIN[anim.kitGi || 0];
+  return '';
 }
 
 // ---------------- kit (viewer side) ----------------
@@ -702,6 +790,8 @@ const KIT = [
   ['Couplings: hamstring band (appears when M1 + M3 dock)', n => /^(knee_guide|dring_ham)/.test(n), ['hamstring_band_l', 'hamstring_band_r']],
   ['Upgrades: stance clutches, one motor + Bowden, M4 ankle, M5 shoulder', n => /^(ea_|p1_|bowden|m4_|m5_)/.test(n), ['bowden_l', 'bowden_r', 'm5_lever_l', 'm5_lever_r', 'm4_cable_l', 'm4_cable_r', 'calf_band_l', 'calf_band_r']],
 ];
+const KIT_PLAIN = ['The hub: hip belt + back panel', 'Seat module: knee springs, locks, seat poles', 'Back module: the back tendon', 'Hip module: hip bands',
+  'Linking bands (appear when two modules dock)', 'Upgrades: smart clutches, ankles, shoulders, one motor'];
 const KIT_STEP = 2.2;
 function kitFrame(t) {
   // static standing pose, parts fly in group by group
@@ -725,7 +815,7 @@ function kitFrame(t) {
     const ghost = isGhost(p.meta.module, p.meta.requires);
     p.obj.traverse(o => { if (o.isMesh) o.material = ghost ? ghostMat : o.userData.baseMat; });
   }
-  const gi = Math.min(KIT.length - 1, Math.floor(t / KIT_STEP)); caption = KIT[gi][0];
+  const gi = Math.min(KIT.length - 1, Math.floor(t / KIT_STEP)); caption = KIT[gi][0]; anim.kitGi = gi;
   const c = cables['stand'];
   if (c) {
     c.visible = true;
@@ -737,7 +827,7 @@ function kitFrame(t) {
     });
   }
   for (const [p, b] of Object.entries(bodies)) b.visible = p === 'stand' && state.body !== 'off';
-  setInfo('Kit: modules dock', `<div class="cap">${gi + 1} / ${KIT.length} · ${caption}</div>`, `Kit ${gi + 1}/${KIT.length} · ${caption.split(':')[0]}`);
+  setInfo('Modules dock', `<div class="cap">${esc(HUD_PLAIN.kit)}</div><div class="cap">${gi + 1} / ${KIT.length} · ${esc(KIT_PLAIN[gi])}</div>` + techBlock([], caption));
 }
 const KIT_LEN = KIT.length * KIT_STEP + 1.0;
 
@@ -790,7 +880,7 @@ function updateAnimUI() {
   for (const [k, b] of Object.entries(ui.seqs)) b.classList.toggle('on', anim.on && anim.seq === k);
   ROOT.classList.toggle('anim', anim.on);
   $('playIco').innerHTML = anim.playing ? PAUSE : PLAY;
-  $('playTxt').textContent = !anim.on ? 'Animate' : anim.playing ? 'Pause' : 'Play';
+  $('playTxt').textContent = !anim.on ? 'Play' : anim.playing ? 'Pause' : 'Play';
   $('bPlay').setAttribute('aria-label', $('playTxt').textContent);
   if (anim.on) $('seqName').textContent = SEQS.find(s => s[0] === anim.seq)[1];
   $('bSpeed').textContent = anim.speed === 1 ? '1×' : anim.speed === 0.5 ? '½×' : '¼×';
@@ -799,17 +889,192 @@ function updateAnimUI() {
 }
 function buildAnimUI() {
   const r = $('anims'); ui.seqs = {};
-  for (const [k, t] of SEQS) ui.seqs[k] = btn(r, t, () => { startSeq(k); if (ROOT.classList.contains('compact') && !ROOT.classList.contains('land')) toggleSheet('ctl', false); });
-  $('bPlay').onclick = () => { if (!anim.on) startSeq('walk'); else { if (!anim.playing && anim.t >= seqLen(anim.seq)) anim.t = 0; anim.playing = !anim.playing; updateAnimUI(); } };
+  for (const [k, t] of SEQS) ui.seqs[k] = btn(r, t, () => { stopProgram(); startSeq(k); if (ROOT.classList.contains('compact') && !ROOT.classList.contains('land')) toggleSheet('ctl', false); });
+  $('bPlay').onclick = () => { if (!anim.on) { stopProgram(); startSeq('walk'); } else { if (!anim.playing && anim.t >= seqLen(anim.seq)) anim.t = 0; anim.playing = !anim.playing; updateAnimUI(); } };
   $('bSpeed').onclick = () => { anim.speed = anim.speed === 1 ? 0.5 : anim.speed === 0.5 ? 0.25 : 1; updateAnimUI(); };
-  $('bStop').onclick = () => stopAnim();
+  $('bStop').onclick = () => { stopProgram(); stopAnim(); };
   const sc = $('scrub');
-  const seek = () => { if (!anim.on) return; anim.playing = false; anim.t = parseFloat(sc.value) * seqLen(anim.seq); updateAnimUI(); };
+  const seek = () => { if (!anim.on) return; stopProgram(); anim.playing = false; anim.t = parseFloat(sc.value) * seqLen(anim.seq); updateAnimUI(); };
   sc.oninput = seek;
   sc.addEventListener('pointerdown', () => { scrubbing = true; }); addEventListener('pointerup', () => { scrubbing = false; });
   sc.addEventListener('touchstart', () => { scrubbing = true; }, { passive: true }); addEventListener('touchend', () => { scrubbing = false; });
+  // the simple main screen: four big buttons
+  const main = (id, key) => $(id).onclick = () => {
+    if (prog.cur && prog.cur.key === key && anim.on) { anim.playing = !anim.playing; if (anim.playing && anim.t >= seqLen(anim.seq)) anim.t = 0; updateAnimUI(); return; }
+    runProgram(MAIN[key]);
+  };
+  main('mWalk', 'walk'); main('mSit', 'sit'); main('mLift', 'lift');
+  $('mTour').onclick = () => tourStart(0);
+}
+
+// =====================================================================================
+// PROGRAMS: a looping playlist of sequences / poses with one plain caption (main buttons and tour steps)
+// =====================================================================================
+const MAIN = {
+  walk: { key: 'walk', cap: 'Walking with no motor: elastic bands link hips and knees like your own hamstrings.', items: [{ seq: 'walk', speed: 0.6 }] },
+  sit: { key: 'sit', cap: 'A pole under each hip takes 69% of your weight; the knee spring gives the energy back when you stand.', items: [{ seq: 'sitdown', speed: 0.7, hold: 1.4 }, { seq: 'standup', speed: 0.7, hold: 1 }] },
+  lift: { key: 'lift', cap: 'The back tendon stores energy as you bend: a 15 kg box feels about 12 kg lighter, with no motor.', items: [{ seq: 'stoop', speed: 0.7, hold: 1.2 }] },
+};
+const prog = { cur: null, i: 0, t: 0, wait: 0, token: 0, busy: false };
+function runProgram(p) {
+  prog.cur = p; prog.i = 0; prog.token++;
+  if (!tour.on) { framePoses = p.frame || null; }
+  updateButtons();
+  return startItem(prog.token);
+}
+function stopProgram() { prog.cur = null; prog.token++; prog.busy = false; updateButtons(); }
+async function startItem(tok) {
+  const it = prog.cur.items[prog.i]; prog.t = 0; prog.wait = 0; prog.busy = true;
+  try {
+    if (it.pose) { if (anim.on) stopAnim(); state.pose = it.pose; apply(); }
+    else { await startSeq(it.seq); if (tok !== prog.token) return; anim.speed = it.speed || 1; updateAnimUI(); }
+  } finally { if (tok === prog.token) prog.busy = false; }
+}
+function progTick(dt) {
+  const p = prog.cur; if (!p || prog.busy) return;
+  const it = p.items[prog.i]; if (!it || it.pose || !anim.on) return;
+  const L = seqLen(anim.seq), finished = !anim.playing && anim.t >= L - 1e-6;
+  if (!anim.playing && !finished) return;              // paused by the visitor
+  prog.t += dt;
+  if (it.dur ? prog.t * (it.speed || 1) >= it.dur * (it.speed || 1) : finished) {
+    prog.wait += dt;
+    if (it.dur || prog.wait >= (it.hold || 0.8)) { prog.i = (prog.i + 1) % p.items.length; startItem(prog.token); }
+  }
+}
+
+// ---------- focus: glow the parts that matter, dim everything else (tour) ----------
+let focus = null;   // (name) => bool
+const dimMat = new THREE.MeshStandardMaterial({ color: 0x8d949c, transparent: true, opacity: 0.30, roughness: 0.8, depthWrite: false });
+const dimBody = new THREE.MeshStandardMaterial({ color: 0xd8d2ca, transparent: true, opacity: 0.30, roughness: 0.85, depthWrite: false });
+const focusMats = new Map();
+const FOCUS_GLOW = new THREE.Color(0xff6a10);
+function focusMatFor(m) {
+  let f = focusMats.get(m);
+  if (!f) { f = m.clone(); f.emissive = FOCUS_GLOW.clone(); f.emissiveIntensity = 0.8; if (!f.transparent) f.depthWrite = true; focusMats.set(m, f); }
+  return f;
+}
+function applyFocus(time) {
+  if (!focus) return;
+  const pulse = 0.65 + 0.35 * Math.sin(time * 0.004);
+  for (const m of focusMats.values()) m.emissiveIntensity = pulse;
+  const kit = anim.on && anim.seq === 'kit';
+  for (const [name, p] of Object.entries(parts)) {
+    if (!p.obj.visible) continue;
+    const on = focus(name), body = p.meta.module === 'body';
+    p.obj.traverse(o => {
+      if (!o.isMesh) return;
+      const base = isGhost(p.meta.module, p.meta.requires) ? ghostMat : o.userData.baseMat;
+      o.material = on ? focusMatFor(base) : body ? dimBody : kit ? base : dimMat;
+      o.castShadow = on || (kit && !body);
+    });
+  }
+  for (const [name, m] of Object.entries(anim.cables)) if (m.visible) {
+    const base = isGhost(m.userData.module, m.userData.requires) ? ghostMat : m.userData.baseMat;
+    m.material = focus(name) ? focusMatFor(base) : dimMat;
+  }
+  const c = cables[state.pose] || (kit && cables.stand);
+  for (const cc of [cables[state.pose], cables.stand]) if (cc && cc.visible) cc.traverse(o => {
+    if (!o.isMesh || !o.visible) return;
+    const base = o.material === ghostMat || isGhost((o.userData || {}).module, (o.userData || {}).requires) ? ghostMat : o.userData.baseMat;
+    o.material = focus(o.name) ? focusMatFor(base) : kit ? base : dimMat;
+  });
+  if (anim.body && anim.body.visible) anim.body.material = dimBody;
+  for (const b of Object.values(bodies)) if (b.visible) b.traverse(o => { if (o.isMesh) { o.material = dimBody; o.castShadow = false; } });
+}
+function clearFocus() {
+  focus = null;
+  for (const p of Object.values(parts)) p.obj.traverse(o => { if (o.isMesh) { o.material = isGhost(p.meta.module, p.meta.requires) ? ghostMat : o.userData.baseMat; o.castShadow = true; } });
+  for (const m of Object.values(anim.cables)) m.material = m.userData.baseMat;
+  if (anim.body) anim.body.material = anim.body.userData.baseMat;
+  for (const b of Object.values(bodies)) b.traverse(o => { if (o.isMesh) { o.material = o.userData.baseMat; o.castShadow = true; } });
+  if (!anim.on) apply();
+}
+
+// =====================================================================================
+// GUIDED TOUR: six steps, one plain sentence each, the right parts glowing
+// =====================================================================================
+const TOUR = [
+  { title: 'Meet Sitka', view: '34', spin: true, chip: 'Glowing: the springs, clutches and tendons',
+    cap: 'This is Sitka. Your bones carry the weight; springs, clutches and cable tendons do what your muscles do.',
+    items: [{ pose: 'stand' }], focus: /^(sit_leaf|knee_manifold|mode_lever|m2_leaf|whiffletree|t1_tendon|t3_tendon|m3_band|knee_arc)/ },
+  { title: 'Sit anywhere', view: '34',
+    cap: 'Sit down anywhere: a light pole under each hip takes most of your weight (69%), and the knee spring stores energy and gives it back when you stand.',
+    items: [{ seq: 'sitdown', speed: 0.6, hold: 1.6 }, { seq: 'standup', speed: 0.6, hold: 1.2 }], focus: /^(strut_|seat_cup|sit_leaf|knee_manifold|mode_lever|t1_tendon|knee_arc)/ },
+  { title: 'Lean back', view: 'side', frame: ['chair'], chip: 'Glowing: the two lean-back straps',
+    cap: 'Lean back: two straps hold you, like a camp chair you wear.',
+    items: [{ pose: 'chair' }], focus: /^(crazycreek|dring_cc)/ },
+  { title: 'Lift', view: 'side', frame: ['stand', 'stoop'],
+    cap: 'Lift: the back tendon stores energy as you bend, so a 15 kg box feels about 12 kg lighter, with no motor.',
+    items: [{ seq: 'stoop', speed: 0.6, hold: 1.4 }], focus: /^(m2_leaf|whiffletree|t3_tendon|glute_guide|lumbar_standoff|panel_guide|thigh_cuff_[lr]$)/ },
+  { title: 'Walk and run', view: 'side', frame: ['walk', 'run'],
+    cap: 'Walk and run: elastic bands link your hips, knees and ankles, the way your hamstrings and calves do.',
+    items: [{ seq: 'walk', speed: 0.45, dur: 6 }, { seq: 'run', speed: 0.45, dur: 5 }], focus: /^(m3_band|hamstring_band|running_band|calf_band|m3_standoff|knee_guide|dring_ham|dring_m3|runband_clip)/ },
+  { title: 'Start small, add more', view: '34', kit: true,
+    cap: 'Start with Seat + Back (about $1,300, under 10 lb), then add hips, ankles, shoulders and one optional motor, all docking into one hub.',
+    items: [{ seq: 'kit', speed: 0.8, hold: 2.5 }], focus: null },
+];
+const tour = { on: false, i: 0 };
+function kitFocus(name) {
+  const g = KIT[anim.kitGi || 0]; if (!g) return false;
+  return g[1](name) || g[2].some(c => name === c || name.startsWith(c + '_') || name.startsWith(c + '.'));
+}
+function tourStart(i = 0) {
+  tour.on = true; ROOT.classList.add('touring');
+  ui.open.ctl = ui.open.info = false; state.labels = false; tip.style.display = 'none';
+  if (state.explode) { state.explode = 0; $('explode').value = 0; $('exVal').textContent = '0%'; }
+  state.basic = state.coupling = true; state.upgrade = 'ghost'; state.body = 'on';
+  const dots = $('tDots'); dots.innerHTML = TOUR.map(() => '<i></i>').join('');
+  loadAnimData(true).catch(() => {});      // fetch the animation quietly while step 1 is read
+  tourGo(i);
+}
+function tourGo(i) {
+  tour.i = Math.max(0, Math.min(TOUR.length - 1, i));
+  const S = TOUR[tour.i], last = tour.i === TOUR.length - 1;
+  $('tCount').textContent = `${tour.i + 1} of ${TOUR.length}`;
+  [...$('tDots').children].forEach((d, k) => { d.className = k === tour.i ? 'on' : k < tour.i ? 'done' : ''; });
+  $('tTitle').textContent = S.title; $('tCap').textContent = S.cap; $('tPhase').textContent = S.chip || '';
+  $('tBack').disabled = tour.i === 0;
+  $('tNext').textContent = last ? 'Explore on your own' : 'Next';
+  $('tSkip').style.visibility = last ? 'hidden' : 'visible';
+  try { localStorage.setItem('sitka_tour_seen', '1'); } catch (e) {}
+  clearFocus();
+  focus = S.kit ? kitFocus : (n => S.focus.test(n));
+  framePoses = S.frame || ['stand'];
+  syncSheets();
+  controls.autoRotate = !!S.spin; controls.autoRotateSpeed = 0.7;
+  runProgram({ key: 'tour', items: S.items }).then(() => { if (tour.on && TOUR[tour.i] === S) setView(S.view); });
+  setView(S.view);
+}
+function tourEnd() {
+  tour.on = false; ROOT.classList.remove('touring');
+  try { localStorage.setItem('sitka_tour_seen', '1'); } catch (e) {}
+  controls.autoRotate = false; stopProgram(); if (anim.on) stopAnim();
+  clearFocus(); framePoses = null; state.pose = 'stand'; apply(); syncSheets(); setView('34');
+}
+$('tNext').onclick = () => { if (tour.i >= TOUR.length - 1) tourEnd(); else tourGo(tour.i + 1); };
+$('tBack').onclick = () => tourGo(tour.i - 1);
+$('tSkip').onclick = () => tourEnd();
+addEventListener('keydown', e => {
+  if (!tour.on) return;
+  if (e.key === 'ArrowRight') $('tNext').click(); else if (e.key === 'ArrowLeft' && tour.i) tourGo(tour.i - 1); else if (e.key === 'Escape') tourEnd();
+});
+function tourTick() {
+  if (!tour.on) return;
+  const S = TOUR[tour.i]; if (S.chip) return;
+  const ph = anim.on ? phaseOf(anim.seq) : '';
+  if ($('tPhase').textContent !== ph) $('tPhase').textContent = ph;
+}
+// the caption bar on the main screen
+function captionTick() {
+  if (tour.on) return;
+  let ph = '', txt;
+  if (anim.on) { ph = phaseOf(anim.seq); txt = prog.cur && prog.cur.cap ? prog.cur.cap : CAP_SHORT[anim.seq]; if (ROOT.classList.contains('compact')) txt = ph + '. ' + txt; }
+  else txt = state.pose === 'stand' ? 'Tap Walk, Sit or Lift to watch how it works.' : POSE_PLAIN[state.pose];
+  if ($('peekTxt').textContent !== txt) { $('peekTxt').textContent = txt; ROOT.style.setProperty('--dockh', $('dock').offsetHeight + 'px'); }
+  if ($('peekPh').textContent !== ph) $('peekPh').textContent = ph;
 }
 window.SITKA_ANIM_API = { startSeq, stopAnim, anim, seek: (f) => { anim.playing = false; anim.t = f * seqLen(anim.seq); } };
+window.SITKA_TOUR = { start: tourStart, go: tourGo, end: tourEnd, tour, prog };
 
 // ---------- loop ----------
 function resize() {
@@ -834,7 +1099,11 @@ let lastLbl = 0, lastT = 0;
 function loop(t) {
   requestAnimationFrame(loop);
   const dt = Math.min(0.1, (t - lastT) / 1000 || 0); lastT = t;
+  progTick(dt);
   animTick(dt);
+  tweenTick(dt);
+  applyFocus(t);
+  tourTick(); captionTick();
   controls.update();
   renderer.render(scene, camera);
   if (t - lastLbl > 120) { drawLabels(); lastLbl = t; }
@@ -842,6 +1111,10 @@ function loop(t) {
 init().then(async () => {
   applyCamParam(); requestAnimationFrame(loop);
   const sq = Q.get('anim');
+  let seen = false; try { seen = !!localStorage.getItem('sitka_tour_seen'); } catch (e) {}
+  const tq = Q.get('tour');
+  if (tq && tq !== '0') { tourStart(Math.max(0, (parseInt(Q.get('step') || '1', 10) || 1) - 1)); return; }
+  if (!sq && !seen && tq !== '0' && !Q.get('pose') && !Q.get('cam')) { tourStart(0); return; }
   if (sq) { window.__ready = false; await startSeq(sq); if (Q.get('at')) { anim.playing = false; anim.t = parseFloat(Q.get('at')) * seqLen(sq); } window.__ready = true; }
 }).catch(e => {
   showLoading('Load error', 0); $('ldSub').textContent = String(e); window.__errs = [String(e)]; console.error(e);

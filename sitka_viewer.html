@@ -1,8 +1,11 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#b9bfc6">
-<title>Sitka render two: kinetics-first exo, contoured CAD</title>
+<title>Sitka: a wearable sit, lift and walk assist (3D)</title>
 <style>
 :root{--ink:#e9edf2;--mut:#9aa3ad;--glass:rgba(18,21,26,.72);--line:rgba(255,255,255,.13);--acc:#d2602a;
   --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);--sal:env(safe-area-inset-left,0px);--sar:env(safe-area-inset-right,0px);
@@ -35,22 +38,29 @@ button{font:inherit;color:inherit}
 #top .sp{flex:1}
 html.compact .title small .long{display:none}
 
-/* dock (bottom bar) */
-#dock{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--sab) + 8px);display:flex;flex-direction:column;gap:4px;padding:4px;border-radius:24px;z-index:6;
+/* dock (bottom bar): four big buttons + Advanced */
+#dock{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--sab) + 8px);display:flex;flex-direction:column;padding:5px;border-radius:24px;z-index:6;
   max-width:calc(100vw - var(--sal) - var(--sar) - 2*var(--gap))}
-#dock .row{display:flex;align-items:center;gap:4px}
-#dock .srow{display:none;align-items:center;gap:10px;padding:0 10px;min-height:var(--tap)}
-html.anim #dock .srow{display:flex}
-#dock .srow b{font-size:12px;white-space:nowrap;color:var(--ink)}
-#scrub{flex:1;min-width:160px;accent-color:var(--acc);height:var(--tap);margin:0;touch-action:pan-x}
-#bStop,#bSpeed{display:none}
-html.anim #bStop,html.anim #bSpeed{display:inline-flex}
+#dock .row{display:flex;align-items:stretch;gap:4px}
+.tab{all:unset;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:78px;min-height:56px;padding:6px 10px;border-radius:19px;
+  color:var(--ink);font-weight:650;font-size:13.5px;cursor:pointer;flex:1 1 0;white-space:nowrap}
+.tab svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tab svg .f{fill:currentColor;stroke:none}
+@media (hover:hover){.tab:hover{background:rgba(255,255,255,.08)}}
+.tab.on{background:linear-gradient(180deg,#e0743c,#c2531f);color:#fff}
+.tab.adv{color:var(--mut)}
+.tab.adv.on{background:rgba(255,255,255,.16);color:#fff}
+.tab:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
 html.compact #dock{left:calc(var(--sal) + var(--gap));right:calc(var(--sar) + var(--gap));transform:none;max-width:none}
-html.compact #dock .row{justify-content:space-between}
-html.compact #dock .row .grow{flex:1}
-html.compact #scrub{min-width:0}
-html.land #dock{left:50%;right:auto;transform:translateX(-50%);flex-direction:row;align-items:center}
-html.land #dock .srow{order:2;min-width:240px}
+html.compact .tab{min-width:0;padding:6px 2px;font-size:13px}
+html.land #dock{left:50%;right:auto;transform:translateX(-50%)}
+html.land .tab{min-height:48px;min-width:70px}
+/* advanced: animation transport */
+.arow{display:flex;gap:4px;margin-top:6px}
+.arow .pill{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07)}
+.srow{display:flex;align-items:center;gap:10px;min-height:var(--tap);margin-top:4px}
+.srow b{font-size:12px;white-space:nowrap;color:var(--ink);min-width:58px}
+#scrub{flex:1;min-width:0;accent-color:var(--acc);height:var(--tap);margin:0;touch-action:pan-x}
 
 /* sheets / side panels */
 .sheet{position:fixed;z-index:4;border-radius:18px;display:flex;flex-direction:column;overflow:hidden;transition:transform .22s ease,opacity .22s ease}
@@ -62,9 +72,9 @@ html.land #dock .srow{order:2;min-width:240px}
 .sheet.closed{opacity:0;pointer-events:none}
 
 /* desktop: floating side cards */
-#ctl{left:calc(var(--sal) + var(--gap));top:calc(var(--sat) + 8px + var(--tap) + 10px);width:300px;max-height:calc(100% - var(--sat) - var(--sab) - 150px)}
+#ctl{left:calc(var(--sal) + var(--gap));top:calc(var(--sat) + 8px + var(--tap) + 10px);width:300px;max-height:calc(100% - var(--sat) - var(--sab) - var(--dockh,66px) - 80px)}
 #ctl.closed{transform:translateX(-20px)}
-#info{right:calc(var(--sar) + var(--gap));top:calc(var(--sat) + 8px + var(--tap) + 10px);width:300px;max-height:calc(100% - var(--sat) - var(--sab) - 150px)}
+#info{right:calc(var(--sar) + var(--gap));top:calc(var(--sat) + 8px + var(--tap) + 10px);width:320px;max-height:calc(100% - var(--sat) - var(--sab) - var(--dockh,66px) - 80px)}
 #info.closed{transform:translateX(20px)}
 
 /* phone portrait: bottom sheets above the dock */
@@ -76,14 +86,47 @@ html.compact:not(.land) .sheet .hd .x{display:none}
 /* phone landscape: side panels between the top bar and the dock */
 html.land .sheet{top:calc(var(--sat) + 8px + var(--tap) + 8px);bottom:calc(var(--sab) + 8px + var(--dockh,52px) + 8px);max-height:none;width:min(300px,38vw)}
 
-/* info peek handle (phone portrait only) */
-#peek{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--sab) + 8px + var(--dockh,52px) + 8px);z-index:4;display:none;align-items:center;gap:8px;
-  min-height:44px;padding:0 16px;border-radius:999px;font-weight:600;font-size:12px;color:var(--ink);cursor:pointer;max-width:calc(100vw - 40px)}
-#peek span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#peek i{width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:6px solid var(--mut)}
-html.compact:not(.land) #peek{display:inline-flex}
-html.compact:not(.land) #peek.hide{display:none}
-html.compact:not(.land) #bInfo{display:none}
+/* caption bar above the dock: what is happening right now, tap for details */
+#peek{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--sab) + 8px + var(--dockh,66px) + 8px);z-index:4;display:flex;align-items:center;gap:10px;
+  min-height:44px;padding:8px 16px;border-radius:18px;font-size:14px;line-height:1.35;font-weight:600;color:var(--ink);cursor:pointer;text-align:left;
+  width:max-content;max-width:min(600px,calc(100vw - var(--sal) - var(--sar) - 2*var(--gap)))}
+#peek .ph{flex:0 0 auto;align-self:flex-start;margin-top:1px;padding:1px 8px;border-radius:999px;background:rgba(255,122,26,.22);color:#ffc89e;font-size:12px;font-weight:700;white-space:nowrap}
+#peek .ph:empty{display:none}
+#peekTxt{min-width:0}
+#peek i{flex:0 0 auto;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:6px solid var(--mut)}
+#peek.hide{display:none}
+html.compact:not(.land) #peek{width:auto;left:calc(var(--sal) + var(--gap));right:calc(var(--sar) + var(--gap));transform:none;max-width:none;font-size:14px}
+html.compact:not(.land) #peek .ph{display:none}
+html.land #peek{font-size:13px;min-height:36px;padding:6px 14px}
+
+/* guided tour card */
+#tour{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--sab) + 10px);z-index:8;display:none;flex-direction:column;gap:8px;
+  width:min(580px,calc(100vw - var(--sal) - var(--sar) - 2*var(--gap)));padding:12px 16px 14px;border-radius:24px;background:rgba(16,19,24,.86)}
+html.touring #tour{display:flex}
+html.touring #dock,html.touring #peek,html.touring #ctl,html.touring #info,html.touring #bLabels,html.touring #bInfo,html.touring #labels,html.touring #leaders{display:none}
+.tprog{display:flex;align-items:center;gap:10px;color:var(--mut);font-size:13px;font-weight:650;min-height:32px}
+.dots{display:flex;gap:5px;align-items:center}
+.dots i{width:7px;height:7px;border-radius:4px;background:rgba(255,255,255,.25);transition:width .2s}
+.dots i.on{background:var(--acc);width:20px}
+.dots i.done{background:rgba(255,160,110,.55)}
+#tSkip{margin-left:auto;min-height:40px;color:var(--mut);font-size:13.5px}
+.ttl{font-size:13px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;color:#ffb48a}
+#tCap{margin:0;font-size:20px;line-height:1.32;font-weight:650;color:#fff;letter-spacing:-.1px}
+#tPhase{display:flex;align-items:center;gap:8px;align-self:flex-start;padding:4px 12px 4px 10px;border-radius:999px;background:rgba(255,122,26,.18);color:#ffcfa8;font-size:14px;font-weight:650;min-height:28px}
+#tPhase::before{content:'';flex:0 0 auto;width:8px;height:8px;border-radius:50%;background:#ff7a1a;box-shadow:0 0 8px #ff7a1a;animation:tpulse 1.2s ease-in-out infinite}
+#tPhase:empty{display:none}
+@keyframes tpulse{50%{opacity:.35}}
+.tnav{display:flex;gap:8px;margin-top:2px}
+.tnav button{all:unset;box-sizing:border-box;flex:1;display:flex;align-items:center;justify-content:center;min-height:50px;border-radius:15px;font-size:17px;font-weight:700;cursor:pointer;text-align:center}
+#tBack{flex:0 0 32%;background:rgba(255,255,255,.08);border:1px solid var(--line);color:var(--ink)}
+#tBack[disabled]{opacity:.35;cursor:default}
+#tNext{color:#fff;background:linear-gradient(180deg,#e0743c,#c2531f);border:1px solid rgba(255,200,170,.35)}
+.tnav button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+html:not(.compact) #tCap{font-size:23px}
+html:not(.compact) #tour{padding:14px 20px 16px}
+html.land #tour{left:calc(var(--sal) + var(--gap));transform:none;top:calc(var(--sat) + 8px + var(--tap) + 8px);bottom:calc(var(--sab) + 8px);width:min(360px,46vw);overflow:auto;gap:6px;padding:10px 14px}
+html.land #tCap{font-size:17px}
+html.land .tnav button{min-height:44px;font-size:15px}
 
 /* controls content */
 .sec{margin-top:10px}
@@ -105,11 +148,15 @@ html.compact .prow::-webkit-scrollbar{display:none}
 /* info content */
 #infoBody .row{display:flex;justify-content:space-between;gap:12px;padding:4px 0;border-top:1px solid rgba(255,255,255,.07)}
 #infoBody .row span{color:var(--mut)}#infoBody .row b{font-weight:600;text-align:right}
-#infoBody .cap{color:var(--mut);margin-bottom:6px;line-height:1.45}
+#infoBody .cap{color:var(--ink);margin-bottom:8px;line-height:1.45;font-size:14px;font-weight:500}
+#infoBody .tech{margin-top:12px;padding-top:8px;border-top:1px solid rgba(255,255,255,.1);color:var(--mut);font-size:11px;line-height:1.45}
+#infoBody .tech h5{margin:0 0 4px;font-size:10px;letter-spacing:.7px;text-transform:uppercase;font-weight:700}
+#infoBody .tech .row{font-size:11px}
 #infoBody .hrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:3px 0}
 #infoBody .hrow i{flex:0 0 110px;height:6px;border-radius:4px;background:rgba(255,255,255,.1);overflow:hidden}
 #infoBody .hrow b{display:block;height:100%;background:linear-gradient(90deg,#ff7a1a,#ffd06b)}
 
+.ver{flex:0 0 auto;padding:4px 12px 8px;color:rgba(255,255,255,.38);font-size:10px;text-align:right}
 /* labels */
 #labels,#leaders{position:fixed;inset:0;pointer-events:none;z-index:2}
 #leaders path{fill:none;stroke:rgba(20,22,26,.6);stroke-width:1}
@@ -118,7 +165,7 @@ html.compact .prow::-webkit-scrollbar{display:none}
 html.compact .lbl{font-size:10.5px;padding:2px 7px;max-width:40vw;overflow:hidden;text-overflow:ellipsis}
 
 #tip{position:fixed;display:none;pointer-events:none;padding:6px 10px;border-radius:12px;max-width:min(320px,80vw);z-index:7}
-#tip b{display:block}#tip span{color:var(--mut);font-size:11.5px}
+#tip b{display:block;font-size:14px}#tip span{color:var(--mut);font-size:11px}
 
 /* loading */
 #loading{position:fixed;inset:0;display:grid;place-items:center;z-index:9;pointer-events:none}
@@ -136,21 +183,25 @@ html.compact .lbl{font-size:10.5px;padding:2px 7px;max-width:40vw;overflow:hidde
 <div id="loading"><div class="card glass"><b id="ldTxt">Loading Sitka</b><div class="bar"><i id="ldFill"></i></div><span id="ldSub">0%</span></div></div>
 
 <header id="top">
-  <div class="title glass">Sitka <small>render two<span class="long"> · kinetics-first · 1.87 m / 130 kg wearer</span></small></div>
+  <div class="title glass">Sitka <small>wearable sit, lift &amp; walk assist<span class="long"> · design study</span></small></div>
   <div class="sp"></div>
-  <button class="pill solo" id="bLabels" aria-pressed="false"><svg viewBox="0 0 16 16"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h4.6c.4 0 .8.16 1.06.44l6.4 6.4a1.5 1.5 0 0 1 0 2.12l-4.6 4.6a1.5 1.5 0 0 1-2.12 0l-6.4-6.4A1.5 1.5 0 0 1 1 7.1zM4.5 6a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/></svg>Labels</button>
-  <button class="pill solo" id="bInfo" aria-pressed="false">Info</button>
+  <button class="pill solo" id="bLabels" aria-pressed="false"><svg viewBox="0 0 16 16"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h4.6c.4 0 .8.16 1.06.44l6.4 6.4a1.5 1.5 0 0 1 0 2.12l-4.6 4.6a1.5 1.5 0 0 1-2.12 0l-6.4-6.4A1.5 1.5 0 0 1 1 7.1zM4.5 6a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/></svg><span id="lblTxt">Labels: off</span></button>
+  <button class="pill solo" id="bInfo" aria-pressed="false">Details</button>
 </header>
 
-<aside class="sheet glass closed" id="ctl" aria-label="Controls">
-  <div class="hd" id="ctlHd"><span class="grab"></span><b>Controls</b><button class="pill ico x" id="ctlX" aria-label="Close controls">✕</button></div>
+<aside class="sheet glass closed" id="ctl" aria-label="Advanced">
+  <div class="hd" id="ctlHd"><span class="grab"></span><b>Advanced</b><button class="pill ico x" id="ctlX" aria-label="Close advanced">✕</button></div>
   <div class="bd">
-    <div class="sec"><h4>Animate</h4><div class="prow" id="anims"></div></div>
+    <div class="sec"><h4>Animation</h4><div class="prow" id="anims"></div>
+      <div class="arow"><button class="pill" id="bPlay"><svg viewBox="0 0 16 16" id="playIco"><path d="M4 2.5v11l9.5-5.5z"/></svg><span id="playTxt">Play</span></button>
+        <button class="pill" id="bSpeed" aria-label="Speed">1×</button>
+        <button class="pill" id="bStop" aria-label="Stop"><svg viewBox="0 0 16 16"><path d="M3.5 3.5h9v9h-9z"/></svg>Stop</button></div>
+      <div class="srow"><b id="seqName">Walk</b><input id="scrub" type="range" min="0" max="1" step="0.001" value="0" aria-label="Scrub"></div></div>
     <div class="sec"><h4>Pose</h4><div class="prow" id="poses"></div></div>
     <div class="sec"><h4>View</h4><div class="prow" id="views"></div></div>
     <div class="sec"><h4>Show</h4><div class="prow" id="mods"></div></div>
     <div class="sec"><h4>Explode</h4><div class="slider"><input id="explode" type="range" min="0" max="1" step="0.01" value="0" aria-label="Explode"><span id="exVal">0%</span></div></div>
-    <div class="sec"><h4>Materials</h4><div class="legend"><span><i style="background:#1d1f23"></i>carbon</span><span><i style="background:#253a52"></i>leaf spring</span><span><i style="background:#a8adb3"></i>anodized alu</span><span><i style="background:#dca540"></i>tendon</span><span><i style="background:#2e918b"></i>elastic band</span><span><i style="background:#8f959c"></i>foam liner</span><span><i style="background:#7fb2ff"></i>upgrade (ghost)</span></div></div>
+    <div class="sec"><h4>Materials</h4><div class="legend"><span><i style="background:#1d1f23"></i>carbon shell</span><span><i style="background:#253a52"></i>spring</span><span><i style="background:#a8adb3"></i>aluminium</span><span><i style="background:#dca540"></i>tendon (cable)</span><span><i style="background:#2e918b"></i>elastic band</span><span><i style="background:#8f959c"></i>padding</span><span><i style="background:#7fb2ff"></i>upgrade (preview)</span></div></div>
     <div class="hint" id="hint">Drag to orbit · pinch to zoom · two fingers to pan · tap a part to name it</div>
   </div>
 </aside>
@@ -158,19 +209,28 @@ html.compact .lbl{font-size:10.5px;padding:2px 7px;max-width:40vw;overflow:hidde
 <aside class="sheet glass closed" id="info" aria-label="Details">
   <div class="hd" id="infoHd"><span class="grab"></span><b id="infoTitle">Details</b><button class="pill ico x" id="infoX" aria-label="Close details">✕</button></div>
   <div class="bd" id="infoBody"></div>
+  <div class="ver" id="ver"></div>
 </aside>
-<button class="glass" id="peek"><i></i><span id="peekTxt">Details</span></button>
+<button class="glass" id="peek" aria-label="Show details"><span class="ph" id="peekPh"></span><span id="peekTxt">Tap Walk, Sit or Lift to watch how it works.</span><i></i></button>
 
-<nav class="glass" id="dock">
-  <div class="srow"><b id="seqName">Walk</b><input id="scrub" type="range" min="0" max="1" step="0.001" value="0" aria-label="Scrub"></div>
+<nav class="glass" id="dock" aria-label="Main">
   <div class="row">
-    <button class="pill" id="bCtl" aria-expanded="false"><svg viewBox="0 0 16 16"><path d="M2 3.25h12v1.5H2zm0 4h12v1.5H2zm0 4h12v1.5H2z"/></svg>Controls</button>
-    <span class="grow"></span>
-    <button class="pill prime" id="bPlay"><svg viewBox="0 0 16 16" id="playIco"><path d="M4 2.5v11l9.5-5.5z"/></svg><span id="playTxt">Animate</span></button>
-    <button class="pill" id="bSpeed" aria-label="Speed">1×</button>
-    <button class="pill" id="bStop" aria-label="Stop"><svg viewBox="0 0 16 16"><path d="M3.5 3.5h9v9h-9z"/></svg>Stop</button>
+    <button class="tab" id="mTour"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.2"/><path class="f" d="M10 8.2v7.6l6-3.8z"/></svg>Tour</button>
+    <button class="tab" id="mWalk"><svg viewBox="0 0 24 24"><circle class="f" cx="13.5" cy="3.6" r="2"/><path d="M12.6 7.2 11 13.4l3.4 2.6.8 5.4M11 13.4l-3 7.6M12.6 7.2l3.4 3.6 3 .8M12.6 7.2 9 9.2l-1.6 3.4"/></svg>Walk</button>
+    <button class="tab" id="mSit"><svg viewBox="0 0 24 24"><circle class="f" cx="9" cy="3.6" r="2"/><path d="M9 7v7.4h7.2l1.2 7M9 7l4.2 3.6h3.4M9 14.4l-2.6 7"/></svg>Sit</button>
+    <button class="tab" id="mLift"><svg viewBox="0 0 24 24"><path d="M5 11.5h14v9.5H5zM12 2.8v6M8.8 5.8 12 2.6l3.2 3.2M5 15h14"/></svg>Lift</button>
+    <button class="tab adv" id="bCtl" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 17h16"/><circle class="f" cx="9" cy="7" r="2.4"/><circle class="f" cx="15" cy="17" r="2.4"/></svg>Advanced</button>
   </div>
 </nav>
+
+<section class="glass" id="tour" aria-live="polite" aria-label="Guided tour">
+  <div class="tprog"><span id="tCount">1 of 6</span><span class="dots" id="tDots"></span><button class="pill" id="tSkip">Skip tour</button></div>
+  <div class="ttl" id="tTitle">Meet Sitka</div>
+  <p id="tCap"></p>
+  <div id="tPhase"></div>
+  <div class="tnav"><button id="tBack">Back</button><button id="tNext">Next</button></div>
+</section>
 <div class="glass" id="tip"></div>
-<script src="cad/viewer/sitka_viewer.bundle.js"></script>
+<script>window.SITKA_BUILD="20261022-1002"</script>
+<script src="cad/viewer/sitka_viewer.bundle.js?v=20261022-1002"></script>
 </body></html>
