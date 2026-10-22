@@ -5,7 +5,43 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 
-const D = window.SITKA_DATA;
+let D = window.SITKA_DATA;
+const $ = id => document.getElementById(id);
+const ROOT = document.documentElement;
+// ---------- loading with progress (XHR so we can show %, script-tag fallback for file://) ----------
+const EST = { 'cad/viewer/sitka_data.js': 22.1e6, 'cad/viewer/sitka_anim.js': 21.3e6 };
+function showLoading(txt, frac) {
+  $('loading').style.display = 'grid'; $('ldTxt').textContent = txt;
+  const f = frac == null ? null : Math.max(0, Math.min(1, frac));
+  $('ldFill').style.width = f == null ? '100%' : Math.round(f * 100) + '%';
+  $('ldSub').textContent = f == null ? 'preparing…' : Math.round(f * 100) + '%';
+}
+function hideLoading() { $('loading').style.display = 'none'; }
+function loadScript(src, txt, globalName) {
+  return new Promise((res, rej) => {
+    if (window[globalName]) return res(window[globalName]);
+    const viaTag = () => {
+      showLoading(txt, null);
+      const sc = document.createElement('script'); sc.src = src;
+      sc.onload = () => res(window[globalName]); sc.onerror = rej; document.head.appendChild(sc);
+    };
+    if (location.protocol === 'file:') return viaTag();
+    const x = new XMLHttpRequest(); x.open('GET', src); x.responseType = 'text';
+    x.onprogress = e => {
+      const est = EST[src] || 2e7;
+      const tot = e.lengthComputable && e.total >= e.loaded && e.total > est * 0.6 ? e.total : est;
+      showLoading(txt, Math.min(0.99, e.loaded / tot));
+    };
+    x.onload = () => {
+      if (x.status && x.status !== 200) return viaTag();
+      showLoading(txt, 1);
+      const sc = document.createElement('script'); sc.text = x.responseText; document.head.appendChild(sc);
+      res(window[globalName]);
+    };
+    x.onerror = viaTag; x.send();
+  });
+}
+const nextFrame = () => new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
 const Q = new URLSearchParams(location.search);
 const state = {
   pose: Q.get('pose') || 'stand',
@@ -14,7 +50,7 @@ const state = {
   upgrade: Q.get('upg') || 'ghost',      // off | ghost | on
   body: Q.get('body') || 'on',           // on | ghost | off
   explode: parseFloat(Q.get('explode') || '0'),
-  labels: Q.get('labels') !== '0',
+  labels: Q.get('labels') === '1',      // off by default; ?labels=1 or the Labels button
   view: Q.get('view') || '34',
 };
 
@@ -27,6 +63,7 @@ renderer.toneMapping = THREE.AgXToneMapping;
 renderer.toneMappingExposure = 1.05;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const SMALL = Math.min(screen.width, screen.height) <= 600;
 wrap.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
@@ -52,7 +89,7 @@ controls.minDistance = 0.4; controls.maxDistance = 9;
 const hemi = new THREE.HemisphereLight(0xf4f6ff, 0x5a5550, 0.55); scene.add(hemi);
 const key = new THREE.DirectionalLight(0xfff4ea, 2.2);
 key.position.set(-2.2, 4.2, 2.6); key.castShadow = true;
-key.shadow.mapSize.set(2048, 2048); key.shadow.bias = -0.0004; key.shadow.normalBias = 0.02;
+key.shadow.mapSize.set(SMALL ? 1024 : 2048, SMALL ? 1024 : 2048); key.shadow.bias = -0.0004; key.shadow.normalBias = 0.02;
 Object.assign(key.shadow.camera, { left: -1.4, right: 1.4, top: 2.2, bottom: -0.3, near: 0.5, far: 10 });
 scene.add(key);
 const rim = new THREE.DirectionalLight(0xe8f0ff, 1.3); rim.position.set(1.5, 2.8, -3.2); scene.add(rim);
@@ -114,6 +151,9 @@ function prepMeshes(root, cast = true) {
 }
 
 async function init() {
+  layout();
+  if (!D) D = await loadScript('cad/viewer/sitka_data.js', 'Loading Sitka', 'SITKA_DATA');
+  layout(); showLoading('Building the model', null); await nextFrame();
   const g = await loadGLB(D.parts);
   // every top-level node is a part in its local (segment) frame
   const kids = [...g.scene.children];
@@ -139,7 +179,7 @@ async function init() {
   partRoot.matrixAutoUpdate = false; partRoot.matrix.copy(ZUP);
   ready = true;
   buildUI(); buildAnimUI(); apply(); setView(state.view, true);
-  document.getElementById('loading').style.display = 'none';
+  hideLoading();
   if (!Q.get('anim')) window.__ready = true;
 }
 
@@ -191,6 +231,64 @@ function apply() {
   updateReadout(); updateButtons();
 }
 
+// ---------- layout: phone (compact) / phone landscape / desktop ----------
+const ui = { open: { ctl: false, info: false } };
+let lastMode = '';
+function layout() {
+  const W = Math.min(innerWidth, ROOT.clientWidth || innerWidth), H = innerHeight;
+  const compact = W <= 600 || H <= 500;
+  const land = compact && H <= 500 && W > H;
+  const mode = compact ? (land ? 'land' : 'port') : (W >= 1000 ? 'wide' : 'mid');
+  ROOT.classList.toggle('compact', compact); ROOT.classList.toggle('land', land);
+  if (mode !== lastMode) {
+    // default: side cards open on a wide desktop, everything closed on phones/tablets
+    if (!lastMode || (lastMode === 'wide') !== (mode === 'wide')) ui.open = { ctl: mode === 'wide', info: mode === 'wide' };
+    if (!lastMode && Q.get('open')) { const o = Q.get('open'); ui.open = { ctl: o === 'ctl', info: o === 'info' }; }
+    if (mode === 'port' && ui.open.ctl && ui.open.info) ui.open.info = false;
+    lastMode = mode;
+  }
+  syncSheets();
+}
+function syncSheets() {
+  $('ctl').classList.toggle('closed', !ui.open.ctl);
+  $('info').classList.toggle('closed', !ui.open.info);
+  $('bCtl').classList.toggle('on', ui.open.ctl); $('bCtl').setAttribute('aria-expanded', ui.open.ctl);
+  $('bInfo').classList.toggle('on', ui.open.info); $('bInfo').setAttribute('aria-pressed', ui.open.info);
+  $('peek').classList.toggle('hide', ui.open.ctl || ui.open.info);
+  ROOT.style.setProperty('--dockh', $('dock').offsetHeight + 'px');
+  updateOffset();
+}
+function toggleSheet(which, force) {
+  const v = force === undefined ? !ui.open[which] : force;
+  ui.open[which] = v;
+  // phone portrait: one bottom sheet at a time
+  if (v && ROOT.classList.contains('compact') && !ROOT.classList.contains('land')) ui.open[which === 'ctl' ? 'info' : 'ctl'] = false;
+  syncSheets();
+}
+// the part of the screen the model can use (between the bars, beside any open side card)
+function freeRect() {
+  const W = innerWidth, H = innerHeight;
+  let l = 0, r = W, t = $('top').getBoundingClientRect().bottom + 6, b = $('dock').getBoundingClientRect().top - 6;
+  const compact = ROOT.classList.contains('compact'), land = ROOT.classList.contains('land');
+  if (compact && !land) { const pk = $('peek'); if (getComputedStyle(pk).display !== 'none') b = pk.getBoundingClientRect().top - 6; }
+  else {
+    if (ui.open.ctl) l = $('ctl').getBoundingClientRect().right + 6;
+    if (ui.open.info) r = $('info').getBoundingClientRect().left - 6;
+    if (!land) b = H - 8 - ($('dock').offsetHeight + 8);
+  }
+  if (r - l < W * 0.35) { l = 0; r = W; }
+  if (b - t < H * 0.35) { t = 0; b = H; }
+  return { l, r, t, b, W, H };
+}
+// shift the projection so the orbit target sits in the middle of the free area
+function updateOffset() {
+  if (!camera) return;
+  const f = freeRect();
+  const cx = (f.l + f.r) / 2, cy = (f.t + f.b) / 2;
+  camera.setViewOffset(f.W, f.H, f.W / 2 - cx, f.H / 2 - cy, f.W, f.H);
+  camera.updateProjectionMatrix();
+}
+
 // ---------- views ----------
 const VIEWS = { front: [0, 0.08, 1], side: [1, 0.06, 0], back: [0, 0.10, -1], '34': [0.78, 0.30, 0.78], top: [0.2, 1.6, 0.4] };
 function bodyBox() {
@@ -202,10 +300,16 @@ function setView(v, instant) {
   state.view = v;
   const box = bodyBox(); const c = box.getCenter(new THREE.Vector3()); const s = box.getSize(new THREE.Vector3());
   const d = new THREE.Vector3(...VIEWS[v]).normalize();
-  const fit = Math.max(s.y, s.x * 1.2, s.z * 1.2) * 0.5 / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * 1.12;
+  // fit the body's height AND its on-screen width into the free area (tall narrow phones are width-bound)
+  const f = freeRect(); const fw = f.r - f.l, fh = f.b - f.t;
+  const tn = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  const hz = Math.hypot(d.x, d.z) || 1, ax = Math.abs(d.x) / hz, az = Math.abs(d.z) / hz;
+  const wide = (az * s.x + ax * s.z) * 1.04;                       // projected width for this view direction
+  const tall = s.y * (0.15 + 0.85 * (1 - Math.abs(d.y))) + Math.abs(d.y) * Math.max(s.x, s.z);
+  const dist = Math.max(tall * f.H / (2 * tn * fh), wide * f.H / (2 * tn * fw)) * 1.06 + Math.max(s.x, s.z) * 0.5;
   controls.target.copy(c);
-  camera.position.copy(c).addScaledVector(d, fit + 0.2);
-  camera.updateProjectionMatrix(); controls.update();
+  camera.position.copy(c).addScaledVector(d, dist);
+  updateOffset(); controls.update();
   updateButtons();
 }
 const camQ = Q.get('cam');
@@ -216,120 +320,177 @@ function applyCamParam() {
 }
 
 // ---------- labels ----------
-const labelLayer = document.getElementById('labels');
-const svg = document.getElementById('leaders');
+const labelLayer = $('labels');
+const svg = $('leaders');
+// phones get only the major parts, with short names
+const SHORT = [[/^thigh_shell/, 'Thigh shell'], [/^knee_manifold/, 'Cam clutch'], [/^sit_leaf_[lr]$/, 'Sit leaf'], [/^seat_cup_[lr]$/, 'Seat cup'],
+  [/^strut_tube0/, 'Strut'], [/^back_panel$/, 'Back panel'], [/^m2_leaf$/, 'Lift leaf'], [/^hip_belt/, 'Hip belt'],
+  [/^t1_tendon/, 'Knee tendon'], [/^m3_band/, 'Hip band']];
+const shortName = n => { for (const [re, t] of SHORT) if (re.test(n)) return t; return null; };
 function drawLabels() {
   labelLayer.innerHTML = ''; svg.innerHTML = '';
   if (!state.labels || !ready) return;
-  const W = renderer.domElement.clientWidth, H = renderer.domElement.clientHeight;
+  const compact = ROOT.classList.contains('compact');
+  const W = innerWidth, H = innerHeight;
   const items = [];
-  const seen = new Set();
-  const consider = (name, label, obj, worldPos) => {
-    if (!label || seen.has(label)) return;
-    const p = worldPos.clone().project(camera);
-    if (p.z > 1 || Math.abs(p.x) > 1.05 || Math.abs(p.y) > 1.05) return;
-    seen.add(label);
-    items.push({ label, x: (p.x + 1) / 2 * W, y: (1 - p.y) / 2 * H });
-  };
   const KEY = /^(thigh_shell|seat_cup_[lr]$|strut_tube0|knee_arc|knee_manifold|sit_leaf_[lr]$|hip_belt|back_panel$|m2_leaf$|whiffletree|knee_hub_lat|ptb_shell|thigh_cuff_[lr]$|p1_motor|m5_cassette|m4_heelclip|ea_clutch)/;
   const KEYC = /^(t1_tendon|t3_tendon|m3_band|crazycreek|hamstring_band|running_band|harness_l|bowden_l)/;
   for (const [name, p] of Object.entries(parts)) {
     if (!p.obj.visible || !p.meta.label || !KEY.test(name)) continue;
     if (p.meta.module === 'upgrade' && state.upgrade === 'off') continue;
-    // label the side facing the camera: prefer _l in side views facing +x, else whichever is nearer
+    const label = shortName(name); if (!label) continue;   // major parts only; hover/tap gives the full name
     const wp = p.centerLocal.clone().applyMatrix4(p.obj.matrix).applyMatrix4(partRoot.matrix);
-    items.push({ label: p.meta.label, x: 0, y: 0, wp, name, dist: wp.distanceTo(camera.position) });
+    items.push({ label, wp, name, dist: wp.distanceTo(camera.position) });
   }
   const c = cables[state.pose];
   if (c && c.visible) c.traverse(o => {
     if (!o.isMesh || !o.visible) return;
     const ud = Object.keys(o.userData || {}).length ? o.userData : (o.parent && o.parent.userData) || {};
     if (!ud.label || !KEYC.test(o.name)) return;
+    const label = shortName(o.name); if (!label) return;
     o.geometry.computeBoundingBox();
-    const bb = o.geometry.boundingBox; const ctr = bb.getCenter(new THREE.Vector3());
-    const wp = ctr.applyMatrix4(o.matrixWorld);
-    items.push({ label: ud.label + (ud.state ? ' · ' + ud.state : ''), wp, name: o.name, dist: wp.distanceTo(camera.position) });
+    const wp = o.geometry.boundingBox.getCenter(new THREE.Vector3()).applyMatrix4(o.matrixWorld);
+    items.push({ label, wp, name: o.name, dist: wp.distanceTo(camera.position) });
   });
   // one label per text, nearest instance wins
   const best = {};
-  for (const it of items) { if (!it.wp) continue; if (!best[it.label] || it.dist < best[it.label].dist) best[it.label] = it; }
+  for (const it of items) if (!best[it.label] || it.dist < best[it.label].dist) best[it.label] = it;
+  const f = freeRect();
   const list = [];
   for (const it of Object.values(best)) {
     const p = it.wp.clone().project(camera);
     if (p.z > 1 || Math.abs(p.x) > 1.0 || Math.abs(p.y) > 1.0) continue;
-    list.push({ ...it, x: (p.x + 1) / 2 * W, y: (1 - p.y) / 2 * H });
+    const x = (p.x + 1) / 2 * W, y = (1 - p.y) / 2 * H;
+    if (y < f.t || y > f.b) continue;
+    list.push({ ...it, x, y });
   }
-  const cx = W / 2;
+  // split by the model's own centre line so leaders run outward, not across the body
+  const tc = controls.target.clone().project(camera); const cx = (tc.x + 1) / 2 * W;
+  const mb = { l: W, r: 0 }; const bb = bodyBox();
+  for (let i = 0; i < 8; i++) {
+    const v = new THREE.Vector3(i & 1 ? bb.max.x : bb.min.x, i & 2 ? bb.max.y : bb.min.y, i & 4 ? bb.max.z : bb.min.z).project(camera);
+    const x = (v.x + 1) / 2 * W; mb.l = Math.min(mb.l, x); mb.r = Math.max(mb.r, x);
+  }
   const left = list.filter(i => i.x < cx).sort((a, b) => a.y - b.y);
   const right = list.filter(i => i.x >= cx).sort((a, b) => a.y - b.y);
-  const lh = 22;
+  const lh = compact ? 24 : 22, top = f.t + 12, bot = f.b - 10;
   const place = (arr, side) => {
-    let y = 70;
+    let y = top;
     for (const it of arr) { it.ly = Math.max(y, it.y); y = it.ly + lh; }
-    const over = y - (H - 20);
-    if (over > 0) for (const it of arr) it.ly -= over * (it.ly / y);
-    for (const it of arr) {
-      const el = document.createElement('div'); el.className = 'lbl ' + side; el.textContent = it.label;
-      labelLayer.appendChild(el);
-      const lx = side === 'l' ? 16 : W - 16 - el.offsetWidth;
+    const over = y - lh - bot;
+    if (over > 0) { const k = (bot - top) / Math.max(1, (y - lh - top)); for (const it of arr) it.ly = top + (it.ly - top) * k; }
+    const els = arr.map(it => { const el = document.createElement('div'); el.className = 'lbl ' + side; el.textContent = it.label; labelLayer.appendChild(el); return el; });
+    const mw = Math.max(0, ...els.map(e => e.offsetWidth));
+    // hug the model: columns sit just outside its silhouette when there is room, else at the screen edge
+    const edge = side === 'l' ? Math.max(f.l + 8, mb.l - 18 - mw) : Math.min(f.r - 8, mb.r + 18 + mw);
+    arr.forEach((it, i) => {
+      const el = els[i];
+      const lx = side === 'l' ? edge : edge - el.offsetWidth;
       el.style.left = lx + 'px'; el.style.top = (it.ly - 10) + 'px';
       const ex = side === 'l' ? lx + el.offsetWidth : lx;
       const ln = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      ln.setAttribute('d', `M${ex},${it.ly} L${ex + (side === 'l' ? 14 : -14)},${it.ly} L${it.x},${it.y}`);
+      ln.setAttribute('d', `M${ex},${it.ly} L${ex + (side === 'l' ? 8 : -8)},${it.ly} L${it.x},${it.y}`);
       svg.appendChild(ln);
       const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
       dot.setAttribute('cx', it.x); dot.setAttribute('cy', it.y); dot.setAttribute('r', 2.6);
       svg.appendChild(dot);
-    }
+    });
   };
   place(left, 'l'); place(right, 'r');
 }
 
-// ---------- hover ----------
-const ray = new THREE.Raycaster(); const mouse = new THREE.Vector2(); const tip = document.getElementById('tip');
-renderer.domElement.addEventListener('pointermove', e => {
+// ---------- hover (mouse) and tap-a-part (touch) ----------
+const ray = new THREE.Raycaster(); const mouse = new THREE.Vector2(); const tip = $('tip');
+let tipTimer = 0;
+function pick(cx, cy) {
   const r = renderer.domElement.getBoundingClientRect();
-  mouse.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
+  mouse.set((cx - r.left) / r.width * 2 - 1, -(cy - r.top) / r.height * 2 + 1);
   ray.setFromCamera(mouse, camera);
-  const objs = [partRoot, cables[state.pose]].filter(Boolean);
-  const hit = ray.intersectObjects(objs, true).find(h => h.object.visible && isVis(h.object));
-  if (hit) {
-    let o = hit.object; let name = o.name; let ud = o.userData || {};
-    while (o && !parts[o.name] && o.parent && o.parent !== partRoot) o = o.parent;
-    if (parts[o.name]) { name = o.name; ud = parts[o.name].meta; }
-    const lbl = ud.label || ud.group || name;
-    tip.style.display = 'block'; tip.style.left = (e.clientX + 14) + 'px'; tip.style.top = (e.clientY + 10) + 'px';
-    tip.innerHTML = `<b>${lbl}</b><span>${name} · ${ud.module || ''}${ud.state ? ' · ' + ud.state : ''}</span>`;
-  } else tip.style.display = 'none';
+  const objs = [partRoot, anim.on ? animRoot : cables[state.pose]].filter(Boolean);
+  const hit = ray.intersectObjects(objs, true).find(h => isVis(h.object));
+  if (!hit) return null;
+  let o = hit.object; let name = o.name; let ud = o.userData || {};
+  while (o && !parts[o.name] && o.parent && o.parent !== partRoot) o = o.parent;
+  if (parts[o.name]) { name = o.name; ud = parts[o.name].meta; }
+  if (ud.module === 'body' || /^(body|human)/i.test(name)) return null;
+  return { lbl: ud.label || ud.group || name, sub: `${ud.module || ''}${ud.state ? ' · ' + ud.state : ''}` };
+}
+function showTip(h, x, y, touch) {
+  if (!h) { tip.style.display = 'none'; return; }
+  tip.innerHTML = `<b></b><span></span>`; tip.firstChild.textContent = h.lbl; tip.lastChild.textContent = h.sub;
+  tip.style.display = 'block';
+  const w = tip.offsetWidth, hh = tip.offsetHeight;
+  let lx = touch ? x - w / 2 : x + 14, ly = touch ? y - hh - 28 : y + 10;
+  lx = Math.max(8, Math.min(innerWidth - w - 8, lx)); ly = Math.max(8, Math.min(innerHeight - hh - 8, ly));
+  tip.style.left = lx + 'px'; tip.style.top = ly + 'px';
+}
+renderer.domElement.addEventListener('pointermove', e => {
+  if (e.pointerType !== 'mouse' || e.buttons) return;
+  showTip(pick(e.clientX, e.clientY), e.clientX, e.clientY, false);
+});
+renderer.domElement.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') tip.style.display = 'none'; });
+let down = null;
+renderer.domElement.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY, t: performance.now(), type: e.pointerType }; });
+renderer.domElement.addEventListener('pointerup', e => {
+  if (!down || down.type === 'mouse') return;
+  const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y), dt = performance.now() - down.t; down = null;
+  if (moved > 10 || dt > 400) return;
+  const h = pick(e.clientX, e.clientY);
+  showTip(h, e.clientX, e.clientY, true);
+  clearTimeout(tipTimer); if (h) tipTimer = setTimeout(() => tip.style.display = 'none', 3200);
+  // tapping the model also tucks any open bottom sheet away on phones
+  if (ROOT.classList.contains('compact') && !ROOT.classList.contains('land') && (ui.open.ctl || ui.open.info)) { ui.open.ctl = ui.open.info = false; syncSheets(); }
 });
 function isVis(o) { while (o) { if (!o.visible) return false; o = o.parent; } return true; }
 
 // ---------- UI ----------
-function btn(parent, text, on, cls = '') { const b = document.createElement('button'); b.textContent = text; b.className = cls; b.onclick = on; parent.appendChild(b); return b; }
-const ui = {};
+function btn(parent, text, on, cls = 'pill') { const b = document.createElement('button'); b.textContent = text; b.className = cls; b.onclick = on; parent.appendChild(b); return b; }
 function buildUI() {
-  const pr = document.getElementById('poses');
+  const pr = $('poses');
   ui.poses = {};
-  for (const p of Object.keys(D.poses.poses)) ui.poses[p] = btn(pr, D.poses.poses[p].label, () => { state.pose = p; apply(); });
-  const vr = document.getElementById('views'); ui.views = {};
-  for (const [k, t] of [['front', 'Front'], ['side', 'Side'], ['back', 'Back'], ['34', '3/4']]) ui.views[k] = btn(vr, t, () => setView(k));
-  const mr = document.getElementById('mods');
+  for (const p of Object.keys(D.poses.poses)) ui.poses[p] = btn(pr, D.poses.poses[p].label.replace(/, mid-stance/, '').replace(/ deg /, '° '), () => { if (anim.on) stopAnim(); state.pose = p; apply(); });
+  const vr = $('views'); ui.views = {};
+  for (const [k, t] of [['34', '3/4'], ['front', 'Front'], ['side', 'Side'], ['back', 'Back']]) ui.views[k] = btn(vr, t, () => setView(k));
+  const mr = $('mods');
   ui.basic = btn(mr, 'Basic (passive)', () => { state.basic = !state.basic; apply(); });
   ui.coupling = btn(mr, 'Couplings', () => { state.coupling = !state.coupling; apply(); });
   ui.upgrade = btn(mr, 'Upgrades: ghost', () => { state.upgrade = { off: 'ghost', ghost: 'on', on: 'off' }[state.upgrade]; apply(); });
-  ui.body = btn(mr, 'Full body: on', () => { state.body = { on: 'ghost', ghost: 'off', off: 'on' }[state.body]; apply(); });
-  ui.labels = btn(mr, 'Labels', () => { state.labels = !state.labels; updateButtons(); });
-  const ex = document.getElementById('explode'); ex.value = state.explode;
-  ex.oninput = () => { state.explode = parseFloat(ex.value); apply(); };
+  ui.body = btn(mr, 'Body: on', () => { state.body = { on: 'ghost', ghost: 'off', off: 'on' }[state.body]; apply(); });
+  ui.labels2 = btn(mr, 'Labels', () => toggleLabels());
+  const ex = $('explode'); ex.value = state.explode;
+  ex.oninput = () => { state.explode = parseFloat(ex.value); $('exVal').textContent = Math.round(state.explode * 100) + '%'; apply(); };
+  $('exVal').textContent = Math.round(state.explode * 100) + '%';
+  $('bLabels').onclick = () => toggleLabels();
+  $('bInfo').onclick = () => toggleSheet('info');
+  $('bCtl').onclick = () => toggleSheet('ctl');
+  $('ctlHd').onclick = () => toggleSheet('ctl', false);
+  $('infoHd').onclick = () => toggleSheet('info', false);
+  $('peek').onclick = () => toggleSheet('info', true);
+  for (const id of ['ctl', 'info']) swipeClose($(id).querySelector('.hd'), id);
+  if (!matchMedia('(hover: hover)').matches) $('hint').textContent = 'Drag to orbit · pinch to zoom · two fingers to pan · tap a part to name it';
+  else $('hint').textContent = 'Drag to orbit · scroll to zoom · right-drag to pan · hover a part to name it';
 }
+function swipeClose(el, which) {
+  let y0 = null;
+  el.addEventListener('touchstart', e => { y0 = e.touches[0].clientY; }, { passive: true });
+  el.addEventListener('touchend', e => { if (y0 != null && e.changedTouches[0].clientY - y0 > 30) toggleSheet(which, false); y0 = null; });
+}
+function toggleLabels() { state.labels = !state.labels; updateButtons(); drawLabels(); }
 function updateButtons() {
   if (!ui.poses) return;
-  for (const [p, b] of Object.entries(ui.poses)) b.classList.toggle('on', p === state.pose);
+  for (const [p, b] of Object.entries(ui.poses)) b.classList.toggle('on', !anim.on && p === state.pose);
   for (const [v, b] of Object.entries(ui.views)) b.classList.toggle('on', v === state.view);
   ui.basic.classList.toggle('on', state.basic); ui.coupling.classList.toggle('on', state.coupling);
   ui.upgrade.textContent = 'Upgrades: ' + state.upgrade; ui.upgrade.classList.toggle('on', state.upgrade !== 'off');
-  ui.body.textContent = 'Full body: ' + state.body; ui.body.classList.toggle('on', state.body !== 'off');
-  ui.labels.classList.toggle('on', state.labels);
+  ui.body.textContent = 'Body: ' + state.body; ui.body.classList.toggle('on', state.body !== 'off');
+  ui.labels2.classList.toggle('on', state.labels);
+  $('bLabels').classList.toggle('on', state.labels); $('bLabels').setAttribute('aria-pressed', state.labels);
+}
+let infoKey = '';
+function setInfo(title, html, peek) {
+  const k = title + '|' + html; if (k === infoKey) return; infoKey = k;
+  $('infoTitle').textContent = title; $('infoBody').innerHTML = html;
+  $('peekTxt').textContent = peek || title + ' · details';
 }
 function updateReadout() {
   const P = D.poses.poses[state.pose];
@@ -345,10 +506,9 @@ function updateReadout() {
     ['Hamstring band', state.coupling ? pick('hamstring_band') : 'not docked'],
   ];
   if (C.running_band) rows.push(['Running band', C.running_band.state]);
-  document.getElementById('readout').innerHTML = `<div class="ttl">${P.label}</div>` +
-    rows.filter(r => r[1]).map(r => `<div class="row"><span>${r[0]}</span><b>${r[1]}</b></div>`).join('');
+  const esc = t => String(t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  setInfo(P.label, rows.filter(r => r[1]).map(r => `<div class="row"><span>${esc(r[0])}</span><b>${esc(r[1])}</b></div>`).join(''));
 }
-
 
 // =====================================================================================
 // ANIMATION: walk / run cycles, sit-down, stand-up, stoop-lift (baked frames from Blender:
@@ -361,11 +521,7 @@ const animRoot = new THREE.Group(); animRoot.matrixAutoUpdate = false; animRoot.
 const GLOW = { load: new THREE.Color(0xff7a1a), ret: new THREE.Color(0x27e0c0), lock: new THREE.Color(0xff3344), gate: new THREE.Color(0x46a8ff), band: new THREE.Color(0x3fe0a8), strap: new THREE.Color(0xffc233) };
 
 function loadAnimData() {
-  return new Promise((res, rej) => {
-    if (window.SITKA_ANIM) return res(window.SITKA_ANIM);
-    const sc = document.createElement('script'); sc.src = 'cad/viewer/sitka_anim.js';
-    sc.onload = () => res(window.SITKA_ANIM); sc.onerror = rej; document.head.appendChild(sc);
-  });
+  return loadScript('cad/viewer/sitka_anim.js', 'Loading animation', 'SITKA_ANIM');
 }
 function i16(b64) { const b = b64ToU8(b64); return new Int16Array(b.buffer, b.byteOffset, b.byteLength / 2); }
 function i8(b64) { const b = b64ToU8(b64); return new Int8Array(b.buffer, b.byteOffset, b.byteLength); }
@@ -374,8 +530,8 @@ function b64ToU8(s) { const bin = atob(s); const u = new Uint8Array(bin.length);
 let AD = null;
 async function ensureAnim() {
   if (AD) return AD;
-  document.getElementById('loading').style.display = 'grid'; document.getElementById('loading').textContent = 'Loading animation…';
   const A = await loadAnimData();
+  showLoading('Preparing animation', null); await nextFrame();
   AD = { A, body: i16(A.body_b64), cab: i16(A.cab_b64), nrm: A.nrm_b64 ? i8(A.nrm_b64) : new Int8Array(0) };
   // body mesh
   const g = new THREE.BufferGeometry();
@@ -401,7 +557,7 @@ async function ensureAnim() {
     mesh.userData = { ...c, baseMat: m, name };
     anim.cables[name] = mesh; animRoot.add(mesh);
   }
-  document.getElementById('loading').style.display = 'none';
+  hideLoading();
   return AD;
 }
 
@@ -531,10 +687,10 @@ const HUD_ROWS = [['sit_leaf', 'Sit leaf loading'], ['sit_return', 'Sit leaf ret
   ['t3_load', 'Lift tendon loading'], ['t3_return', 'Lift tendon returning'], ['m3_l', 'Hip band L'], ['m3_r', 'Hip band R'],
   ['ea_l', 'Stance clutch L'], ['ea_r', 'Stance clutch R'], ['ham_l', 'Hamstring band L'], ['ham_r', 'Hamstring band R'], ['runband', 'Running band']];
 function hud(seqName, st, i, n) {
-  const el = document.getElementById('hud');
-  const rows = HUD_ROWS.filter(([k]) => st[k] > 0.01).map(([k, t]) => `<div class="hrow"><span>${t}</span><i><b style="width:${Math.round(100 * Math.min(1, st[k]))}%"></b></i></div>`).join('');
-  el.innerHTML = `<div class="ttl">${SEQS.find(s => s[0] === seqName)[1]}</div><div class="cap">${HUD_TXT[seqName]}</div>${rows}`;
-  el.style.display = 'block';
+  const act = HUD_ROWS.filter(([k]) => st[k] > 0.01);
+  const rows = act.map(([k, t]) => `<div class="hrow"><span>${t}</span><i><b style="width:${Math.round(10 * Math.min(1, st[k])) * 10}%"></b></i></div>`).join('');
+  const ttl = SEQS.find(s => s[0] === seqName)[1];
+  setInfo(ttl, `<div class="cap">${HUD_TXT[seqName]}</div>${rows}`, act.length ? ttl + ' · ' + act[0][1] : ttl + ' · details');
 }
 
 // ---------------- kit (viewer side) ----------------
@@ -581,9 +737,7 @@ function kitFrame(t) {
     });
   }
   for (const [p, b] of Object.entries(bodies)) b.visible = p === 'stand' && state.body !== 'off';
-  const el = document.getElementById('hud');
-  el.innerHTML = `<div class="ttl">Kit: modules dock to the hub</div><div class="cap">${gi + 1} / ${KIT.length} · ${caption}</div>`;
-  el.style.display = 'block';
+  setInfo('Kit: modules dock', `<div class="cap">${gi + 1} / ${KIT.length} · ${caption}</div>`, `Kit ${gi + 1}/${KIT.length} · ${caption.split(':')[0]}`);
 }
 const KIT_LEN = KIT.length * KIT_STEP + 1.0;
 
@@ -596,16 +750,15 @@ async function startSeq(name) {
   if (anim.body) anim.body.visible = name !== 'kit' && state.body !== 'off';
   for (const m of Object.values(anim.cables)) m.visible = name !== 'kit';
   if (name === 'kit') for (const m of Object.values(anim.cables)) m.visible = false;
-  state.labels = false; updateButtons(); updateAnimUI();
+  state.labels = false; drawLabels(); updateButtons(); updateAnimUI();
 }
 function stopAnim() {
   anim.on = false; anim.playing = false;
   if (anim.body) anim.body.visible = false;
   for (const m of Object.values(anim.cables)) m.visible = false;
-  document.getElementById('hud').style.display = 'none';
   for (const ms of glowMats.values()) for (const m of ms) m.emissiveIntensity = 0;
   for (const p of Object.values(parts)) p.obj.traverse(o => { if (o.isMesh) o.material = o.userData.baseMat; });
-  apply(); updateAnimUI();
+  infoKey = ''; apply(); updateAnimUI();
 }
 function animTick(dt) {
   if (!anim.on) return;
@@ -615,7 +768,7 @@ function animTick(dt) {
     if (anim.t > L) { if (anim.seq === 'walk' || anim.seq === 'run') anim.t -= L; else { anim.t = L; anim.playing = false; updateAnimUI(); } }
   }
   renderAnimAt(anim.t);
-  const sc = document.getElementById('scrub'); if (sc && !sc.matches(':active')) sc.value = anim.t / seqLen(anim.seq);
+  const sc = $('scrub'); if (sc && !scrubbing) sc.value = anim.t / seqLen(anim.seq);
 }
 function renderAnimAt(t) {
   if (anim.seq === 'kit') kitFrame(t);
@@ -630,32 +783,53 @@ function renderAnimAt(t) {
     applyAnimFrame(anim.seq, t * SEQ_FPS[anim.seq]);
   }
 }
+let scrubbing = false;
+const PLAY = '<path d="M4 2.5v11l9.5-5.5z"/>', PAUSE = '<path d="M3.5 2.5h3.2v11H3.5zm5.8 0h3.2v11H9.3z"/>';
 function updateAnimUI() {
   if (!ui.seqs) return;
   for (const [k, b] of Object.entries(ui.seqs)) b.classList.toggle('on', anim.on && anim.seq === k);
-  ui.play.textContent = anim.playing ? 'Pause' : 'Play';
-  document.getElementById('animbar').classList.toggle('live', anim.on);
-  document.getElementById('readout').style.display = anim.on ? 'none' : 'block';
+  ROOT.classList.toggle('anim', anim.on);
+  $('playIco').innerHTML = anim.playing ? PAUSE : PLAY;
+  $('playTxt').textContent = !anim.on ? 'Animate' : anim.playing ? 'Pause' : 'Play';
+  $('bPlay').setAttribute('aria-label', $('playTxt').textContent);
+  if (anim.on) $('seqName').textContent = SEQS.find(s => s[0] === anim.seq)[1];
+  $('bSpeed').textContent = anim.speed === 1 ? '1×' : anim.speed === 0.5 ? '½×' : '¼×';
+  updateButtons();
+  syncSheets();
 }
 function buildAnimUI() {
-  const r = document.getElementById('anims'); ui.seqs = {};
-  for (const [k, t] of SEQS) ui.seqs[k] = btn(r, t, () => startSeq(k));
-  ui.play = btn(document.getElementById('animctl'), 'Play', () => { if (!anim.on) startSeq('walk'); else { if (!anim.playing && anim.t >= seqLen(anim.seq)) anim.t = 0; anim.playing = !anim.playing; updateAnimUI(); } });
-  btn(document.getElementById('animctl'), '½×', () => { anim.speed = anim.speed === 1 ? 0.5 : anim.speed === 0.5 ? 0.25 : 1; event.target.textContent = anim.speed === 1 ? '½×' : anim.speed === 0.5 ? '¼×' : '1×'; });
-  btn(document.getElementById('animctl'), 'Stop', () => stopAnim());
-  const sc = document.getElementById('scrub');
-  sc.oninput = () => { if (!anim.on) return; anim.playing = false; anim.t = parseFloat(sc.value) * seqLen(anim.seq); updateAnimUI(); };
+  const r = $('anims'); ui.seqs = {};
+  for (const [k, t] of SEQS) ui.seqs[k] = btn(r, t, () => { startSeq(k); if (ROOT.classList.contains('compact') && !ROOT.classList.contains('land')) toggleSheet('ctl', false); });
+  $('bPlay').onclick = () => { if (!anim.on) startSeq('walk'); else { if (!anim.playing && anim.t >= seqLen(anim.seq)) anim.t = 0; anim.playing = !anim.playing; updateAnimUI(); } };
+  $('bSpeed').onclick = () => { anim.speed = anim.speed === 1 ? 0.5 : anim.speed === 0.5 ? 0.25 : 1; updateAnimUI(); };
+  $('bStop').onclick = () => stopAnim();
+  const sc = $('scrub');
+  const seek = () => { if (!anim.on) return; anim.playing = false; anim.t = parseFloat(sc.value) * seqLen(anim.seq); updateAnimUI(); };
+  sc.oninput = seek;
+  sc.addEventListener('pointerdown', () => { scrubbing = true; }); addEventListener('pointerup', () => { scrubbing = false; });
+  sc.addEventListener('touchstart', () => { scrubbing = true; }, { passive: true }); addEventListener('touchend', () => { scrubbing = false; });
 }
 window.SITKA_ANIM_API = { startSeq, stopAnim, anim, seek: (f) => { anim.playing = false; anim.t = f * seqLen(anim.seq); } };
 
 // ---------- loop ----------
 function resize() {
-  const w = wrap.clientWidth, h = wrap.clientHeight;
+  const w = innerWidth, h = innerHeight;
   renderer.setSize(w, h, false); renderer.domElement.style.width = w + 'px'; renderer.domElement.style.height = h + 'px';
   camera.aspect = w / h; camera.updateProjectionMatrix();
   svg.setAttribute('width', w); svg.setAttribute('height', h);
+  layout();
 }
-window.addEventListener('resize', resize); resize();
+let rsT = 0, lastW = 0, lastH = 0;
+function onResize() {
+  const w0 = innerWidth, h0 = innerHeight; resize();
+  // re-frame on a real size change (rotation, window resize), not on the iOS toolbar wobble
+  clearTimeout(rsT); rsT = setTimeout(() => { if (ready && (Math.abs(innerWidth - lastW) > 40 || Math.abs(innerHeight - lastH) > 120)) { setView(state.view); } lastW = innerWidth; lastH = innerHeight; }, 180);
+}
+window.addEventListener('resize', onResize); window.addEventListener('orientationchange', onResize); resize();
+lastW = innerWidth; lastH = innerHeight;
+document.addEventListener('gesturestart', e => e.preventDefault());
+if (window.visualViewport) visualViewport.addEventListener('resize', () => layout());
+document.addEventListener('dblclick', e => e.preventDefault());
 let lastLbl = 0, lastT = 0;
 function loop(t) {
   requestAnimationFrame(loop);
@@ -670,6 +844,6 @@ init().then(async () => {
   const sq = Q.get('anim');
   if (sq) { window.__ready = false; await startSeq(sq); if (Q.get('at')) { anim.playing = false; anim.t = parseFloat(Q.get('at')) * seqLen(sq); } window.__ready = true; }
 }).catch(e => {
-  document.getElementById('loading').textContent = 'Load error: ' + e; window.__errs = [String(e)]; console.error(e);
+  showLoading('Load error', 0); $('ldSub').textContent = String(e); window.__errs = [String(e)]; console.error(e);
 });
 window.SITKA = { state, apply, setView };
