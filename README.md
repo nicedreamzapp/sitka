@@ -16,16 +16,24 @@ Named after the Sitka spruce: strong, light, and it bends without breaking.
 | **Lean back** | Two straps hold you, like a camp chair you wear. | About **94 N** per strap at 10° recline |
 | **Lift** | A passive tendon along your back stores energy as you bend. | A **15 kg** box feels about **12 kg** lighter, with no motor |
 | **Walk and run** | Elastic bands link hips, knees and ankles the way your hamstrings and calves do. | Published passive devices: **−6 to −8%** effort |
-| **Smart tier** | Electroadhesive clutches (26 g, fail open) switch the springs on at the right moment. | About **+0.3 kg** |
+| **Smart tier** | Electroadhesive clutches (26 g, fail open) switch the springs on at the right moment. | About **+0.45 kg** with sensors and battery |
 | **Power tier** | One small motor on the back, through cables, only for stairs, hills and heavy lifts. | Box feels **22 to 31 kg** lighter |
 
 ## Fully modular
 
 Every module works alone and gets smarter when combined. Cross-joint "tendons" (hamstring, calf and lift bands) appear only when the two modules they link are docked. Everything docks into one hub.
 
-- **Start here, Seat + Back:** about **$1,300**, about **4.4 kg** (under 10 lb), no motors
-- **Add:** hips, ankles, shoulders, smart clutches, power
-- **With one motor:** about **6.7 kg**
+**[PARTS_LIST.md](PARTS_LIST.md)** has every part (print, metal or buy), with mass, price, supplier links, print time and the build story; the same rows are in [parts.csv](parts.csv).
+
+| Kit | Mass | Parts cost, prototype one | Per set, batch of 10 (EST) |
+|---|---|---|---|
+| **Start here: Seat + Back** (Dock, knee seat, back lift), no motors | 6.3 kg | $2,671 | $1,925 |
+| + hips and running band | 6.5 kg | $2,730 | $1,985 |
+| + smart clutches | 7.0 kg | $3,297 | $2,552 |
+| + one motor | 9.0 kg | $4,571 | $3,760 |
+| Full body (+ ankles, shoulders, couplings) | 10.3 kg | $5,049 | $4,138 |
+
+These are counted part by part from the CAD, and much of the cost is still estimate (one-off machining). The earlier "about $1,300 and 4.4 kg" was a top-down target for the hips-included kit; PARTS_LIST.md explains the gap and the path back toward about 4.8 kg.
 
 ## The science
 
@@ -42,7 +50,7 @@ Every module works alone and gets smarter when combined. Cross-joint "tendons" (
 
 ## Status, honestly
 
-This is a design, not a product. Every number above is computed from the open math or taken from published research, and it still needs bench tests and a prototype. Known gaps: the walking-spring timing (a spring engaged mid-swing could trip you, so every walking clutch must fail open), long-sit comfort beyond 30 minutes, and a few CAD fit issues (the belt edge at the hip crease when seated, foam sink in some poses, placeholder shoes). The older parts list and model output in this repo (`PARTS_LIST_BOM.md`, `MODEL_OUTPUT.txt`, `*.mjs`) describe the earlier rigid design and are kept as the physics baseline the new one was checked against.
+This is a design, not a product. Every number above is computed from the open math or taken from published research, and it still needs bench tests and a prototype. Known gaps: the walking-spring timing (a spring engaged mid-swing could trip you, so every walking clutch must fail open), long-sit comfort beyond 30 minutes, and a few CAD fit issues (the belt edge at the hip crease when seated, foam sink in some poses, placeholder shoes). The older parts list (`legacy/PARTS_LIST_BOM.md`) and the model output (`MODEL_OUTPUT.txt`, `*.mjs`) describe the earlier rigid design and are kept as the physics baseline the new one was checked against.
 
 ## How the video was made
 

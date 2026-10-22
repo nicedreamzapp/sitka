@@ -24,7 +24,7 @@ Our last hardware project, a heat-and-clean oven made with a factory overseas, c
 ## Why it's ready to build now
 
 - **The physics closes.** Balance, load path, ratchet logic, rear-leg buckling and slip were all independently checked, and every failed item was fixed and re-checked (see the README's honest-status section).
-- **Almost everything is off the shelf.** The motors, cells, controller, sensors, carbon tube and brace hinges can all be ordered today. See `PARTS_LIST_BOM.md`, with prices and links.
+- **Almost everything is off the shelf.** The motors, cells, controller, sensors, carbon tube and brace hinges can all be ordered today. See [PARTS_LIST.md](PARTS_LIST.md), with prices and links.
 - **The control code isn't starting from zero.** It builds on NAU's open-source OpenExo firmware (Teensy plus the same motor family).
 - **Most of the frame can be printed** (see the printable edition), so changes cost hours instead of tooling.
 - **Every remaining unknown is written down,** with the test that settles it, so nothing is a surprise at the bench.

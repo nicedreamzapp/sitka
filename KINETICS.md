@@ -194,6 +194,7 @@ Cross-joint tendons exist **only when both modules are docked**.
 | Full body | + M4 ankle + M5 shoulder + couplings | **~9.4 kg** | **~$4,100** |
 | P2: Second motor | + AK10-9 + pack | +1.2 kg | +$800: **not recommended** (pad cap, see lift) |
 
+- **Bottom-up check (2026-10-22):** these tier masses and costs are top-down targets. Counting every CAD part, prototype one comes out heavier and pricier (Basic about 6.5 kg and $2,700). See [PARTS_LIST.md](PARTS_LIST.md) for the list and the reasons.
 - Saves vs the tendon concept: **−1 motor (0.96 kg, $699), −1 pack (0.52 kg)**, and the knee holds with no power.
 
 ### Lift assist: passive vs motor (the owner's priority)
