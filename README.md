@@ -1,6 +1,8 @@
 # Sitka: Open Powered Knee Exoskeleton with a Seat Built In
 *Motorized knees that help you walk, hike and run, then lock at the angle you pick so you can sit anywhere. Designed in America, given away to everyone.*
 
+
+**Build it right the first time:** read [BUILD_RIGHT_FIRST_TIME.md](BUILD_RIGHT_FIRST_TIME.md) for the measurement and test gates every part passes before it gets made, and why Sitka is ready to build.
 ![Sitka P1, chair mode](renders/mode_chair_quarter.png)
 
 ### ▶ [Open the live 3D viewer](https://nicedreamzapp.github.io/sitka/run_sit_exo_viewer.html) · [watch it assemble](https://nicedreamzapp.github.io/sitka/run_sit_exo_viewer.html?anim=assembly) · [watch it walk, hike, run and sit](https://nicedreamzapp.github.io/sitka/run_sit_exo_viewer.html?anim=body)
