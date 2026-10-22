@@ -2,7 +2,7 @@
 
 [![Watch the 90-second Sitka video](docs/sitka_video_thumbnail.png)](https://youtu.be/XvE-1hMoaXw)
 
-**▶ [Watch the 90-second video](https://youtu.be/XvE-1hMoaXw)** · **[Open the animated 3D CAD](https://nicedreamzapp.github.io/sitka/sitka_viewer.html)** (any browser, no install)
+**▶ [Watch the 90-second video](https://youtu.be/XvE-1hMoaXw)** · **[Open the animated 3D CAD](https://nicedreamzapp.github.io/sitka/sitka_viewer.html)** (any browser or phone, no install; starts with a 6-step guided tour)
 
 Most exoskeletons fight your body with motors and metal. Sitka works with it. Your bones already carry the weight; Sitka adds what your muscles do, using springs, clutches and cables that work like tendons. A motor shows up only where your body truly needs extra energy.
 
@@ -36,7 +36,7 @@ Every module works alone and gets smarter when combined. Cross-joint "tendons" (
 
 ## The CAD
 
-- **[sitka_viewer.html](sitka_viewer.html):** animated 3D viewer (walk, run, sit down, stand up, lift, modules docking), module toggles, explode, labels
+- **[sitka_viewer.html](sitka_viewer.html):** animated 3D viewer built for phones and desktop: a 6-step guided tour, one-tap Walk / Sit / Lift, plain-English part names, labels on demand, plus an Advanced menu with every pose, module toggle and the explode view
 - `cad/`: build123d source, STEP per part (in the release download), STL for printed parts (`cad/stl/`), GLB per pose (`cad/glb/`), renders (`cad/renders/`). The full standing assembly STEP (270 MB) is attached to the [latest release](https://github.com/nicedreamzapp/sitka/releases) as a .gz.
 - The wearer is a CC0 MakeHuman/MPFB body.
 
