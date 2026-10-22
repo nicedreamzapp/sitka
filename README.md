@@ -1,19 +1,19 @@
 # Sitka: Open Powered Knee Exoskeleton with a Seat Built In
 *Motorized knees that help you walk, hike and run, then lock at the angle you pick so you can sit anywhere. Designed in America, given away to everyone.*
 
+> **Design pivot, October 22, 2026: kinetics first.** Sitka is being redesigned around the way the body already works. Bones carry compression; springs, clutches and cable "tendons" do the work; motors appear only where the body truly needs extra energy (stairs, hills, heavy lifts). Start with [KINETICS.md](KINETICS.md) (the full-body modular plan) and [TENDON_CONCEPT.md](TENDON_CONCEPT.md) (the seat physics). The earlier rigid-rail CAD and its renders were retired; the new contoured CAD is in progress. The numbers below this note describe the retired v2 design and will be replaced.
+
+
 
 **Build it right the first time:** read [BUILD_RIGHT_FIRST_TIME.md](BUILD_RIGHT_FIRST_TIME.md) for the measurement and test gates every part passes before it gets made, and why Sitka is ready to build.
 
-![Sitka P1, chair mode](renders/mode_chair_quarter.png)
 
-### ▶ [Open the live 3D viewer](https://nicedreamzapp.github.io/sitka/run_sit_exo_viewer.html) · [watch it assemble](https://nicedreamzapp.github.io/sitka/run_sit_exo_viewer.html?anim=assembly) · [watch it walk, hike, run and sit](https://nicedreamzapp.github.io/sitka/run_sit_exo_viewer.html?anim=body)
 *Runs in any browser, no install. Click any part for its price, mass and why it's there.*
 
 > **Mission:** This project is about freedom of movement. Go farther on your own legs, and rest wherever you are: on a trail with no bench, at a shop bench all day, in a line that never ends. The machine works for the person wearing it, quietly, and never against anyone. We build it to give people more say in how far they can go and when they can stop.
 
 | | |
 |---|---|
-| ![front](renders/stand_front.png) | ![back](renders/stand_back.png) |
 
 ## What this is
 A fully open-source design for a **powered lower-limb exoskeleton** that does two jobs no single product does today:
@@ -33,7 +33,6 @@ Numbers for a **130 kg, 1.87 m man** (US 95th percentile for both, NHANES), wear
 | | **Perch** | **Half-sit** | **Chair** | **Deep squat** |
 |---|---|---|---|---|
 | Knee angle / shin lean | 25° / 10° | 60° / 15° | 90° / 15° | 120° / 20° |
-| | ![](renders/mode_perch_side.png) | ![](renders/mode_halfsit_side.png) | ![](renders/mode_chair_side.png) | ![](renders/mode_squat_side.png) |
 | Seat height (hip) | 0.98 m | 0.85 m | 0.64 m | 0.43 m |
 | Rear leg | stowed | 0.84 m | 0.65 m | 0.46 m |
 | Load down the rear leg | 0% | 28% | 40% | 30% |
@@ -47,7 +46,6 @@ Numbers for a **130 kg, 1.87 m man** (US 95th percentile for both, NHANES), wear
 
 | Running stride | Exo only | Exploded |
 |---|---|---|
-| ![run](renders/mode_run_quarter.png) | ![exo only](renders/exo_only_quarter.png) | ![exploded](renders/exploded_quarter.png) |
 
 ## Current design (prototype one, P1)
 - **Knee actuators:** CubeMars **AK10-9 V2.0** at each knee: 9:1 quasi-direct drive, 18 Nm rated, 48 Nm peak, 0.8 Nm backdrive, CAN, $698.90. It keeps up with a running knee (rated 205 rpm = 21.5 rad/s at 24 V, more than twice the ~8.7 rad/s a running knee reaches in swing), and it adds only ~2% to the inertia your shank already swings.
@@ -77,7 +75,6 @@ Numbers for a **130 kg, 1.87 m man** (US 95th percentile for both, NHANES), wear
 Pawls never drop at a walk or a run, and anything deeper than Perch needs both rear feet on the ground.
 
 ## How it holds you up when you sit
-See the side-view force diagram: **[sit_diagram.html](https://nicedreamzapp.github.io/sitka/sit_diagram.html)**.
 
 Each leg unit stands on three points: your heel, the ball of your foot, and the rear foot about 0.30–0.39 m behind your heel. In chair mode, for a 130 kg man:
 - **40% of the load goes down the rear leg** (284 N axial per leg). It is a strut, pinned at both ends, so it only ever pushes along its length. At 17° from vertical it needs a friction coefficient of 0.30 at the foot: half of rubber on dry concrete (0.6–0.85), and inside wet concrete (0.45–0.75) and wet-rated tile (≥0.42).
@@ -164,25 +161,19 @@ This is experimental assistive hardware, not a medical device. Anyone with a kne
 | File | What it is |
 |------|-----------|
 | `index.html` | Redirects the GitHub Pages site to the viewer |
-| `run_sit_exo_viewer.html` | **The live CAD** ([open it](https://nicedreamzapp.github.io/sitka/run_sit_exo_viewer.html)). Orbit, switch modes, explode, click any part for price and spec. **▶ Assembly** builds it in 7 steps; **▶ On body** walks, hikes, runs, stops, offers a seat, sits in all four angles and stands up, with motor, lock, pad and foot-sensor state live |
 | `run_sit_exo_assembly.html` / `run_sit_exo_onbody.html` | Open the viewer straight into either animation |
 | `run_sit_exo.scad` | Parametric OpenSCAD model; `mode` = stand / perch / halfsit / chair / squat / run |
-| `render_all.sh` → `renders/*.png` | Renders every view and mode with the OpenSCAD CLI |
 | `params.mjs` | Every input, each tagged `[SRC n]`, `[CALC]` or `[EST]` |
 | `seat_torque_model.mjs` | Seat tripod statics per angle (with and without the rear leg), tipping margins front/back/side, ratchet tooth stress, rear-leg buckling, upright sizing |
-| `sit_diagram.html` | Side-view force diagram of how the seat holds you up ([open it](https://nicedreamzapp.github.io/sitka/sit_diagram.html)) |
 | `gait_assist_model.mjs` | Assist share per activity, speed check, inertia, fall catch |
 | `energy_model.mjs` | Runtime for walk, hike, run and sit; regen; a day-hike budget |
 | `mass_budget.mjs` | Mass per leg and belt, and its metabolic weighting |
 | `bom.mjs` → `PARTS_LIST_BOM.md` | Bill of materials with prices, links and sources (one source of truth) |
 | `project_cost.mjs` | All-in cost and the M1–M4 money ladder |
 | `run_all.mjs` → `MODEL_OUTPUT.txt` | Every model's output in one file |
-| `concept.html` | One-page concept sketch, drawn from the same geometry |
 | `RESEARCH_REPORT_2026-10-21.md` | Sources, prior art, licences, what we could not find |
 
 **Run the numbers:** `node run_all.mjs` (Node 18+, no dependencies).
-**View the CAD:** [live viewer](https://nicedreamzapp.github.io/sitka/run_sit_exo_viewer.html), or open `run_sit_exo_viewer.html` locally in any browser; no install, no account. Options: `?anim=assembly|body` · `?mode=chair` · `?view=side` · `?labels=1` · `?shot=1` (download a PNG).
-**Re-render:** `bash render_all.sh` (OpenSCAD 2021.01+).
 
 ## How to contribute
 Anyone may use, study, modify and share this design. Improvements that keep it open are welcome, especially:
