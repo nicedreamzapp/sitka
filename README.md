@@ -48,10 +48,10 @@ Numbers for a **130 kg, 1.87 m man** (US 95th percentile for both, NHANES), wear
 
 ## Current design (prototype one, P1)
 - **Knee actuators:** CubeMars **AK10-9 V2.0** at each knee: 9:1 quasi-direct drive, 18 Nm rated, 48 Nm peak, 0.8 Nm backdrive, CAN, $698.90. It keeps up with a running knee (rated 205 rpm = 21.5 rad/s at 24 V, more than twice the ~8.7 rad/s a running knee reaches in swing), and it adds only ~2% to the inertia your shank already swings.
-- **Seat lock: a one-way ratchet.** A 40-tooth 17-4PH sector at r = 50 mm and a pawl that engages 3 teeth. It **blocks bending and always lets the knee straighten**, so you stand up with no release step, with the power on or off. A latching solenoid lifts the pawl only when the knee is under 20° and straightening, i.e. when nothing is pressing on it. A strain-gauge load sensor on each pawl reads the tooth load; a hall sensor confirms it is seated. Root bending at the 507 Nm fallback is 359 MPa with only 2 of the 3 teeth sharing (17-4PH H900 yield ~1170 MPa, handbook, to verify).
+- **Seat lock: a one-way ratchet with two pawls.** A 40-tooth 17-4PH sector at r = 50 mm, bolted to the AK10-9 output flange with 8 × M4 12.9 screws (1.76 kN shear each at 507 Nm, SF 3.7), and two 3-tooth pawls offset half a pitch (4.5°) in a housing on the actuator case's outboard face, so you sag at most 2.7 cm at the pad (3.6 cm at the hip) onto the next tooth. It **blocks bending and always lets the knee straighten**: you stand up with no release step, power on or off, and the pawls click over the teeth on the way up (that is correct). A bistable solenoid lifts the pawls only when they carry no load; a sprung detent stops its 4 N from ever dropping a pawl mid-stride. Each pawl has a hall sensor and a strain-gauge load sensor. Flank angles are matched with crown relief: contact 134 MPa (2 teeth) / 269 MPa (1 tooth); root bending 359 / **717 MPa (SF 1.6 on one tooth, so a proof test is required)**.
 - **Why not a stronger motor?** A 64:1 AK80-64 has 120 Nm peak, and at 23 rpm it runs at 28% of running swing speed, so it would fight a runner. A motor holding even 48 Nm burns about 92 W per knee as heat. The ratchet holds for 0 W.
 - **Rear legs.** Each thigh carries a 3-section telescoping carbon tube with a uniform 1.5 mm wall, Ø24/20/16 mm, hinged at the top of the thigh rail: one-way lock (extends freely, locks in compression), torsion spring to retract, 0.35 m stowed, 0.84 m in half-sit. It buckles at **3.2 kN** at that length (stepped-column solve; a stock 16/14/12 trekking pole would give only 0.87 kN). Nominal load 196–284 N; design 1 kN. The foot is a 360° pivoting rubber cane tip with a flip-down ice/trail spike.
-- **Frame:** 7075-T6 lateral uprights, 8 × 28 mm, sized for the 507 Nm fallback, with the knee axis at the lateral epicondyle on a ±10 mm slot. A 6 × 20 mm 7075 medial bar on each leg runs on a single-axis medial hinge coaxial with the actuator, tied to the lateral side by an anterior thigh bridge and a posterior shank bridge, so the knee is a closed box and not a cantilever. A **free ankle pivot** (±30° sagittal) at the lateral malleolus carries a heel stirrup with a heel pad right below it and a strap round the shoe's heel counter. Seat pads are 200 × 180 mm on a lateral hinge plus a medial arm.
+- **Frame:** 7075-T6 lateral uprights, 8 × 28 mm, sized for the 507 Nm fallback, with the knee axis at the lateral epicondyle on a ±10 mm slot. A 6 × 20 mm 7075 medial bar on each leg runs on a single-axis medial hinge coaxial with the actuator, tied to the lateral side by an anterior thigh bridge and a posterior shank bridge, so the knee is a closed box and not a cantilever. A **free ankle pivot** (+35° dorsiflexion / −45° plantarflexion stops) at the lateral malleolus carries a heel stirrup with a heel pad right below it and a strap round the shoe's heel counter. Seat pads are 200 × 180 mm on a lateral hinge plus a medial arm.
 - **Belt to legs: straps, no rigid hip joint.** Two straps per side run from the belt to a yoke at the top of each thigh rail so the leg units can't slide down. There is no rigid hip joint because the seat loads close inside each leg (heel, toes, rear foot) and never need the belt, and a rigid joint that is not exactly on your hip's three axes fights every step.
 - **Wiring:** one braided sleeve per side, 24 V + CAN, with a service loop at the rail top for 120° of hip flexion. The pawl solenoids run on their own always-live 12 V rail; **the E-stop cuts the motors only**, so the ratchet keeps working.
 - **Brain:** Teensy 4.1 + CAN, the same MCU family and motor bus as NAU's OpenExo, so their firmware is our starting point. BNO085 IMUs at the pelvis and both shanks. Four FSRs per foot. An ESP32-S3 links to the phone.
@@ -63,7 +63,15 @@ Numbers for a **130 kg, 1.87 m man** (US 95th percentile for both, NHANES), wear
   - **Place memory:** it suggests the angle you picked last time at this spot.
 
 ### Seat lock safety rule
-The pawl may drop **only** when both feet are loaded on the FSRs, the shank IMUs have been quiet for about a second, knee velocity is near zero, the motor already holds the target angle, and (for anything deeper than Perch) both rear-leg feet read ground contact. It is never dropped at a walk or a run. To go *deeper* from a seat you rise one tooth first (straightening is always free), the load sensor reads ~0, and only then does the pawl lift.
+**The motor cannot hold you in any seat:** the targets need 78–94 Nm per knee with the rear leg and 145–190 Nm without, against 48 Nm peak. So:
+1. **Drop:** your quads hold you, with motor braking. Pawls held up.
+2. **Seat:** at the target the pawls are released and you **lower until seated**. The motor lets go only when the hall sensor says engaged *and* the load sensor carries load.
+3. **Emergency catch:** an unexpected knee bend drops the pawls only below 60°/s. **The descent is otherwise unprotected.** Above that speed the catch is not attempted.
+4. **Stand:** straightening is always free; the clicks are normal. Below 20° and straightening, the pawls lift for walking.
+5. **Depth change:** the rear pole is locked in compression and cannot shorten, so to go deeper you stand up (knee under 20°) and sit again.
+6. **Perch is never hands-free.** The firmware, app and manual must never call it that.
+
+Pawls never drop at a walk or a run, and anything deeper than Perch needs both rear feet on the ground.
 
 ## How it holds you up when you sit
 See the side-view force diagram: **[sit_diagram.html](https://nicedreamzapp.github.io/run-sit-exo/sit_diagram.html)**.
@@ -77,7 +85,7 @@ Each leg unit stands on three points: your heel, the ball of your foot, and the 
 
 ## Honest status: what does not close yet
 - **v1 tipped over backward, and the owner caught it.** The first design put the pad's centre of pressure over the heel, which is the *back edge* of the foot. Re-run in this model, its centre of mass sat ~5 cm in front of the heel edge: a 4° lean back, a pack shift or a slope and you go over. It also asked for 32.9° of shin lean, well past the ~20° an ankle comfortably holds under load, and "the feet take the rest" quietly meant leg muscles. Two more v1 errors: its solenoid could not have pulled a loaded pawl out (~2 kN of tooth friction), and its 48 Nm motor could not unload a 142 Nm hold to let it. v2 fixes all of it with the rear legs, the free ankle, and the one-way ratchet.
-- **Mass got worse, and it is the live risk.** v2 is **3.72 kg per leg and 8.96 kg worn** (v1: 2.91 / 7.2). The plan target was ~3.55 kg per leg. A path to ~3.53 exists on paper (count only the parts of the donor brace we keep, −120 g; book a third of the harness to the belt, −50 g; slimmer medial bars, −20 g), but none of it is weighed, so **3.72 kg is the number until the scale says otherwise.** That is about five times the Dnsys Z1's ~0.68 kg per leg, an 11.1 kg waist-equivalent load. **The assist has to beat its own mass before this helps anyone, and nothing here proves it does yet.** `node mass_budget.mjs`
+- **Mass got worse, and it is the live risk.** v2 is **3.85 kg per leg and 9.21 kg worn** (v1: 2.91 / 7.2). The plan target was ~3.55 kg per leg. The dual-pawl ratchet, housing and sector bolts added 0.13 kg per leg after the re-audit. A −190 g path exists on paper (to ~3.66) (count only the parts of the donor brace we keep, −120 g; book a third of the harness to the belt, −50 g; slimmer medial bars, −20 g), but none of it is weighed, so **3.85 kg is the number until the scale says otherwise**; the old ~3.55 target is out of reach without a lighter actuator or frame. That is about five times the Dnsys Z1's ~0.68 kg per leg, an 11.4 kg waist-equivalent load. **The assist has to beat its own mass before this helps anyone, and nothing here proves it does yet.** `node mass_budget.mjs`
 - **Rear foot on wet floors: there is a limit.** The legs are angled so the foot needs a friction coefficient of 0.30. Rubber gives 0.6–0.85 on dry concrete and 0.45–0.75 on wet concrete (Engineering ToolBox), and wet-rated interior tile tests at 0.42 or more (ANSI A326.3). One source puts rubber on wet concrete as low as 0.30, which is zero margin. **Wet polished stone, unrated wet tile, mud and ice are not safe for the rubber foot.** Flip down the spike outdoors, or use Perch. The carbide-spike option is not sourced yet (the listed ice tips are steel).
 - **Perch is a lean-assist, not hands-free sitting.** Without the rear leg the centre of mass sits about over your ankle, 5 cm in front of the heel edge (a 3° tilt). The lock takes the knee bend, but your own calves keep you balanced, as when standing. Lean on something, or put the rear legs down and use Half-sit.
 - **Rear-leg stiffness is assumed, not measured.** The 3.2 kN buckling load uses E = 70 GPa for roll-wrapped carbon and a ~$10 tube from an unverified seller. Every pole gets proof-tested to 1 kN at full length at M1.
@@ -85,16 +93,16 @@ Each leg unit stands on three points: your heel, the ball of your foot, and the 
 - **Runtime depends on a strategy we haven't tested.** Conservative running is **~2.8 h (~36 km) at 58 W**. Push-only assist is ~4 h. Hiking uphill at 25 Nm assist is **~4.2 h**. Sitting costs 5 W. On paper, braking assist while running could stretch runtime a lot; we do not claim that until a bench shows it. `node energy_model.mjs`
 - **Regen is a few watts, not a charger.** The best net downhill regen is **~3.7 W**. Downhill mode earns its place by taking load off your quads.
 - **Fall catch buys time; it does not catch you.** A hard single-leg catch is ~270–410 Nm of knee moment. Two motors at 48 Nm give 12–18% of that.
-- **The ratchet is checked for tooth bending, not contact.** Root bending is 359 MPa at the fallback load (SF 3.3 on a handbook yield we still have to verify). Hertz contact stress is not checked yet.
-- **Inputs flagged EST in `params.mjs`:** pad position (75% of thigh), rear-hinge position, carbon modulus and density, friction on wood and dry tile, stance width, trunk lean per mode, running cadence and contact time, drive efficiencies, idle draw, and **41% of the parts cost** (mostly machining and the custom ratchet). The bench replaces all of these.
+- **The ratchet only just clears on one tooth.** If only one of the two engaged teeth carries the 507 Nm fallback, root bending is 717 MPa (SF 1.6 on a handbook yield we still have to verify). Matched-flank contact is 134–269 MPa. Every ratchet is proof-tested at M1. The 72 mm bolt circle is a guess until checked on the CubeMars drawing.
+- **Inputs flagged EST in `params.mjs`:** pad position (75% of thigh), rear-hinge position, carbon modulus and density, friction on wood and dry tile, stance width, trunk lean per mode, running cadence and contact time, drive efficiencies, idle draw, and **44% of the parts cost** (mostly machining and the custom ratchet). The bench replaces all of these.
 
 ## What it costs, honestly
 The parts list is not the project. Both numbers matter. `node project_cost.mjs`
 
 | | |
 |---|---|
-| **P1, one exo, parts only** | **$4,200** (`bom.mjs`; $1,731 of it is estimate, not quote) |
-| P1 worn and tested, all in | **~$6,889** |
+| **P1, one exo, parts only** | **$4,416** (`bom.mjs`; $1,937 of it is estimate, not quote) |
+| P1 worn and tested, all in | **~$7,126** |
 
 The gap is what a parts list quietly omits:
 - a knee test stand with a load cell
@@ -110,9 +118,9 @@ Labour is $0; it assumes you build it yourself.
 ### You do not build the whole exo first
 | | | |
 |---|---|---|
-| **M1** | one knee + ratchet on a dummy-leg stand, plus a rear-leg pole buckling test | **~$1,652** |
+| **M1** | one knee + ratchet on a dummy-leg stand, plus a rear-leg pole buckling test | **~$1,697** |
 | **M2** | one leg, worn: walking and stairs, no seat | ~$938 |
-| **M3** | both legs + belt: running and hiking assist | ~$2,100 |
+| **M3** | both legs + belt: running and hiking assist | ~$2,208 |
 | **M4** | rear legs + seat modes, under an overhead harness first | ~$680 |
 
 **M1 answers the two questions that decide the project** before anything is strapped to a person: does the 3-tooth ratchet hold 507 Nm and drop in cleanly at every tooth, does the stock pole carry 1 kN, and does the motor stay cool through a simulated hour of hiking?
@@ -126,7 +134,7 @@ Labour is $0; it assumes you build it yourself.
 5. **M4:** seat modes under an overhead harness, then free.
 
 Hard rules in firmware and hardware:
-- The pawl drops only at a confirmed standstill, and deeper than Perch only with both rear feet on the ground.
+- The motor lets go only after the pawls are seated (hall) and loaded (strain gauge), and deeper than Perch only with both rear feet on the ground.
 - With no rear leg on the ground, only Perch may lock: the other three modes tip backward without it.
 - The ratchet blocks bending only. Straightening is always free, so you can always stand up, power or no power.
 - The pawl lifts only when its load sensor reads ~0; nothing ever tries to drag out a loaded pawl.
@@ -134,7 +142,8 @@ Hard rules in firmware and hardware:
 - Motor torque is software-limited per stage.
 - At M1, proof-load the ratchet to 507 Nm at every tooth and the rear pole to 1 kN at full length before anyone sits.
 - On a wet or icy surface the rubber foot is not trusted: spike down, or Perch only.
-- Perch is lean-assist only; the app and the manual never call it hands-free.
+- Perch is lean-assist only; the firmware, app and manual never call it hands-free.
+- The descent into a seat is protected only by the velocity-gated catch (< 60°/s); the manual says so.
 - Nothing ships with a seat mode until M4 passes, starting on flat dry ground.
 
 This is experimental assistive hardware, not a medical device. Anyone with a knee condition should talk to a clinician before wearing anything like it.

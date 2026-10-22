@@ -96,6 +96,12 @@ export const SEAT = {
 export const RATCHET = {
   v1: { r: 0.035, teeth: 36, width: 0.008, teethEngaged: 1 },   // v1 pawl: one tooth at r = 35 mm
   v2: { r: 0.050, teeth: 40, width: 0.012, teethEngaged: 3, effectiveTeeth: 2 }, // 3-tooth pawl; assume only 2 share load (tolerance) — EST
+  pawls: 2,               // dual pawl, offset half a pitch → the knee can sag at most pitch/2 onto a tooth
+  catchMaxDegS: 60,       // emergency drop catch allowed only below this knee speed. EST (from the re-audit)
+  // Sector bolted to the AK10-9 output flange: 8 x M4. Bolt circle radius 36 mm is EST — read it off the
+  // CubeMars drawing. M4 tensile stress area 8.78 mm² (ISO 898-1); class 12.9 UTS 1220 MPa (ISO 898-1); shear 0.6 x UTS EST.
+  bolts: { n: 8, rCircle: 0.036, As: 8.78e-6, uts: 1220e6 },
+  solenoidN: 4,           // Intertec ITS-LX-2218 start force 4 N [SRC 16]; a sprung detent must out-hold it
   toothThickFrac: 0.6, toothHeightFrac: 0.4,  // tooth base thickness and height as fractions of pitch — EST
 };
 

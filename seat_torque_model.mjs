@@ -2,7 +2,7 @@
 // each part carry, for a 95th-percentile adult at each lock angle?
 //
 // THE MECHANISM (side view, one leg; both legs identical, each carries half):
-//   * Heel stirrup + shoe sit on the ground; the exo's ANKLE PIVOT is free (±30°),
+//   * Heel stirrup + shoe sit on the ground; the exo's ANKLE PIVOT is free (+35° dorsi / −45° plantar),
 //     so the shin rail is pinned at the ankle and the wearer's own ankle muscles relax.
 //   * Thigh rail + locked knee + shin rail = one rigid frame B ("the leg unit").
 //   * REAR LEG: a telescoping carbon pole hinged at the top of the thigh rail, foot on
@@ -171,7 +171,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   line(`  Side check: shoes ${SEAT.stance.shoeCentreSep} m apart (EST), rear feet ${SEAT.stance.rearFootSep} m apart. A cross-slope of θ eats θ of the side margin.`);
   for (const md of SEAT.modes) if (md.phi > SEAT.maxShankLeanDeg) line(`  !! ${md.name}: shank lean ${md.phi}° exceeds the ${SEAT.maxShankLeanDeg}° ankle cap`);
   const perch = rows[0];
-  line(`\nPERCH IS A LEAN-ASSIST, NOT HANDS-FREE SITTING: the knee lock takes the bend, but your own calves keep you balanced,`);
+  line(`\nPERCH IS A LEAN-ASSIST, NOT HANDS-FREE SITTING (firmware, app and manual must never call it hands-free): the knee lock takes the bend, but your own calves keep you balanced,`);
   line(`exactly as when standing. Backward margin ${fmt(perch.marginBack * 100, 0)} cm (${fmt(perch.tipBackDeg, 0)}° tilt). Lean on a wall or pole, or deploy the rear legs and use Half-sit.`);
   line(`Perch has no rear leg: the wearer balances at the ankle exactly as when standing, ${fmt(Math.abs(perch.ankleMuscleNm), 0)} Nm per ankle (calf), CoM ${fmt(perch.cgX * 100, 1)} cm ${perch.cgX >= 0 ? 'ahead of' : 'behind'} the ankle.`);
 
@@ -205,12 +205,32 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const t = toothStress(cfg, Mfb);
     line(`${k.padEnd(10)}: ${cfg.teeth}T at r = ${cfg.r * 1000} mm, ${cfg.width * 1000} mm wide, ${cfg.effectiveTeeth ?? cfg.teethEngaged} tooth/teeth loaded → ${fmt(t.F / 1000, 1)} kN each, bending ${fmt(t.sigma / 1e6, 0)} MPa vs 17-4PH H900 yield ~${MAT.steel174_H900_yield / 1e6} MPa (VERIFY) → ${t.sigma > MAT.steel174_H900_yield ? 'FAILS' : 'SF ' + fmt(MAT.steel174_H900_yield / t.sigma, 1)}; step ${fmt(t.stepDeg, 0)}°`);
   }
-  line('Contact (Hertz) stress is still NOT checked. Pawl-load sensor (strain gauge) on each pawl.');
-  line('Sequence: GAIT pawl lifted (latching solenoid) → LOWER under motor braking + quads, pawl lifted → at the target the');
-  line('pawl DROPS into the nearest tooth and takes the load → STAND: extension is free, the pawl clicks over the teeth,');
-  line('no release needed, works with power off → below 20° and extending the solenoid lifts it for walking.');
-  line('Going DEEPER from a seat: rise one tooth (extension is free) → pawl-load sensor reads ~0 → only then lift.');
-  line('(A 30 g solenoid cannot drag a pawl out under ~2 kN of tooth friction, so it never tries to.)');
+  {
+    const cfg = RATCHET.v2, t = toothStress(cfg, Mfb), h = RATCHET.toothHeightFrac * t.pitch;
+    const pMatched = t.F / (cfg.width * h), single = toothStress({ ...cfg, effectiveTeeth: 1 }, Mfb);
+    line(`Single tooth (one of the two misses): ${fmt(single.F / 1000, 1)} kN, bending ${fmt(single.sigma / 1e6, 0)} MPa → SF ${fmt(MAT.steel174_H900_yield / single.sigma, 1)}. Thin: PROOF TEST to 507 Nm is required.`);
+    line(`Flank contact, MATCHED flank angles (flat-on-flat, crown relief at the edges): ${fmt(pMatched / 1e6, 0)} MPa with 2 teeth, ${fmt((2 * pMatched) / 1e6, 0)} MPa on one tooth.`);
+    line('Line contact (mismatched angles) would be far higher: the drawing must specify matched flank angles + crown relief.');
+    const Lt = PERSON.thighFrac * PERSON.stature95, sag = (t.stepDeg / RATCHET.pawls) * R;
+    line(`DUAL PAWL offset half a pitch (${fmt(t.stepDeg / 2, 1)}°): worst sag onto a tooth = ${fmt(sag * SEAT.padCoPFrac * Lt * 100, 1)} cm at the pad, ${fmt(sag * Lt * 100, 1)} cm at the hip (single pawl: ${fmt(2 * sag * Lt * 100, 1)} cm).`);
+    const B = RATCHET.bolts, Fb = Mfb / (B.n * B.rCircle), cap = 0.6 * B.uts * B.As;
+    line(`MOUNTING: sector on the AK10-9 output flange, ${B.n} x M4 on a ${fmt(B.rCircle * 2000, 0)} mm circle (EST): ${fmt(Fb / 1000, 2)} kN shear each at ${fmt(Mfb, 0)} Nm`);
+    line(`  vs ~${fmt(cap / 1000, 1)} kN for a 12.9 M4 (0.6 x 1220 MPa x 8.78 mm²) → SF ${fmt(cap / Fb, 1)}. Pawl housing on the actuator case's outboard face.`);
+  }
+  line('Pawl-load sensor (strain gauge) and hall sensor on each pawl.');
+  line('');
+  line('SEQUENCE (re-audited). The motor CANNOT hold any seat target: 78–94 Nm per knee with the rear leg, 145–190 without, vs 48 Nm peak.');
+  line('  1 DROP: your QUADS hold you, the motor adds braking. Pawls held UP (solenoid + detent).');
+  line('  2 SEAT: at the target the pawls are released; you LOWER UNTIL SEATED — hall says engaged AND load sensor carries load —');
+  line('    and only then does the motor let go. Sag onto the next tooth is the half-pitch figure above.');
+  line(`  3 EMERGENCY CATCH: if the knee flexes unexpectedly, the pawls drop ONLY below ${RATCHET.catchMaxDegS}°/s (threshold from the re-audit, EST: above it the`);
+  line('    impact on a tooth is not tested, so the catch is not attempted). The DESCENT IS UNPROTECTED except by this catch. Say it plainly in the manual.');
+  line('  4 STAND: extension is always free. The pawls CLICK over the teeth on the way up: that is correct, not a fault.');
+  line('    Below 20° and extending, the solenoid lifts the pawls for walking.');
+  line(`  5 DETENT: a sprung mechanical detent holds each pawl up/down; the bistable solenoid's ${RATCHET.solenoidN} N alone must never be able to drop a pawl mid-stride.`);
+  line('  6 DEPTH CHANGE: the rear pole is locked in compression and cannot shorten, so you change depth only by STANDING (knee < 20°)');
+  line('    and sitting again. Never re-seat deeper in place.');
+  line('  (A small solenoid cannot drag a pawl out under ~2 kN of tooth friction, so the sequence never asks it to.)');
 
   line('\n=== REAR LEG STRENGTH (stepped column, pinned both ends, solved numerically) ===');
   const T = SEAT.rearTube;

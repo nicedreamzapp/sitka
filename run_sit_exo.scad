@@ -82,6 +82,15 @@ module ex(v) { translate(explode * v) children(); }
 L75 = lat - hipW/2;          // lateral rail offset from the leg axis (75)
 med = -66;                   // medial bar offset (× side)
 module bar(a, b, r=4) hull() { translate(a) sphere(r); translate(b) sphere(r); }
+act_face = L75 + bar_t/2 + act_w;   // AK10-9 outboard face = output flange (141 mm from the leg axis)
+rat_z    = act_face + 10;           // toothed band centre, clear of the 3 mm pawl bracket
+pawlA    = [180, 148.5];            // pawl angles in the thigh frame (x fwd, z up), 3.5 pitches apart
+// xz-plane helper: 2D shapes drawn in (x forward, z up) at lateral station yc on this leg's side
+module lat(sd, yc) translate([0, sd*yc, 0]) rotate([90,0,0]) children();
+module annSector(r0, r1, a0, a1) polygon(concat([for (i=[0:24]) r1*[cos(a0+(a1-a0)*i/24), sin(a0+(a1-a0)*i/24)]], [for (i=[24:-1:0]) r0*[cos(a0+(a1-a0)*i/24), sin(a0+(a1-a0)*i/24)]]));
+module ratchetSector(a0=165, a1=327, n=18) let(w=(a1-a0)/n) polygon(concat(
+  [for (i=[0:n-1]) for (p=[[46,0],[55,0.3],[55,0.45],[46,1]]) p[0]*[cos(a0+w*(i+p[1])), sin(a0+w*(i+p[1]))]],
+  [for (i=[24:-1:0]) 40*[cos(a0+(a1-a0)*i/24), sin(a0+(a1-a0)*i/24)]]));
 module leg(ang, side) {
   hipF = ang[0]; knee = ang[1];
   rotate([0, -hipF, 0]) {
@@ -122,10 +131,20 @@ module leg(ang, side) {
       // KNEE ACTUATOR (AK10-9) + output-flange bolts
       ex([0, side*200, 0]) translate([0, side*(L75+bar_t/2+act_w/2), 0]) rotate([90,0,0]) {
         color(C_act) cylinder(d=act_d, h=act_w, center=true);
-        for (i=[0:7]) color([0.85,0.87,0.9]) rotate([0,0,i*45]) translate([36,0,-side*(act_w/2+1)]) cylinder(r=2.6, h=3, center=true);
       }
-      // pawl housing (thigh side) — 3-tooth pawl
-      ex([-80, side*200, 0]) color(locked ? [0.95,0.30,0.25] : C_act) translate([-82, side*(L75+80), 6]) cube([34, 18, 56], center=true);
+      // PAWL BRACKET bolted to the AK10-9 CASE outboard face (3 flush screws into the case holes), carrying
+      // TWO 3-tooth pawls 31.5° apart (3.5 pitches = half-pitch phase), one latching solenoid + yoke, a detent per pawl
+      ex([-80, side*260, 0]) {
+        color(C_alu) lat(side, act_face + 1.5) linear_extrude(3, center=true) annSector(42, 92, 128, 197);
+        for (a = [134, 164, 192]) color([0.85,0.87,0.9]) lat(side, act_face + 3.2) rotate(a) translate([45.5,0]) cylinder(r=3.4, h=0.8, center=true);
+        for (j = [0, 1]) let(a = pawlA[j], pin = locked ? (j == 0 ? 1 : 0.45) : 0, dy = (j == 0 ? 1 : -1) * 23) {
+          color(C_act) lat(side, act_face + 12) rotate(a) translate([74, 0]) cube([34, 36, 18], center=true);
+          color(C_ring) lat(side, rat_z) rotate(a) translate([74 - 8*pin - 11, 0]) cube([8, 22, 12], center=true);    // pawl teeth (in = engaged)
+          color(C_alu) lat(side, act_face + 12) rotate(a) translate([80, dy]) rotate([0,90,0]) cylinder(r=3, h=22, center=true);  // detent rod
+          color([0.85,0.87,0.9]) lat(side, act_face + 12) rotate(a) translate([pin > 0.2 ? 78 : 86, dy * 1.15]) sphere(2.8);  // detent ball: inner notch = in
+        }
+        color(C_act) lat(side, act_face + 12) rotate((pawlA[0] + pawlA[1]) / 2) translate([100, 0]) rotate([0,90,0]) cylinder(r=8, h=24, center=true);   // bistable solenoid
+      }
       // single-axis medial hinge + the knee axis (thin rod)
       ex([0, -side*90, 0]) color(C_alu) translate([0, side*med, 0]) rotate([90,0,0]) cylinder(d=48, h=10, center=true);
       color([0.49,1,0.82]) rotate([90,0,0]) cylinder(r=1.2, h=2*(L75+130), center=true);
@@ -133,9 +152,13 @@ module leg(ang, side) {
 
       rotate([0, knee, 0]) {
         if (show_body) color(C_body) limb([0,0,0], [0,0,-Ls], 56, 40);
-        // ONE-WAY RATCHET SECTOR, bolted to the shank side, r = 50 mm, 140°
-        ex([0, side*260, 0]) color(C_ring) translate([0, side*(L75+80), 0]) rotate([90,0,0])
-          rotate([0,0,175]) rotate_extrude(angle=140, $fn=60) translate([30,-6]) square([25, 12]);
+        // ONE-WAY RATCHET SECTOR bolted straight to the AK10-9 OUTPUT FLANGE: hub spacer + 8 x M4 on a 72 mm circle,
+        // 40-pitch (9°) teeth r 46-55 over 162°, 12 mm wide, outboard of the pawl bracket
+        ex([0, side*330, 0]) {
+          color(C_ring) lat(side, act_face + 8) linear_extrude(16, center=true) difference() { circle(40, $fn=60); circle(26, $fn=60); }
+          color(C_ring) lat(side, rat_z) linear_extrude(12, center=true) ratchetSector();
+          for (i = [0:7]) color([0.85,0.87,0.9]) lat(side, act_face + 17.5) rotate(22.5 + i*45) translate([36, 0]) cylinder(r=3.5, h=3.5, center=true, $fn=16);
+        }
         // lateral shank rail to the ankle pivot, medial shank bar, posterior bridge
         ex([0, side*120, -40]) color(C_alu) translate([-bar_h/2, side*L75 - bar_t/2, -Ls]) cube([bar_h, bar_t, Ls-20]);
         ex([0, -side*100, 0]) color(C_alu) translate([-10, side*med - 3, -110]) cube([20, 6, 110]);
@@ -146,7 +169,7 @@ module leg(ang, side) {
           translate([-75,0,0]) cube([80,80,70], center=true); }
         // shank IMU on the rail
         color(C_act) translate([22, side*(L75+12), -Ls*0.5]) cube([14, 22, 26], center=true);
-        // free ANKLE PIVOT at the lateral malleolus
+        // free ANKLE PIVOT at the lateral malleolus (+35° dorsi / −45° plantar hard stops)
         ex([0, side*200, -120]) color([0.85,0.87,0.9]) translate([0, side*(L75+7), -Ls]) rotate([90,0,0]) cylinder(r=17, h=12, center=true);
         translate([0,0,-Ls]) rotate([0, -(knee-hipF), 0]) {   // foot frame (level with the floor)
           // heel stirrup hangs from the pivot: vertical bar, heel plate, heel pad below the pivot

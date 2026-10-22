@@ -7,11 +7,13 @@ Prices are USD, seen 2026-10-21 at the linked retailer. **EST** means our estima
 | # | Part | Spec | Qty | Mass ea | Cost ea | Line | Source |
 |---|---|---|---|---|---|---|---|
 | A1 | Knee actuator — CubeMars AK10-9 V2.0 KV100 | 9:1 QDD, 18 Nm rated / 48 Nm peak, CAN, dual encoder, 0.8 Nm backdrive | 2 | 0.96 kg | $698.90 | $1,397.80 | [link](https://www.cubemars.com/goods-1148-AK10-9+V20.html) |
-| A2 | One-way ratchet — 140° toothed sector + 3-tooth pawl, 17-4PH H900 | 40T pitch at r = 50 mm, 12 mm wide; blocks FLEXION, extension always free; sector bolted to the shank rail, pawl housing to the thigh rail; 507 Nm fallback design (seat_torque_model.mjs) | 2 | 0.25 kg | $180.00 | $360.00 | EST — custom CNC part, needs a quote (SendCutSend/PCBWay CNC) |
-| A3 | Pawl lift — bistable latching solenoid | lifts the pawl only when the pawl is unloaded (knee < 20° and extending, or load sensor ≈ 0); on its own always-live 12 V rail | 2 | 0.03 kg | $54.00 | $108.00 | [link](https://rapidonline.com/intertec-its-lx-2218-12vdc-10mm-4n-de-energised-20n-bi-directional-solenoid-50-2909) (Intertec ITS-LX-2218, £40.32 ≈ $54, 4/20 N bistable; kg EST) |
-| A4 | Pawl-engaged hall sensor + magnet | confirms the pawl is fully seated before the motor lets go | 2 | 0.005 kg | $3.00 | $6.00 | EST |
-| A5 | Pawl load sensor — strain gauge + HX711 | reads tooth load; the pawl may only lift when it reads ~0 | 2 | 0.01 kg | $10.00 | $20.00 | EST |
-| | **Subtotal** | | | **2.51 kg** | | **$1,891.80** | |
+| A2 | One-way ratchet — 140° toothed sector + DUAL 3-tooth pawls (offset half a pitch), 17-4PH H900 | 40T at r = 50 mm, 12 mm wide, MATCHED flank angles + crown relief; blocks FLEXION, extension always free; worst sag onto a tooth 4.5° (2.7 cm at the pad); 507 Nm fallback: 359 MPa bending on 2 teeth, 717 MPa on 1 (SF 1.6, proof test required); flank contact 134 / 269 MPa (seat_torque_model.mjs) | 2 | 0.28 kg | $220.00 | $440.00 | EST — custom CNC + wire-EDM teeth, needs a quote |
+| A3 | Pawl lift — bistable latching solenoid (lifts both pawls via a yoke) + sprung mechanical detent | lifts the pawls only when unloaded (knee < 20° and extending, or load sensors ≈ 0); the detent out-holds the solenoid’s 4 N so it can never drop a pawl mid-stride; always-live 12 V rail | 2 | 0.035 kg | $59.00 | $118.00 | [link](https://rapidonline.com/intertec-its-lx-2218-12vdc-10mm-4n-de-energised-20n-bi-directional-solenoid-50-2909) (Intertec ITS-LX-2218, £40.32 ≈ $54, 4/20 N bistable) + $5 detent spring/ball EST; kg EST |
+| A4 | Pawl-engaged hall sensor + magnet (one per pawl) | confirms each pawl is fully seated; the motor lets go only when hall = engaged AND the load sensor carries load | 4 | 0.005 kg | $3.00 | $12.00 | EST |
+| A5 | Pawl load sensor — strain gauge (one per pawl) + HX711 | reads tooth load; a pawl may only lift when it reads ~0 | 4 | 0.01 kg | $10.00 | $40.00 | EST |
+| A6 | Sector mounting — 8 x M4 class 12.9 socket cap screws per knee to the AK10-9 output flange | 1.76 kN shear each at 507 Nm on a 72 mm bolt circle (EST — confirm on the CubeMars drawing); 12.9 M4 ≈ 6.4 kN shear → SF 3.7 | 16 | 0.002 kg | $0.60 | $9.60 | EST — commodity 12.9 M4 cap screws |
+| A7 | Pawl housing on the actuator case outboard face (7075, pawl pivots + detent + sensor mounts) | bolts to the AK10-9 case mounting holes; carries the pawl reaction back into the thigh rail | 2 | 0.06 kg | $45.00 | $90.00 | EST — CNC part, quote with B6 |
+| | **Subtotal** | | | **2.76 kg** | | **$2,107.40** | |
 
 ## B. STRUCTURE
 | # | Part | Spec | Qty | Mass ea | Cost ea | Line | Source |
@@ -24,7 +26,7 @@ Prices are USD, seen 2026-10-21 at the linked retailer. **EST** means our estima
 | B4 | Fold-down seat pad, 200 x 180 mm | aluminium pan + 20 mm closed-cell foam; hinged on the lateral rail, proximal (75% of thigh from the knee) | 2 | 0.22 kg | $40.00 | $80.00 | EST |
 | B7 | Rear leg — 3-section uniform-wall carbon tube 24/20/16 x 1.5 mm + pivoting foot | roll-wrapped 3K tube, 3 x 0.32 m, 65 mm overlaps, bushings; one-way lock (extends freely, locks in compression), torsion-spring retract, hinge boss at the thigh-rail top. 0.35 m stowed → 0.46 / 0.65 / 0.84 m; buckling 3.16 kN at 0.84 m (stepped-column solve). Foot: 360° pivoting rubber cane tip ($18.95) + flip-down ice/trail spike tip ($20.59); carbide option not sourced | 2 | 0.3 kg | $85.00 | $170.00 | EST total — tubes ~$10 per 500 mm (https://www.ebay.de/itm/155584394259, 20 x 17 mm, unverified seller) x3 + feet $39.54 (https://fashionablecanes.com/products/ingrid-ice-gripper-cane-tip and retail listings, 2026-10-21) + ~$15 lock/boss/spring EST; tubes 130 g CALC + 0.17 kg hardware EST |
 | B8 | Medial bars + single-axis medial hinge + 2 bridges | 6 x 20 mm 7075, 0.36 m thigh + 0.10 m shank, hinge coaxial with the actuator; anterior thigh bridge above the patella, posterior shank bridge | 2 | 0.24 kg | $40.00 | $80.00 | CALC bars 0.46 m x 6 x 20 mm x 2810 kg/m³ = 0.16 kg + bridges 0.08 EST |
-| B9 | Ankle pivot (free, ±30° sagittal) at the lateral malleolus | joins the shin rail to the stirrup; plain bearing + hard stops | 2 | 0.05 kg | $20.00 | $40.00 | EST |
+| B9 | Ankle pivot (free, +35° dorsi / −45° plantar hard stops) at the lateral malleolus | joins the shin rail to the stirrup; plain bearing + hard stops | 2 | 0.05 kg | $20.00 | $40.00 | EST |
 | B10 | Suspension yoke + 2 straps per side | belt rear, over the glute, to a yoke at the thigh-rail top: stops the leg units migrating down. NO rigid hip joint | 1 | 0.12 kg | $25.00 | $25.00 | EST — webbing, ladder-locks, 2 printed yokes (one set per exo) |
 | B11 | Pad medial support arm | carries the medial edge of the pad pan to the medial bar | 2 | 0.04 kg | $15.00 | $30.00 | EST |
 | B5 | Fasteners, bushings, thread-locker |  | 1 | 0.1 kg | $60.00 | $60.00 | EST |
@@ -60,13 +62,13 @@ Prices are USD, seen 2026-10-21 at the linked retailer. **EST** means our estima
 ## Roll-up
 | | Mass | Cost |
 |---|---|---|
-| A KNEE ACTUATION + SEAT LOCK | 2.51 kg | $1,891.80 |
+| A KNEE ACTUATION + SEAT LOCK | 2.76 kg | $2,107.40 |
 | B STRUCTURE | 4.54 kg | $1,768.18 |
 | C SENSING + CONTROL | 0.59 kg | $303.31 |
 | D POWER + BELT | 1.32 kg | $236.95 |
-| **TOTAL — parts for one exo** | **8.96 kg** | **$4,200.24** |
+| **TOTAL — parts for one exo** | **9.21 kg** | **$4,415.84** |
 
-**$1,731.00 of the $4,200.24 (41%) is estimate, not quote** — mostly machining (B6) and the custom lock (A2). See `project_cost.mjs` for what a parts list leaves out, and `mass_budget.mjs` for where the mass rides.
+**$1,936.60 of the $4,415.84 (44%) is estimate, not quote** — mostly machining (B6) and the custom lock (A2). See `project_cost.mjs` for what a parts list leaves out, and `mass_budget.mjs` for where the mass rides.
 
 ## Rejected parts (and why)
 | Part | Why not |
