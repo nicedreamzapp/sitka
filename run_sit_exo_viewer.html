@@ -180,7 +180,9 @@ const M = {
   act:   new THREE.MeshPhysicalMaterial({ color: 0x15171c, roughness: 0.34, metalness: 0.65, clearcoat: 0.5, clearcoatRoughness: 0.25 }),
   steel: new THREE.MeshPhysicalMaterial({ color: 0xe0e4ea, roughness: 0.18, metalness: 1.0 }),
   fabric:new THREE.MeshPhysicalMaterial({ color: 0x1f2a3c, roughness: 0.92, metalness: 0, sheen: 1, sheenRoughness: 0.5, sheenColor: new THREE.Color(0x4d6a99) }),
-  pad:   new THREE.MeshPhysicalMaterial({ color: 0xf0a43a, roughness: 0.82, metalness: 0, sheen: 0.8, sheenRoughness: 0.6, sheenColor: new THREE.Color(0xffd28a) }),
+  // seat pads: charcoal closed-cell foam cushion with an amber trim edge (NOT the amber of the battery packs)
+  pad:   new THREE.MeshPhysicalMaterial({ color: 0x2c3442, roughness: 0.88, metalness: 0, sheen: 1, sheenRoughness: 0.45, sheenColor: new THREE.Color(0x8aa0c8) }),
+  trim:  new THREE.MeshPhysicalMaterial({ color: 0xf0a43a, roughness: 0.5, metalness: 0.1, clearcoat: 0.4 }),
   batt:  new THREE.MeshPhysicalMaterial({ color: 0xe9a73a, roughness: 0.42, metalness: 0.15, clearcoat: 0.6 }),
   dark:  new THREE.MeshStandardMaterial({ color: 0x0f1218, roughness: 0.7 }),
   red:   new THREE.MeshPhysicalMaterial({ color: 0xe0352b, roughness: 0.3, clearcoat: 0.8, emissive: 0x400000 }),
@@ -374,9 +376,13 @@ for (const s of [1, -1]) {
   }
   // STEP 6: fold-down seat pad (pivot on the thigh rail, axis along the thigh)
   {
-    const pv = part({ name: `Fold-down seat pad (${side})`, label: 'Seat pad', price: 35, mass: '0.18 kg (EST)', spec: 'Aluminium pan, 20 mm closed-cell foam, hinge and over-centre detent. Centre of pressure 65% of the thigh length from the knee (0.30 m on a 95th-pct man): that lever sets every seat torque number.', step: 5, parent: rig.hip[s], at: V(-14, -(Lt - sPad), s * latLeg), ex: V(-260, 0, s * 140), labelAt: V(-60, 60, 0) });
-    const arm = mesh(new RoundedBoxGeometry(56, 120, 6, 2, 2), M.alu); arm.position.set(-30, 0, -s * 4); pv.add(arm);
-    const pad = mesh(new RoundedBoxGeometry(24, 160, 158, 4, 10), M.pad); pad.position.set(-66, 0, -s * 70); pv.add(pad);
+    const pv = part({ name: `Fold-down seat pad (${side})`, label: 'Seat pad', price: 35, mass: '0.18 kg (EST)', spec: 'Charcoal closed-cell foam cushion on an aluminium pan, with a hinge and over-centre detent on the thigh rail. Stowed, it lies flat on the outside of the rail. Deployed, it swings under the thigh. Centre of pressure 65% of the thigh length from the knee (0.30 m on a 95th-pct man): that lever sets every seat torque number.', step: 5, parent: rig.hip[s], at: V(-14, -(Lt - sPad), s * latLeg), ex: V(-260, 0, s * 140), labelAt: V(-60, 60, 0) });
+    // hinge block stays on the rail; the cushion moves between STOWED (flat on the outside of the
+    // thigh rail, like a side panel) and DEPLOYED (swung under the thigh). applyPose drives K.padMov.
+    const hinge = mesh(new RoundedBoxGeometry(30, 70, 12, 2, 4), M.alu); hinge.position.set(4, 0, s * 4); pv.add(hinge);
+    const mov = new THREE.Group(); pv.add(mov); K.padMov = mov;
+    const pad = mesh(new RoundedBoxGeometry(18, 150, 150, 5, 8), M.pad); mov.add(pad);
+    const trim = mesh(new RoundedBoxGeometry(20, 154, 10, 2, 4), M.trim); trim.position.z = s * 72; mov.add(trim);
     K.padPivot = pv;
   }
   // STEP 7: foot sensors
@@ -451,7 +457,11 @@ function applyPose(P) {
     rig.ankle[s].rotation.z = (P['foot' + s] - P['hip' + s] + P['knee' + s]) * D2R;
     rig.sh[s].rotation.z = P['arm' + s] * D2R;
     rig.el[s].rotation.z = P['elb' + s] * D2R;
-    knees[s].padPivot.rotation.y = s * (Math.PI / 2) * (1 - P.pad);
+    { // pad: stowed flush on the rail's outer face → deployed under the thigh, on a swing arc
+      const t = smooth(P.pad), m = knees[s].padMov;
+      m.position.set(-6 + (-65 + 6) * t, 0, s * (16 + (-70 - 16) * t) + s * 55 * Math.sin(Math.PI * t));
+      m.rotation.y = s * (Math.PI / 2) * (1 - t);
+    }
     contact[s] = { heel: lift(fp[s].heel) < 14, toe: lift(fp[s].toe) < 14 };  // for the FSR display
   }
   rig.trunk.rotation.z = -P.trunk * D2R;

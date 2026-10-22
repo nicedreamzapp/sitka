@@ -3,6 +3,9 @@
 
 ![Run + Sit Exo P1, chair mode](renders/mode_chair_quarter.png)
 
+### ▶ [Open the live 3D viewer](https://nicedreamzapp.github.io/run-sit-exo/run_sit_exo_viewer.html) · [watch it assemble](https://nicedreamzapp.github.io/run-sit-exo/run_sit_exo_viewer.html?anim=assembly) · [watch it walk, hike, run and sit](https://nicedreamzapp.github.io/run-sit-exo/run_sit_exo_viewer.html?anim=body)
+*Runs in any browser, no install. Click any part for its price, mass and why it's there.*
+
 > **Mission:** This project is about freedom of movement. Go farther on your own legs, and rest wherever you are: on a trail with no bench, at a shop bench all day, in a line that never ends. The machine works for the person wearing it, quietly, and never against anyone. We build it to give people more say in how far they can go and when they can stop.
 
 | | |
@@ -34,6 +37,10 @@ Torque is what each knee's lock must carry for a **130 kg, 1.87 m man** (US 95th
 | Use | long lines | bar stool | full seat | work near the ground |
 
 "Lock design load" is the worst lean, all weight on **one** leg, times a 1.5 safety factor.
+
+| Running stride | Exo only | Exploded |
+|---|---|---|
+| ![run](renders/mode_run_quarter.png) | ![exo only](renders/exo_only_quarter.png) | ![exploded](renders/exploded_quarter.png) |
 
 ## Current design (prototype one, P1)
 - **Knee actuators:** CubeMars **AK10-9 V2.0** at each knee: 9:1 quasi-direct drive, 18 Nm rated, 48 Nm peak, 0.8 Nm backdrive, CAN, $698.90. It keeps up with a running knee (rated 205 rpm = 21.5 rad/s at 24 V, more than twice the ~8.7 rad/s a running knee reaches in swing), and it adds only ~2% to the inertia your shank already swings.
@@ -125,7 +132,8 @@ This is experimental assistive hardware, not a medical device. Anyone with a kne
 ## Repository map
 | File | What it is |
 |------|-----------|
-| `run_sit_exo_viewer.html` | **The live CAD.** Orbit, switch modes, explode, click any part for price and spec. **▶ Assembly** builds it in 7 steps; **▶ On body** walks, hikes, runs, stops, offers a seat, sits in all four angles and stands up, with motor, lock, pad and foot-sensor state live |
+| `index.html` | Redirects the GitHub Pages site to the viewer |
+| `run_sit_exo_viewer.html` | **The live CAD** ([open it](https://nicedreamzapp.github.io/run-sit-exo/run_sit_exo_viewer.html)). Orbit, switch modes, explode, click any part for price and spec. **▶ Assembly** builds it in 7 steps; **▶ On body** walks, hikes, runs, stops, offers a seat, sits in all four angles and stands up, with motor, lock, pad and foot-sensor state live |
 | `run_sit_exo_assembly.html` / `run_sit_exo_onbody.html` | Open the viewer straight into either animation |
 | `run_sit_exo.scad` | Parametric OpenSCAD model; `mode` = stand / perch / halfsit / chair / squat / run |
 | `render_all.sh` → `renders/*.png` | Renders every view and mode with the OpenSCAD CLI |
@@ -141,7 +149,7 @@ This is experimental assistive hardware, not a medical device. Anyone with a kne
 | `RESEARCH_REPORT_2026-10-21.md` | Sources, prior art, licences, what we could not find |
 
 **Run the numbers:** `node run_all.mjs` (Node 18+, no dependencies).
-**View the CAD:** open `run_sit_exo_viewer.html` in any browser; no install, no account. Options: `?anim=assembly|body` · `?mode=chair` · `?view=side` · `?labels=1` · `?shot=1` (download a PNG).
+**View the CAD:** [live viewer](https://nicedreamzapp.github.io/run-sit-exo/run_sit_exo_viewer.html), or open `run_sit_exo_viewer.html` locally in any browser; no install, no account. Options: `?anim=assembly|body` · `?mode=chair` · `?view=side` · `?labels=1` · `?shot=1` (download a PNG).
 **Re-render:** `bash render_all.sh` (OpenSCAD 2021.01+).
 
 ## How to contribute

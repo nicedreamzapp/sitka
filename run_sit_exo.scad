@@ -59,7 +59,8 @@ C_body  = [0.80,0.78,0.74, body_alpha];
 C_alu   = [0.72,0.75,0.80];
 C_act   = [0.12,0.13,0.15];
 C_ring  = locked ? [0.95,0.30,0.25] : [0.37,0.83,0.66];
-C_pad   = [0.95,0.72,0.29];
+C_pad   = [0.17,0.20,0.26];   // charcoal foam (the amber is reserved for the battery packs)
+C_trim  = [0.95,0.72,0.29];
 C_cuff  = [0.20,0.24,0.30];
 C_sens  = [0.37,0.83,0.66];
 C_batt  = [0.95,0.72,0.29];
@@ -79,15 +80,18 @@ module leg(ang, side) {
     ex([60, side*60, 0]) color(C_cuff) translate([0,0,-Lt*0.45]) difference() {
       cylinder(r=92, h=70, center=true); cylinder(r=80, h=72, center=true);
       translate([90,0,0]) cube([90,90,80], center=true); }
-    // fold-down seat pad: hinge axis runs along the thigh at the back edge of the
-    // lateral upright; deployed it swings medially UNDER the thigh, stowed it lies
-    // flat against the outside of the upright.
-    ex([-140, side*80, 0]) translate([-bar_h/2, side*(lat-hipW/2), -(Lt - s_pad)])
-      rotate([0, 0, side * 90 * (1 - pad_deploy)]) {
-        color(C_alu) translate([-62, -side*6 - 3, -60]) cube([62, 6, 120]);              // hinge arm
-        color(C_pad) translate([-84, side > 0 ? -(lat-hipW/2) - 75 : -10 + (lat-hipW/2) - 75 + 10, -75])
-          cube([22, 150 + (lat-hipW/2) - 60, 150]);                                       // padded pan
+    // fold-down seat pad: a charcoal foam cushion with an amber trim edge.
+    // STOWED: flat on the outside of the thigh rail. DEPLOYED (seat modes): swung under the thigh.
+    ex([-140, side*80, 0]) translate([0, 0, -(Lt - s_pad)]) {
+      color(C_alu) translate([-bar_h/2 - 2, side*(lat-hipW/2) - 6, -35]) cube([30, 12, 70]);       // hinge block
+      if (pad_deploy > 0.5) {
+        color(C_pad)  translate([-93, -75 + side*5, -75]) cube([18, 150, 150]);                 // under the thigh
+        color(C_trim) translate([-94, side > 0 ? 72 : -82, -77]) cube([20, 10, 154]);
+      } else {
+        color(C_pad)  translate([-95, side > 0 ? (lat-hipW/2) + 7 : -(lat-hipW/2) - 25, -75]) cube([150, 18, 150]);   // flush on the rail
+        color(C_trim) translate([52, side > 0 ? (lat-hipW/2) + 6 : -(lat-hipW/2) - 26, -77]) cube([10, 20, 154]);
       }
+    }
     // haptic disc on the cuff
     ex([60, side*60, 0]) color(C_sens) translate([-88, 0, -Lt*0.45]) rotate([0,90,0]) cylinder(r=10, h=4);
 
