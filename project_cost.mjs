@@ -6,6 +6,7 @@ import { AK10_9 } from './params.mjs';
 
 const f = (n) => '$' + Math.round(n).toLocaleString('en-US');
 const parts = total();
+const usd = (id) => BOM.find((r) => r.id === id).usd;  // one unit, from bom.mjs
 
 console.log('=== 1. ONE EXO, PARTS ONLY (bom.mjs) ===');
 console.log(`Prototype one (P1), both legs:   ${f(parts)}`);
@@ -29,14 +30,15 @@ console.log(`\nP1 WORN AND TESTED, ALL IN:     ${f(parts + m)}   (labour $0 — 
 console.log('\n=== 3. YOU DO NOT BUILD THE WHOLE EXO FIRST ===');
 const steps = [
   ['M1  one knee on a dummy-leg stand: actuator + lock + controller + stand',
-    AK10_9.priceUSD + 180 + 25 + 3 + 31.5 + 4.99 + 120 + 400 + 150],
-  ['M2  one leg, worn, walking/stairs only, no seat', 189.99 + 91.6 + 60 + 300 + 29.5 * 2 + 2.99 * 4 + 80 + 60],
+    AK10_9.priceUSD + usd('A2') + usd('A3') + usd('A4') + usd('A5') + 31.5 + 4.99 + 120 + 400 + 150],
+  ['M2  one leg, worn, walking/stairs only, no seat', 189.99 + 91.6 + 60 + 40 + 20 + 25 + 300 + 29.5 * 2 + 2.99 * 4 + 80 + 60],
   ['M3  both legs + belt + packs, running and hiking assist', parts / 2],
-  ['M4  seat modes under an overhead harness, then free', 250 + 35 * 2 + 180],
+  ['M4  rear legs + seat modes, under an overhead harness first', 250 + 40 * 2 + 60 * 2 + 15 * 2 + 10 * 2 + 180],
 ];
 let s = 0;
 for (const [n, c] of steps) { s += c; console.log(`  ${n.padEnd(76)} ${f(c).padStart(7)}`); }
 console.log('  (Steps overlap with the parts list; they show when the money moves, not extra money.)');
 console.log(`\n  The cheapest useful thing: M1, ~${f(steps[0][1])}. It answers the two questions that`);
-console.log('  decide the project — does the pawl drop in cleanly at every angle under load, and does');
-console.log('  the motor stay cool through a simulated hour of hiking — before anything is worn.');
+console.log('  decide the project — does the 3-tooth ratchet hold 507 Nm and drop in cleanly at every tooth,');
+console.log('  and does the motor stay cool through a simulated hour of hiking — before anything is worn.');
+console.log('  M1 also buckle-tests the real rear-leg pole (1 kN design) and measures rubber-foot friction.');

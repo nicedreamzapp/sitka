@@ -8,13 +8,13 @@ import { PERSON, line, fmt } from './params.mjs';
 //  knee/thigh: Schertzer & Riemer 2014 measured knee/back cost ratios 1.015–1.103 [SRC 14] → 1.06 mid
 //  shank:      Schertzer & Riemer ankle/knee 0.99–1.049 → ~1.08 vs back (CALC from the two ratios)
 //  foot:       Browning 2007 via Mooney & Herr 2016: foot mass costs >4x waist mass in walking [SRC 13] → 4
-const W = { waist: 1.0, thigh: 1.06, knee: 1.06, shank: 1.08, foot: 4.0, none: 0 };
+const W = { waist: 1.0, thigh: 1.06, knee: 1.06, shank: 1.08, ankle: 1.08, foot: 4.0, none: 0 };
 
 export function budget() {
   const worn = BOM.filter((r) => r.loc !== 'none' && r.kg > 0);
   const byLoc = {};
   for (const r of worn) byLoc[r.loc] = (byLoc[r.loc] || 0) + r.qty * r.kg;
-  const legKg = (byLoc.knee || 0) + (byLoc.thigh || 0) + (byLoc.shank || 0) + (byLoc.foot || 0);
+  const legKg = (byLoc.knee || 0) + (byLoc.thigh || 0) + (byLoc.shank || 0) + (byLoc.ankle || 0) + (byLoc.foot || 0);
   const waistKg = byLoc.waist || 0;
   const equiv = Object.entries(byLoc).reduce((a, [k, v]) => a + v * W[k], 0);
   return { worn, byLoc, perLeg: legKg / 2, waistKg, total: legKg + waistKg, equiv };
@@ -32,11 +32,20 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   line('  Dnsys Z1 knee unit      ~0.68 kg per leg  (powered, no seat)');
   line('  Hypershell X Ultra      1.8 kg total w/o battery (hip, no seat)');
   line('  Noonee Chairless Chair  2.95 kg total     (seat, no motor)');
-  line(`  Run + Sit Exo P1        ${fmt(b.perLeg, 2)} kg per leg, ${fmt(b.total, 1)} kg total  (both)`);
+  line(`  Run + Sit Exo P1 (v2)   ${fmt(b.perLeg, 2)} kg per leg, ${fmt(b.total, 1)} kg total  (both; v1 was 2.91 / 7.2 before the rear legs, medial bars and ankle pivots)`);
   line('');
   line(`Waist-equivalent load (distal mass weighted up): ${fmt(b.equiv, 1)} kg — the foot stirrups alone count as ${fmt((b.byLoc.foot || 0) * W.foot, 1)} kg.`);
   for (const m of [PERSON.massMedian, PERSON.mass95])
     line(`  vs a ${m} kg wearer: ~${fmt((b.equiv / m) * 100, 1)}% extra load if walking cost scales with load (EST, first-order).`);
+  line('');
+  line(`TARGET vs ACTUAL: plan target ~3.55 kg per leg; bom.mjs says ${fmt(b.perLeg, 2)} kg (${fmt((b.perLeg - 3.55) * 1000, 0)} g over). Where it could come from (all EST until weighed):`);
+  const cuts = [
+    ['Donor brace: its polycentric hinges are discarded, but B1 counts the whole 0.50 kg brace', 0.12],
+    ['Harness C9: ~1/3 of the 0.30 kg runs on the belt, not the legs (accounting, not a real saving)', 0.05],
+    ['Medial bars B8 6 x 20 → 6 x 16 mm (lightly loaded with the rear leg; needs the fallback check first)', 0.02],
+  ];
+  let c = 0; for (const [n, kg] of cuts) { c += kg; line(`  -${fmt(kg * 1000, 0).padStart(3)} g  ${n}`); }
+  line(`  = -${fmt(c * 1000, 0)} g per leg → ${fmt(b.perLeg - c, 2)} kg IF the weighing confirms it. Until then the honest P1 number is ${fmt(b.perLeg, 2)} kg per leg.`);
   line('Sobering cross-check: Donelan 2008\'s 1.6 kg knee harvester raised walking cost 19.2% just by being worn.');
   line('Assist must beat the mass penalty before the exo helps at all. Cut the foot mass first: it is the expensive kilogram.');
 }

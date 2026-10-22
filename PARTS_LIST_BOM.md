@@ -7,37 +7,46 @@ Prices are USD, seen 2026-10-21 at the linked retailer. **EST** means our estima
 | # | Part | Spec | Qty | Mass ea | Cost ea | Line | Source |
 |---|---|---|---|---|---|---|---|
 | A1 | Knee actuator — CubeMars AK10-9 V2.0 KV100 | 9:1 QDD, 18 Nm rated / 48 Nm peak, CAN, dual encoder, 0.8 Nm backdrive | 2 | 0.96 kg | $698.90 | $1,397.80 | [link](https://www.cubemars.com/goods-1148-AK10-9+V20.html) |
-| A2 | Seat lock — toothed ring + pawl, 17-4PH H900 | r = 35 mm, 4 detents (25/60/90/120°) + fine teeth between; 507 Nm design hold | 2 | 0.2 kg | $180.00 | $360.00 | EST — custom CNC part, needs a quote (SendCutSend/PCBWay CNC) |
-| A3 | Pawl actuator — bistable latching solenoid | stays put with power off: a locked seat stays locked, a free knee stays free | 2 | 0.03 kg | $25.00 | $50.00 | EST — generic 12–24 V latching solenoid |
+| A2 | One-way ratchet — 140° toothed sector + 3-tooth pawl, 17-4PH H900 | 40T pitch at r = 50 mm, 12 mm wide; blocks FLEXION, extension always free; sector bolted to the shank rail, pawl housing to the thigh rail; 507 Nm fallback design (seat_torque_model.mjs) | 2 | 0.25 kg | $180.00 | $360.00 | EST — custom CNC part, needs a quote (SendCutSend/PCBWay CNC) |
+| A3 | Pawl lift — bistable latching solenoid | lifts the pawl only when the pawl is unloaded (knee < 20° and extending, or load sensor ≈ 0); on its own always-live 12 V rail | 2 | 0.03 kg | $54.00 | $108.00 | [link](https://rapidonline.com/intertec-its-lx-2218-12vdc-10mm-4n-de-energised-20n-bi-directional-solenoid-50-2909) (Intertec ITS-LX-2218, £40.32 ≈ $54, 4/20 N bistable; kg EST) |
 | A4 | Pawl-engaged hall sensor + magnet | confirms the pawl is fully seated before the motor lets go | 2 | 0.005 kg | $3.00 | $6.00 | EST |
-| | **Subtotal** | | | **2.39 kg** | | **$1,813.80** | |
+| A5 | Pawl load sensor — strain gauge + HX711 | reads tooth load; the pawl may only lift when it reads ~0 | 2 | 0.01 kg | $10.00 | $20.00 | EST |
+| | **Subtotal** | | | **2.51 kg** | | **$1,891.80** | |
 
 ## B. STRUCTURE
 | # | Part | Spec | Qty | Mass ea | Cost ea | Line | Source |
 |---|---|---|---|---|---|---|---|
-| B1 | Donor hinged knee brace — DonJoy (aluminium hinge) | gives cuffs, straps and the MEDIAL passive hinge; lateral hinge replaced by A1 | 2 | 0.5 kg | $189.99 | $379.98 | [link](https://arrowheadmedstore.com/product/donjoy-drytex-economy-hinged-knee-w-popout) (kg EST) |
+| B1 | Donor hinged knee brace — DonJoy (aluminium hinge) | donor for straps and rigid shell cuffs (silicone-lined; shin cuff on the tibial crest); its polycentric hinges are discarded | 2 | 0.5 kg | $189.99 | $379.98 | [link](https://arrowheadmedstore.com/product/donjoy-drytex-economy-hinged-knee-w-popout) (kg EST) |
 | B2 | 7075-T651 bar 3/4" x 1-1/2" x 36" (Speedy Metals) | machined to 8 x 28 mm lateral uprights: 2 thigh + 2 shank per bar pair | 2 | — | $91.60 | $183.20 | [link](https://speedymetals.com/p-2694-34-x-1-12-7075-t651-aluminum-cold-finish.aspx) |
-| B2m | Lateral uprights (finished, from B2) | thigh + shank, 8 x 28 mm 7075, Z ≥ 1008 mm³ (seat_torque_model.mjs) | 4 | 0.28 kg | — | $0.00 | CALC — 0.45 m x 8 x 28 mm x 2810 kg/m³ |
-| B3 | Heel stirrup + shoe clip | carries the seat load from the shank upright into the ground under the heel | 2 | 0.25 kg | $60.00 | $120.00 | EST — 7075 strip + clip, modelled on the Chairless Chair heel path |
-| B4 | Fold-down seat pad | aluminium pan + 20 mm closed-cell foam + hinge + over-centre detent | 2 | 0.18 kg | $35.00 | $70.00 | EST |
+| B2t | Lateral thigh upright (from B2) | 8 x 28 mm 7075, Z ≥ 1008 mm³; slotted ±10 mm knee-axis mount at the lateral epicondyle; length-adjust | 2 | 0.28 kg | — | $0.00 | CALC — 0.45 m x 8 x 28 mm x 2810 kg/m³ |
+| B2s | Lateral shank upright (from B2) | 8 x 28 mm 7075, bolted to the actuator output flange, runs to the ankle pivot | 2 | 0.28 kg | — | $0.00 | CALC — 0.45 m x 8 x 28 mm x 2810 kg/m³ |
+| B3 | Heel stirrup + heel pad + shoe-heel-counter strap | hangs from the ankle pivot (B9); heel pad directly below the pivot | 2 | 0.25 kg | $60.00 | $120.00 | EST — 7075 strip + strap, after the Chairless Chair heel path |
+| B4 | Fold-down seat pad, 200 x 180 mm | aluminium pan + 20 mm closed-cell foam; hinged on the lateral rail, proximal (75% of thigh from the knee) | 2 | 0.22 kg | $40.00 | $80.00 | EST |
+| B7 | Rear leg — 3-section uniform-wall carbon tube 24/20/16 x 1.5 mm + pivoting foot | roll-wrapped 3K tube, 3 x 0.32 m, 65 mm overlaps, bushings; one-way lock (extends freely, locks in compression), torsion-spring retract, hinge boss at the thigh-rail top. 0.35 m stowed → 0.46 / 0.65 / 0.84 m; buckling 3.16 kN at 0.84 m (stepped-column solve). Foot: 360° pivoting rubber cane tip ($18.95) + flip-down ice/trail spike tip ($20.59); carbide option not sourced | 2 | 0.3 kg | $85.00 | $170.00 | EST total — tubes ~$10 per 500 mm (https://www.ebay.de/itm/155584394259, 20 x 17 mm, unverified seller) x3 + feet $39.54 (https://fashionablecanes.com/products/ingrid-ice-gripper-cane-tip and retail listings, 2026-10-21) + ~$15 lock/boss/spring EST; tubes 130 g CALC + 0.17 kg hardware EST |
+| B8 | Medial bars + single-axis medial hinge + 2 bridges | 6 x 20 mm 7075, 0.36 m thigh + 0.10 m shank, hinge coaxial with the actuator; anterior thigh bridge above the patella, posterior shank bridge | 2 | 0.24 kg | $40.00 | $80.00 | CALC bars 0.46 m x 6 x 20 mm x 2810 kg/m³ = 0.16 kg + bridges 0.08 EST |
+| B9 | Ankle pivot (free, ±30° sagittal) at the lateral malleolus | joins the shin rail to the stirrup; plain bearing + hard stops | 2 | 0.05 kg | $20.00 | $40.00 | EST |
+| B10 | Suspension yoke + 2 straps per side | belt rear, over the glute, to a yoke at the thigh-rail top: stops the leg units migrating down. NO rigid hip joint | 1 | 0.12 kg | $25.00 | $25.00 | EST — webbing, ladder-locks, 2 printed yokes (one set per exo) |
+| B11 | Pad medial support arm | carries the medial edge of the pad pan to the medial bar | 2 | 0.04 kg | $15.00 | $30.00 | EST |
 | B5 | Fasteners, bushings, thread-locker |  | 1 | 0.1 kg | $60.00 | $60.00 | EST |
 | B6 | CNC machining of uprights, stirrups, lock rings | outsourced; the biggest unknown in the parts list | 1 | — | $600.00 | $600.00 | EST — get 3 quotes before M1 |
-| | **Subtotal** | | | **3.08 kg** | | **$1,413.18** | |
+| | **Subtotal** | | | **4.54 kg** | | **$1,768.18** | |
 
 ## C. SENSING + CONTROL
 | # | Part | Spec | Qty | Mass ea | Cost ea | Line | Source |
 |---|---|---|---|---|---|---|---|
 | C1 | Teensy 4.1 (SparkFun DEV-16771) | 600 MHz, native CAN — same MCU family as NAU OpenExo | 1 | 0.01 kg | $31.50 | $31.50 | [link](https://www.sparkfun.com/teensy-4-1.html) |
 | C2 | CAN transceiver — Waveshare SN65HVD230 | 3.3 V | 1 | 0.005 kg | $4.99 | $4.99 | [link](https://www.waveshare.com/product/iot-communication/wired-comm-converter/rs232-rs485-can-dali2/sn65hvd230-can-board.htm) |
-| C3 | IMU — Adafruit BNO085 (#4754) | pelvis + each shank; gait phase, stillness, stumble detection | 3 | 0.005 kg | $29.50 | $88.50 | [link](https://www.adafruit.com/product/4754) |
+| C3 | IMU — Adafruit BNO085 (#4754), shank | gait phase, stillness, stumble detection | 2 | 0.005 kg | $29.50 | $59.00 | [link](https://www.adafruit.com/product/4754) |
+| C3p | IMU — Adafruit BNO085 (#4754), pelvis | in the controller box | 1 | 0.005 kg | $29.50 | $29.50 | [link](https://www.adafruit.com/product/4754) |
 | C4 | FSR — Interlink 402 | 4 per foot: heel, 1st + 5th metatarsal, toe | 8 | 0.002 kg | $2.99 | $23.92 | [link](https://www.interlinkelectronics.com/products/fsr-model-402) |
 | C5 | Insole carrier + foot harness |  | 2 | 0.03 kg | $10.00 | $20.00 | EST |
 | C6 | BLE / phone link — Adafruit ESP32-S3 Feather (#5477) | seat offer, place memory, app | 1 | 0.01 kg | $17.50 | $17.50 | [link](https://www.adafruit.com/product/5477) |
 | C7 | Haptic disc — Adafruit #1201 | the "seat offer" buzz, one per thigh | 2 | 0.002 kg | $1.95 | $3.90 | [link](https://www.adafruit.com/product/1201) |
 | C8 | Belt tap button + big red E-STOP | E-stop cuts motor power; the latching pawls hold their state | 1 | 0.05 kg | $20.00 | $20.00 | EST |
-| C9 | Harness: CAN + power cable, XT30 / JST-GH, fuse, 5 V DC-DC |  | 1 | 0.25 kg | $75.00 | $75.00 | EST |
+| C9 | Harness: 24 V + CAN per side in a braided sleeve, XT30 / JST-GH, fuse, 5 V DC-DC | belt → service loop at the rail top (120° hip flexion) → lateral rail → actuator gland; branch at the knee to the shank IMU and down the shin rail to the insole | 1 | 0.3 kg | $75.00 | $75.00 | EST |
+| C11 | 12 V always-live rail for the pawl solenoids | separate DC-DC; the E-stop cuts MOTORS only, so the ratchet keeps working | 1 | 0.02 kg | $8.00 | $8.00 | EST |
 | C10 | Controller enclosure (printed) |  | 1 | 0.1 kg | $10.00 | $10.00 | EST |
-| | **Subtotal** | | | **0.52 kg** | | **$295.31** | |
+| | **Subtotal** | | | **0.59 kg** | | **$303.31** | |
 
 ## D. POWER + BELT
 | # | Part | Spec | Qty | Mass ea | Cost ea | Line | Source |
@@ -45,24 +54,27 @@ Prices are USD, seen 2026-10-21 at the linked retailer. **EST** means our estima
 | D1 | Cell — Molicel P45B 21700 4.5 Ah | 2 packs x 6S1P = 2 x 97.2 Wh (each under FAA 100 Wh) | 12 | 0.07 kg | $8.75 | $105.00 | [link](https://www.batteryjunction.com/molicel-inr21700-p45b) (kg EST ~70 g) |
 | D2 | 6S BMS + nickel + pack case | quick-swap belt packs | 2 | 0.1 kg | $21.00 | $42.00 | EST — generic BMS $3–6 seen for 10S; case/strip EST |
 | D3 | 6S balance charger |  | 1 | — | $45.00 | $45.00 | EST |
-| D4 | Hip belt — Peak Design outdoor hip belt | carries packs + controller | 1 | 0.2 kg | $44.95 | $44.95 | [link](https://www.peakdesign.com/products/outdoor-hip-belt) (kg EST) |
-| | **Subtotal** | | | **1.24 kg** | | **$236.95** | |
+| D4 | Hip belt — Peak Design outdoor hip belt | carries packs + controller + the suspension-strap anchors | 1 | 0.28 kg | $44.95 | $44.95 | [link](https://www.peakdesign.com/products/outdoor-hip-belt) (kg EST) |
+| | **Subtotal** | | | **1.32 kg** | | **$236.95** | |
 
 ## Roll-up
 | | Mass | Cost |
 |---|---|---|
-| A KNEE ACTUATION + SEAT LOCK | 2.39 kg | $1,813.80 |
-| B STRUCTURE | 3.08 kg | $1,413.18 |
-| C SENSING + CONTROL | 0.52 kg | $295.31 |
-| D POWER + BELT | 1.24 kg | $236.95 |
-| **TOTAL — parts for one exo** | **7.23 kg** | **$3,759.24** |
+| A KNEE ACTUATION + SEAT LOCK | 2.51 kg | $1,891.80 |
+| B STRUCTURE | 4.54 kg | $1,768.18 |
+| C SENSING + CONTROL | 0.59 kg | $303.31 |
+| D POWER + BELT | 1.32 kg | $236.95 |
+| **TOTAL — parts for one exo** | **8.96 kg** | **$4,200.24** |
 
-**$1,478.00 of the $3,759.24 (39%) is estimate, not quote** — mostly machining (B6) and the custom lock (A2). See `project_cost.mjs` for what a parts list leaves out, and `mass_budget.mjs` for where the mass rides.
+**$1,731.00 of the $4,200.24 (41%) is estimate, not quote** — mostly machining (B6) and the custom lock (A2). See `project_cost.mjs` for what a parts list leaves out, and `mass_budget.mjs` for where the mass rides.
 
 ## Rejected parts (and why)
 | Part | Why not |
 |---|---|
-| CubeMars AK80-64 ($889.90, 48/120 Nm) | 64:1 → 23 rpm rated at 24 V = 28% of running swing speed; a 64:1 reducer is hard to backdrive (vendor gives no backdrive figure); still only 120 Nm peak vs 142 Nm chair hold. |
+| CubeMars AK80-64 ($889.90, 48/120 Nm) | 64:1 → 23 rpm rated at 24 V = 28% of running swing speed; a 64:1 reducer is hard to backdrive (vendor gives no backdrive figure); still only 120 Nm peak vs the 507 Nm fallback lock load (and 72 Nm even with the rear leg). |
 | MyActuator RMD-X12-P20 (85/320 Nm, 2.4 kg) | Could hold the seat on torque, but 2.4 kg per knee and holding burns heat continuously. A 0.2 kg pawl does it for 0 W. |
+| Rigid hip joint between belt and legs (v1 left them unconnected) | A 3-DOF passive hip is the v2 plan only (flexion pivot coaxial with the greater trochanter, ab/ad 50 mm posterior-superior, rotation via a 30 mm slotted prismatic). P1 hangs each leg unit from the belt on straps; seat loads never go through the belt. |
+| Monopod / single rear leg, or a stiffened ankle | Monopod puts the support in line with nothing; a locked ankle makes the wearer's own ankle carry the tipping moment. Rejected for two rear legs + a free ankle pivot. |
 | Spring-applied e-brake on the motor shaft | Needs ~507/9 = 56 Nm at the rotor through a 9:1 gear. The largest small 24 V brakes found hold 5.65–10 Nm (Warner, Precima FDB 10), so it does not fit at the knee. |
-| Carbon tube uprights (25x22 mm) | ~826 MPa at the design moment; only workable bilateral or much larger. Kept as a v2 weight-loss option. |
+| Carbon tube uprights (25x22 mm) | ~826 MPa at the 507 Nm fallback moment; only workable bilateral or much larger. Kept as a v2 weight-loss option. |
+| Single-tooth pawl at r = 35 mm (v1) | ~1.98 GPa tooth bending at the fallback load: fails. Replaced by the 3-tooth ratchet at r = 50 mm (359 MPa). |

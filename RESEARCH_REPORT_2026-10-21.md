@@ -76,3 +76,41 @@ Roam Robotics, WIRobotics WIM, Keeogo and Ottobock C-Brace returned nothing curr
 ## Refuted or corrected during research
 - "Dnsys X1 is a knee exo": it is a hip exo. Dnsys's knee product is the Z1.
 - A retailer lists the AK10-9 KV100 at 15 / 38 Nm; CubeMars lists 18 / 48 Nm. We use the manufacturer's numbers.
+
+## Addendum, 2026-10-21 (late): the seat tipped backward, v2 tripod fix
+
+**What was wrong with v1.** A physics audit, prompted by the owner spotting it, found that the v1 seat balanced the pad's centre of pressure over the heel, which is the rear edge of the support polygon. Re-run in `seat_torque_model.mjs`, v1's whole-body centre of mass sits ~5 cm in front of the heel edge (a 4° backward tilt to go over). v1 also needed 32.9° of shank lean, past the ~20° of comfortable loaded dorsiflexion (EST), and "the feet take the rest" silently relied on ankle muscles. Two more v1 errors: a small solenoid cannot drag a loaded pawl out (~2 kN of tooth friction), and the 48 Nm motor could not unload a 142 Nm hold to free it.
+
+**v2 design.** A per-side rear leg (3-section Ø16 × 1.5 carbon pole, hinged at the top of the thigh rail, one-way lock, torsion-spring retract), a free ±30° ankle pivot, the pad moved proximal (0.75 of thigh length), and a one-way ratchet (blocks flexion, extension always free). Results for a 130.3 kg, 1.874 m man (all computed in `seat_torque_model.mjs`):
+
+| Mode | Rear leg | Load down rear leg | Knee lock (with / without rear leg) | Margin back / forward | Tilt to tip back / side |
+|---|---|---|---|---|---|
+| Perch 25° | stowed | 0% | 52 / 52 Nm | 0.05 / 0.21 m | 3° / 11° |
+| Half-sit 60° | 0.83 m | 30% | 73 / 145 Nm | 0.25 / 0.31 m | 16° / 12° |
+| Chair 90° | 0.64 m | 43% | 72 / 190 Nm | 0.24 / 0.38 m | 18° / 14° |
+| Deep squat 120° | 0.46 m | 32% | 88 / 168 Nm | 0.24 / 0.31 m | 23° / 19° |
+
+Without the rear leg, Half-sit, Chair and Deep squat put the centre of mass 4–11 cm behind the heel: they tip. Only Perch may lock without it. The audit's hand estimate for chair (38% rear, 65 Nm, CoM 0.19 m behind the heel) differs from the model (43%, 72 Nm, 0.11 m) because the model uses de Leva segment masses, the exo mass split from the BOM, and a rear foot trimmed to a 0.25 friction limit. We report the model.
+
+Ratchet: 40 teeth at r = 50 mm, 12 mm wide, 3 engaged, 2 assumed loaded: 5.1 kN per tooth, 359 MPa root bending at the 507 Nm fallback (Lewis-style cantilever; tooth proportions EST). Contact stress not yet checked.
+
+Rear-leg buckling: Ø16 × 1.5, E 70 GPa (EST) gives 1.96 kN at 0.8 m. A stock pole steps down to 12 mm; an all-Ø12 × 1.0 column gives 0.57 kN, so the real pole is somewhere in between and must be tested to the 1 kN design load.
+
+| # | Source | Used for |
+|---|---|---|
+| 15 | Locus Gear CP3 spec as quoted in a [Backpacking Light listing](https://backpackinglight.com/forums/topic/locus-gear-carbon-fiber-trekking-poles-50-obo-and-free-shipping-to-continental-us/) (16/14/12 mm shaft, 155 g per pole); [Black Diamond Carbon Distance FLZ](https://www.blackovis.com/black-diamond-carbon-distance-flz-trekking-poles) $179.95/pair; Cascade Mountain Tech carbon pair under $50 (search summary, not opened) | Rear-leg mass, section step-down, price range |
+| 16 | [Intertec ITS-LX-2218-12VDC bistable solenoid, Rapid Online](https://rapidonline.com/intertec-its-lx-2218-12vdc-10mm-4n-de-energised-20n-bi-directional-solenoid-50-2909), £40.32 ex VAT, 4 / 20 N | Pawl-lift solenoid price (A3) |
+
+Still EST: rear-foot friction limit (0.25), rear-hinge position, stance width (0.30 m shoe centres), pole wall thickness and modulus, comfortable dorsiflexion limit, trunk lean per mode.
+
+### Closing the open items (same night)
+- **Pole.** The tapering trekking pole is replaced by a uniform-wall 3-section carbon tube, Ø24/20/16 × 1.5 mm (IDs 21/17/13 mm). A numerical stepped-column solve (pinned both ends, checked against the Euler formula for a uniform tube) gives **3.16 kN at the 0.84 m half-sit length**, vs 0.87 kN for a 16/14/12 trekking pole. Tube mass ~130 g per leg (density 1550 kg/m³ EST).
+- **Friction.** The rear legs are now angled to need μ ≤ 0.30 (17° from vertical). Chair: 40% down the rear leg, 79 Nm per knee, margins 0.28 m back / 0.38 m forward. Wet limit stated in the README: wet polished stone, unrated wet tile, mud and ice are not safe for the rubber foot; use the spike or Perch.
+- **Mass.** Still 3.72 kg per leg. A paper path to ~3.53 kg (−190 g) is listed in `mass_budget.mjs`, unweighed.
+- **Perch** is documented as a lean-assist that relies on the wearer's own balance (5 cm, 3° backward margin).
+
+| # | Source | Used for |
+|---|---|---|
+| 17 | [Engineering ToolBox friction table](https://engineeringtoolbox.com/friction-coefficients-d_778.html) (rubber: dry concrete 0.6–0.85, wet concrete 0.45–0.75); [Autodesk Robot help](https://help.autodesk.com/cloudhelp/2015/ENU/Robot/files/GUID-AB1D3461-6A34-493A-8521-E9AB4E066259.htm) (wet concrete 0.30); ANSI A326.3 wet DCOF ≥ 0.42 for wet interior tile ([MSI summary](https://www.msisurfaces.com/blogs/post/2022/11/10/what-is-dcof-rating-and-how-to-use-for-flooring-selection.aspx), [Crossville](https://www.crossville.com/learn/porcelain-tile-dcof-ratings-and-applications/)) | Rear-foot friction design (μ ≤ 0.30) and the wet limit. Wood and dry tile: not found. |
+| 18 | [3K roll-wrapped carbon tube, 20 × 17 mm, eBay.de seller](https://www.ebay.de/itm/155584394259), ~US$10 per 500 mm (search summary, seller unverified); [Rock West roll-wrapped tubing](https://www.rockwestcomposites.com/roll-wrapped-carbon-fiber-tubes) lists inch sizes only | Rear-leg tube price/availability |
+| 19 | Pivoting cane tip (Blue Jay 360°, $18.95) and retractable ice-spike tip (HealthSmart, $20.59), via retail listings incl. [Fashionable Canes ice gripper tip](https://fashionablecanes.com/products/ingrid-ice-gripper-cane-tip) | Rear foot. No carbide spike tip was found; listed spikes are steel. |

@@ -45,7 +45,7 @@
   #caption h3{margin:3px 0 4px;font-size:22px;font-weight:750;text-shadow:0 3px 18px rgba(0,0,0,.8)}
   #caption p{margin:0;font-size:12.5px;opacity:.85;text-shadow:0 2px 12px rgba(0,0,0,.9)}
   /* live state (on-body animation + static modes) */
-  #state{position:fixed;left:14px;bottom:96px;z-index:4;width:236px;display:none;background:rgba(10,17,32,.9);
+  #state{position:fixed;left:14px;bottom:96px;z-index:4;width:300px;display:none;background:rgba(10,17,32,.9);
     backdrop-filter:blur(8px);border:1px solid #26456f;border-radius:12px;padding:10px 12px;font-size:11px}
   #state .act{font-size:16px;font-weight:750;margin-bottom:6px}
   #state table{width:100%;border-collapse:collapse}
@@ -79,6 +79,9 @@
   <label><input type="checkbox" id="xray"> x-ray wearer</label>
   <label><input type="checkbox" id="labels"> part labels</label>
   <label><input type="checkbox" id="spin"> auto-rotate</label>
+  <label><input type="checkbox" id="overlay" checked> physics overlay (forces, CoM, support)</label>
+  <label><input type="checkbox" id="rearleg" checked> rear legs fitted</label>
+  <div class="row" style="margin-top:4px"><button id="diag" onclick="window.open('sit_diagram.html','_blank')">📐 Sit balance diagram</button></div>
   <div id="dims"></div>
 </div>
 
@@ -89,10 +92,12 @@
   <table>
     <tr><td>Knee L / R</td><td id="sKnee">—</td></tr>
     <tr><td>Motors</td><td id="sMotor">—</td></tr>
-    <tr><td>Seat lock</td><td id="sLock">—</td></tr>
+    <tr><td>Ratchet</td><td id="sLock">—</td></tr>
+    <tr><td>Rear legs</td><td id="sRear">—</td></tr>
     <tr><td>Seat pads</td><td id="sPads">—</td></tr>
     <tr><td>Feet (FSR)</td><td><div style="display:flex;gap:12px"><div class="bars" id="fL"><i></i><i></i></div><div class="bars" id="fR"><i></i><i></i></div></div></td></tr>
-    <tr><td>Draw</td><td id="sDraw">—</td></tr>
+    <tr><td>Balance</td><td id="sBal">—</td></tr>
+    <tr><td>Loads</td><td id="sDraw">—</td></tr>
   </table>
 </div>
 <div id="toast"></div>
@@ -120,7 +125,6 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 const H = 1874, Lt = 0.245 * H, Ls = 0.246 * H, ankleH = 80, footL = 0.152 * H;
 const hipW = 190, sPad = 0.65 * Lt, latLeg = 75;  // upright sits 75 mm lateral of the leg axis
 const D2R = Math.PI / 180;
-const leanDeg = th => Math.min(35, Math.atan2(sPad * Math.sin(th * D2R), Ls + sPad * Math.cos(th * D2R)) / D2R);
 
 // =====================================================================
 //  RENDERER / SCENE  (same lighting recipe as the Sky Tribe viewer)
@@ -282,6 +286,58 @@ const bm = (geo) => { const m = mesh(geo, M.skin); m.userData.body = true; bodyM
 }
 
 // =====================================================================
+//  v2 GEOMETRY (Fable audit): tripod seat. Shank lean ≤ 20°, pad at 0.75·Lt
+//  from the knee (proximal), rear leg hinged at 0.85·Lt on the thigh rail,
+//  rear foot 0.40–0.45 m behind the heel. Free ankle pivot. One-way ratchet.
+// =====================================================================
+const SEATS = {   // knee: [shank lean φ, trunk lean, uses rear leg]
+  0: { phi: 0, trunk: 0, rear: 0 }, 25: { phi: 10, trunk: 4, rear: 0 }, 60: { phi: 15, trunk: 10, rear: 1 },
+  90: { phi: 15, trunk: 18, rear: 1 }, 120: { phi: 20, trunk: 32, rear: 1 },
+};
+const PAD_FRAC = 0.75, HINGE_FRAC = 0.85, HEEL_X = -55, MET_X = 150, TOE_X = 210, REAR_BACK_MAX = 420, MU_MAX = 0.30;   // params.mjs rearMuDesign
+const HINGE_LOCAL = [-34, -(1 - HINGE_FRAC) * Lt];       // rear-leg hinge boss, thigh frame (mm)
+const RAT_R = 50, RAT_Z = latLeg + 4 + 62 + 14;           // ratchet pitch radius and outboard station
+
+// =====================================================================
+//  LIVE STATICS — same method as seat_torque_model.mjs (per leg, metres,
+//  newtons). Body: 130.3 kg 95th-pct man; exo 3.72 kg/leg, 1.52 kg belt.
+// =====================================================================
+const MASS = 130.3, EXO_LEG = 3.72, EXO_BELT = 1.52, G = 9.81;
+function statics(knee, phi, trunk, rearOn) {
+  const lt = Lt / 1000, ls = Ls / 1000, ah = ankleH / 1000, r = D2R;
+  const A = [0, ah], K = [ls * Math.sin(phi * r), ah + ls * Math.cos(phi * r)];
+  const td = [-Math.sin((knee - phi) * r), Math.cos((knee - phi) * r)];
+  const P = f => [K[0] + td[0] * f * lt, K[1] + td[1] * f * lt];
+  const Hip = P(1), Pad = P(PAD_FRAC), Hr = P(HINGE_FRAC);
+  const hat = [Hip[0] + .30 * Math.sin(trunk * r), Hip[1] + .30 * Math.cos(trunk * r)];
+  const mHat = MASS * (1 - 2 * (.1416 + .0433 + .0137)) / 2 + EXO_BELT / 2;
+  const above = [[mHat, hat], [MASS * .1416, P(1 - .4095)], [EXO_LEG * .55, P(.5)]];
+  const shankAt = f => [K[0] + (A[0] - K[0]) * f, K[1] + (A[1] - K[1]) * f];
+  const below = [[MASS * .0433, shankAt(.4395)], [EXO_LEG * .45 - .25, shankAt(.5)]];
+  const foot = [MASS * .0137 + .25, [.06, .04]];
+  const B = [...above, ...below], WB = B.reduce((s, l) => s + l[0] * G, 0);
+  const MgA = B.reduce((s, l) => s + l[1][0] * (-l[0] * G), 0);
+  let rear = null;
+  if (rearOn) {
+    let back = REAR_BACK_MAX / 1000, Rf, u, mu;
+    for (; back > .05; back -= .005) { Rf = [HEEL_X / 1000 - back, 0]; const d = [Hr[0] - Rf[0], Hr[1] - Rf[1]], n = Math.hypot(...d); u = [d[0] / n, d[1] / n]; mu = Math.abs(u[0] / u[1]); if (mu <= MU_MAX) break; }
+    const c = (Hr[0] - A[0]) * u[1] - (Hr[1] - A[1]) * u[0];
+    rear = { back, Rf, u, mu, N: -MgA / c, len: Math.hypot(Hr[0] - Rf[0], Hr[1] - Rf[1]) };
+  }
+  const Nv = rear ? [rear.u[0] * rear.N, rear.u[1] * rear.N] : [0, 0];
+  const RA = [-Nv[0], WB - Nv[1]];
+  const MK = above.reduce((s, l) => s + (l[1][0] - K[0]) * (-l[0] * G), 0) + (rear ? (Hr[0] - K[0]) * Nv[1] - (Hr[1] - K[1]) * Nv[0] : 0);
+  const Wf = foot[0] * G, Fa = [-RA[0], -RA[1]], hx = HEEL_X / 1000, mx = MET_X / 1000;
+  const ankleM = rear ? 0 : -MgA;
+  const Tm = -(((A[0] - hx) * Fa[1] - (A[1]) * Fa[0]) + (foot[1][0] - hx) * (-Wf) + ankleM) / (mx - hx);
+  const Th = -Fa[1] + Wf - Tm;
+  const all = [...B, foot], mT = all.reduce((s, l) => s + l[0], 0);
+  const cgX = all.reduce((s, l) => s + l[0] * l[1][0], 0) / mT, cgY = all.reduce((s, l) => s + l[0] * l[1][1], 0) / mT;
+  const backEdge = rear ? rear.Rf[0] : hx;
+  return { Hip, Pad, Hr, rear, MK, Th, Tm, cgX, cgY, mBack: cgX - backEdge, mFront: TOE_X / 1000 - cgX, seatN: mHat * G, WB, Wf };
+}
+
+// =====================================================================
 //  EXO PARTS — each part is a group parented to a body segment, with its
 //  price/mass/spec (from bom.mjs), its assembly step and explode vector.
 // =====================================================================
@@ -294,147 +350,275 @@ function part(o) {
   return g;
 }
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
-const knees = {};      // per side: lock ring material, status material, pawl group, pad pivot, buzz ring, insole sensors
+const knees = {};
+const tubeAlong = (pts, r, mat) => mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map(p => V(...p))), 32, r, 8, false), mat);
 
 const STEPS = [
-  { t: 'Belt + battery', d: 'Hip belt, two quick-swap 6S packs of 97 Wh each (both under the 100 Wh airline line), the Teensy 4.1 brain, the big red E-stop and the tap button.' },
-  { t: 'Thigh rails', d: '7075-T6 lateral uprights, 8 × 28 mm. Sized for the 507 Nm seat-lock design moment, which beats a single carbon tube.' },
-  { t: 'Knee actuators', d: 'CubeMars AK10-9: 9:1 quasi-direct drive, 48 Nm peak, backdrivable for running. Outboard: the 17-4PH toothed lock ring and the latching pawl that actually holds the seat.' },
-  { t: 'Shin rails', d: 'Shank uprights run down into heel stirrups, so your seated weight goes through the frame into the ground under your heels, not through your muscles.' },
-  { t: 'Cuffs', d: 'Thigh and shin cuffs and straps come from a donor hinged knee brace, which also supplies the medial hinge. Haptic buzzers sit on the thigh cuffs for the seat offer.' },
-  { t: 'Seat pads', d: 'Fold-down pads hinge on the thigh rail. Stowed, they lie flat along the rail. Deployed, they swing under the thigh.' },
-  { t: 'Foot sensors', d: 'Four FSRs per foot (heel, two metatarsals, toe). The seat lock is only allowed when both feet and the IMU agree you are standing still.' },
+  { t: 'Belt + battery', d: 'Hip belt, two quick-swap 6S packs of 97 Wh (each under the 100 Wh airline line), the Teensy 4.1 brain, the E-stop (cuts motors only) and an always-live 12 V rail for the ratchet solenoids.' },
+  { t: 'Thigh rails', d: 'Lateral 7075 upright (8 × 28 mm, slotted ±10 mm knee mount at the lateral epicondyle) plus a 6 × 20 mm medial bar, so the cuffs cannot rotate off the leg.' },
+  { t: 'Knee actuators + ratchet', d: 'CubeMars AK10-9 (48 Nm peak) at the lateral epicondyle; single-axis medial hinge on the same dashed axis. Outboard: the one-way ratchet, a 40-pitch 17-4PH sector at r = 50 mm bolted to the shank rail, and a 3-tooth pawl bolted to the thigh rail.' },
+  { t: 'Shin rails + ankle pivot', d: 'The shank rail bolts to the actuator output flange and runs down to a FREE ankle pivot (±30°) at the lateral malleolus. The heel stirrup hangs from it, heel pad directly below, strapped to the shoe heel counter.' },
+  { t: 'Cuffs + bridges', d: 'Rigid silicone-lined shell cuffs (shin cuff on the tibial crest), an anterior thigh bridge above the patella and a posterior shank bridge tie the lateral and medial rails into a frame. Haptic buzzers on the thigh cuffs.' },
+  { t: 'Seat pads', d: '200 × 180 mm pads at 75% of the thigh from the knee, under the gluteal fold. Hinged on the lateral rail; a medial support arm carries the inner edge.' },
+  { t: 'Rear legs', d: 'The fix for balance: a telescoping 24 / 20 / 16 mm carbon pole hinged at the top of each thigh rail. It deploys with the pad; its pivoting rubber foot lands 0.31–0.39 m behind the heel, as far back as a 0.30 friction need allows. Each leg becomes a tripod (heel, toes, rear foot), so the seat cannot tip backward.' },
+  { t: 'Suspension straps + cables', d: 'No rigid hip joint: two straps per side run from the belt, over the glute, to a yoke at the rail top, so the legs cannot slide down. One sleeved 24 V + CAN cable per side: belt → service loop → rail → actuator → shank IMU → insole.' },
+  { t: 'Foot sensors', d: 'Four FSRs per foot plus a shank IMU. The ratchet may only drop when both feet and the IMU agree you are standing still, and only Perch is allowed if the rear legs are not on the ground.' },
 ];
 
-// ---------- STEP 1: belt + battery + brain ----------
+// ---------- STEP 0: belt + battery + brain ----------
+const beltAnchor = {};   // per side: strap anchor points (pelvis frame)
 {
-  const g = part({ name: 'Hip belt', price: 44.95, mass: '0.20 kg (EST)', spec: 'Peak Design outdoor hip belt. Carries the packs and controller close to the body\'s centre of mass, which is where carried weight costs least.', step: 0, parent: rig.pelvis, at: V(0, 95, 0), ex: V(0, 260, 0), labelAt: V(170, 40, 0) });
+  const g = part({ name: 'Hip belt', price: 44.95, mass: '0.28 kg (EST)', spec: 'Peak Design outdoor hip belt. Carries the packs, controller and the suspension-strap anchors. The seat load never goes through it.', step: 0, parent: rig.pelvis, at: V(0, 95, 0), ex: V(0, 260, 0), labelAt: V(170, 40, 0) });
   const band = mesh(new THREE.CylinderGeometry(1, 1, 58, 72, 1, true), M.fabric); band.material = M.fabric.clone(); band.material.side = THREE.DoubleSide;
   band.scale.set(122, 1, 186); g.add(band);
   const buckle = mesh(new RoundedBoxGeometry(14, 44, 70, 3, 4), M.alu); buckle.position.set(122, 0, 0); g.add(buckle);
   for (const s of [1, -1]) {
-    const p = part({ name: 'Battery pack — 6S1P Molicel P45B', label: 'Battery 97 Wh', price: 6 * 8.75 + 21, mass: '0.52 kg (EST)', spec: '6 × 21700 cells, 21.6 V, 97.2 Wh. Two packs = 194 Wh, 165 Wh usable (85% EST). Each is under the FAA 100 Wh carry-on limit, so it flies. Quick-swap.', step: 0, parent: rig.pelvis, at: V(-118, 95, s * 92), ex: V(-260, 120, s * 140), labelAt: V(-40, 110, s * 40) });
-    p.add(mesh(new RoundedBoxGeometry(46, 84, 124, 4, 9), M.batt));
-    const strip = mesh(new RoundedBoxGeometry(47, 10, 126, 2, 3), M.dark); strip.position.y = 22; p.add(strip);
+    beltAnchor[s] = [[-93, 80, s * 120], [-52, 80, s * 168]];
+    for (const a of beltAnchor[s]) { const d = mesh(new RoundedBoxGeometry(18, 16, 18, 2, 4), M.alu); d.position.set(a[0], a[1] - 95, a[2]); g.add(d); }
+    const p = part({ name: 'Battery pack — 6S1P Molicel P45B', label: 'Battery 97 Wh', price: 6 * 8.75 + 21, mass: '0.52 kg (EST)', spec: '6 × 21700 cells, 21.6 V, 97.2 Wh. Two packs = 194 Wh. Each is under the FAA 100 Wh carry-on limit. Quick-swap.', step: 0, parent: rig.pelvis, at: V(-118, 95, s * 70), ex: V(-260, 120, s * 140), labelAt: V(-40, 110, s * 40) });
+    p.add(mesh(new RoundedBoxGeometry(46, 84, 110, 4, 9), M.batt));
+    const strip = mesh(new RoundedBoxGeometry(47, 10, 112, 2, 3), M.dark); strip.position.y = 22; p.add(strip);
   }
-  const ctl = part({ name: 'Controller — Teensy 4.1 + CAN + ESP32-S3', label: 'Brain', price: 31.5 + 4.99 + 17.5 + 10, mass: '0.13 kg', spec: 'Teensy 4.1 (same MCU family as NAU OpenExo) runs the gait state machine and talks CAN to both knees. ESP32-S3 is the phone link for seat offer and place memory. Pelvis IMU (BNO085) lives here.', step: 0, parent: rig.pelvis, at: V(-128, 160, 0), ex: V(-300, 260, 0), labelAt: V(-30, 70, 0) });
+  const ctl = part({ name: 'Controller — Teensy 4.1 + CAN + ESP32-S3 + 12 V solenoid rail', label: 'Brain', price: 31.5 + 4.99 + 17.5 + 10 + 8, mass: '0.15 kg', spec: 'Teensy 4.1 runs the gait state machine and talks CAN to both knees (same platform as NAU OpenExo). Separate always-live 12 V rail for the pawl solenoids: the E-stop cuts motors only.', step: 0, parent: rig.pelvis, at: V(-128, 160, 0), ex: V(-300, 260, 0), labelAt: V(-30, 70, 0) });
   ctl.add(mesh(new RoundedBoxGeometry(40, 46, 66, 3, 6), M.act));
   const led = mesh(new THREE.SphereGeometry(4, 10, 8), M.sens); led.position.set(-21, 10, 18); ctl.add(led);
-  const es = part({ name: 'E-stop + tap button', label: 'E-stop / tap', price: 20, mass: '0.05 kg', spec: 'Red E-stop cuts motor power; the latching pawls keep whatever state they are in (a locked seat stays locked). The tap button answers the seat offer.', step: 0, parent: rig.pelvis, at: V(108, 100, -112), ex: V(260, 60, -120), labelAt: V(30, 60, 0) });
+  const es = part({ name: 'E-stop + tap button', label: 'E-stop / tap', price: 20, mass: '0.05 kg', spec: 'E-stop cuts MOTOR power only; the ratchet stays powered on its own 12 V rail and, being one-way, always lets you stand up.', step: 0, parent: rig.pelvis, at: V(108, 100, -112), ex: V(260, 60, -120), labelAt: V(30, 60, 0) });
   const b = mesh(new THREE.CylinderGeometry(15, 17, 14, 24), M.red); b.rotation.z = -Math.PI / 2; es.add(b);
 }
+
+const bolts = (parent, n, r, z, rot = 0, rad = 3.2, axis = 'z') => {
+  for (let i = 0; i < n; i++) { const a = rot + i / n * Math.PI * 2; const bm_ = mesh(new THREE.CylinderGeometry(rad, rad, 4, 10), M.steel);
+    bm_.rotation.x = Math.PI / 2; bm_.position.set(r * Math.cos(a), r * Math.sin(a), z); parent.add(bm_); }
+};
 
 // ---------- per-leg parts ----------
 for (const s of [1, -1]) {
   const side = s > 0 ? 'left' : 'right', K = knees[s] = {};
-  // STEP 2: thigh rail
+  // STEP 1: thigh rail (lateral) + medial thigh bar
   {
-    const len = Lt - 90;
-    const g = part({ name: `Thigh upright (${side})`, label: 'Thigh rail', price: 91.6 / 2, mass: '0.28 kg', spec: '7075-T6, 8 × 28 mm, machined from 3/4" × 1-1/2" bar. Must carry the full seat-lock design moment (507 Nm) in bending: Z ≥ 1008 mm³. A single 25 mm carbon tube would see ~826 MPa, so aluminium it is for P1.', step: 1, parent: rig.hip[s], at: V(0, -(Lt + 70) / 2, s * latLeg), ex: V(0, 0, s * 240), labelAt: V(0, 0, s * 90) });
-    g.add(mesh(new RoundedBoxGeometry(28, len, 8, 2, 3), M.alu));
-    const tab = mesh(new RoundedBoxGeometry(46, 40, 10, 2, 4), M.alu); tab.position.y = len / 2 - 10; g.add(tab);
+    const top = -58, len = (Lt - 10) + top;   // rail runs from the rail top (y=-58) down to the knee
+    const g = part({ name: `Thigh upright (${side})`, label: 'Thigh rail', price: 91.6 / 2, mass: '0.28 kg', spec: '7075-T6, 8 × 28 mm. Knee mount slotted ±10 mm so the axis sits on the lateral epicondyle; length-adjustable. Sized for the 507 Nm fallback moment (rear leg slips, all weight on one leg).', step: 1, parent: rig.hip[s], at: V(0, (top + (-Lt + 10)) / 2, s * latLeg), ex: V(0, 0, s * 240), labelAt: V(0, 0, s * 90) });
+    g.add(mesh(new RoundedBoxGeometry(28, -len, 8, 2, 3), M.alu));
+    const slot = mesh(new RoundedBoxGeometry(12, 30, 9, 2, 3), M.dark); slot.position.y = (len) / 2 + 28; g.add(slot);
+    const mb = part({ name: `Medial thigh bar (${side})`, label: 'Medial bar', price: 20, mass: '0.12 kg', spec: '6 × 20 mm 7075, 0.36 m, from the medial hinge up to the pad\'s medial support arm. With the bridges it stops the cuffs rotating off the leg.', step: 1, parent: rig.hip[s], at: V(0, -Lt + 180, -s * 66), ex: V(0, 0, -s * 200), labelAt: V(0, 0, -s * 60) });
+    mb.add(mesh(new RoundedBoxGeometry(20, 360, 6, 2, 2.5), M.alu));
   }
-  // STEP 3: knee actuator + lock ring + pawl + medial hinge
+  // STEP 2: knee actuator + ratchet + pawl + medial hinge + axis
   {
     const zA = s * (latLeg + 4 + 31);
-    const g = part({ name: `Knee actuator — CubeMars AK10-9 V2.0 (${side})`, label: 'AK10-9 actuator', price: 698.9, mass: '0.96 kg', spec: '9:1 quasi-direct drive, 18 Nm rated / 48 Nm peak, 0.8 Nm backdrive, dual encoder, CAN. Covers walking and stairs well and ~18% of a median runner\'s midstance knee moment. It can NOT hold the seat (142 Nm per knee in chair mode): it only positions the knee so the pawl can drop in.', step: 2, parent: rig.knee[s], at: V(0, 0, zA), ex: V(0, 0, s * 330), labelAt: V(0, 80, s * 40) });
+    const g = part({ name: `Knee actuator — CubeMars AK10-9 V2.0 (${side})`, label: 'AK10-9 actuator', price: 698.9, mass: '0.96 kg', spec: '9:1 quasi-direct drive, 18 / 48 Nm, 0.8 Nm backdrive. Assists gait and brakes the descent into a seat. It never holds the seat (79 Nm per knee in chair with the rear legs, 190 Nm without; seat_torque_model.mjs): the ratchet does.', step: 2, parent: rig.knee[s], at: V(0, 0, zA), ex: V(0, 0, s * 330), labelAt: V(0, 80, s * 40) });
     g.add(mesh(canGeo(98, 62), M.act));
-    const face = mesh(new THREE.TorusGeometry(40, 2.2, 10, 64), M.steel); face.position.z = s * 31.5; g.add(face);
     K.status = statusMat();
     const st = mesh(new THREE.TorusGeometry(46, 2.6, 10, 72), K.status); st.position.z = s * 30; g.add(st);
-    const hub = mesh(new THREE.CylinderGeometry(18, 18, 6, 32), M.steel); hub.rotation.x = Math.PI / 2; hub.position.z = s * 33; g.add(hub);
+    bolts(g, 8, 36, s * 32, 0, 2.6);                        // output flange bolt circle (shank rail bolts here)
     const gland = mesh(new THREE.CylinderGeometry(7, 7, 22, 16), M.dark); gland.position.set(-46, -18, 0); gland.rotation.z = 1.1; g.add(gland);
-
-    const lr = part({ name: `Seat lock ring — 17-4PH H900 (${side})`, label: 'Lock ring', price: 180, mass: '0.20 kg (with pawl, EST)', spec: 'Toothed ring on the shank side of the joint. The pawl drops in only at a standstill, at 25 / 60 / 90 / 120°. Design hold 507 Nm (worst case: all weight on one leg, × 1.5 safety). Shear-only check passes with margin; contact and tooth-bending checks are still open.', step: 2, parent: rig.knee[s], at: V(0, 0, s * (latLeg + 4 + 62 + 7)), ex: V(0, 0, s * 430), labelAt: V(0, 70, s * 30) });
+    // ratchet sector: bolted to the SHANK rail, spans the pawl's path over 0–135° of knee flexion
+    const rs = part({ name: `One-way ratchet sector — 17-4PH H900 (${side})`, label: 'Ratchet', price: 180, mass: '0.25 kg (with pawl, EST)', spec: '40-pitch teeth at r = 50 mm, 12 mm wide, 140° sector. Blocks FLEXION only: extension is always free, so you can always stand up, power or no power. 3-tooth pawl: 359 MPa tooth bending at the 507 Nm fallback load (v1\'s single tooth at r = 35 mm: ~1.98 GPa, it would fail).', step: 2, parent: rig.knee[s], at: V(0, 0, s * RAT_Z), ex: V(0, 0, s * 430), labelAt: V(-60, -60, s * 30) });
     K.lock = lockMat();
-    lr.add(mesh(gearGeo(40, 35, 24, 36, 8), K.lock));
-    // pawl: rides on the THIGH side (hip group) at the knee; slides toward the ring to engage
-    const pw = part({ name: `Pawl + latching solenoid (${side})`, label: 'Pawl', price: 25 + 3, mass: '0.03 kg', spec: 'Bistable latching solenoid: no power needed to stay locked OR to stay free. A hall sensor confirms the pawl is fully seated before the motor lets go of the load.', step: 2, parent: rig.hip[s], at: V(-58, -Lt + 50, s * (latLeg + 4 + 62 + 7)), ex: V(-80, 0, s * 430), labelAt: V(-30, 50, s * 20) });
-    const hous = mesh(new RoundedBoxGeometry(30, 52, 20, 3, 5), M.act); hous.position.set(-6, 0, 0); pw.add(hous);
-    K.pawl = mesh(new RoundedBoxGeometry(14, 22, 10, 2, 3), K.lock); K.pawl.position.set(14, -26, 0); pw.add(K.pawl);
-    const mh = part({ name: `Medial hinge (${side})`, label: 'Medial hinge', price: 0, mass: 'in donor brace', spec: 'Free hinge on the inside of the knee, from the donor brace. Keeps the cuffs from twisting under load.', step: 2, parent: rig.knee[s], at: V(0, 0, -s * 66), ex: V(0, 0, -s * 120), labelAt: V(0, 60, 0) });
-    const mhd = mesh(new THREE.CylinderGeometry(24, 24, 10, 32), M.alu); mhd.rotation.x = Math.PI / 2; mh.add(mhd);
+    { const sh = new THREE.Shape(), a0 = 175 * D2R, a1 = 315 * D2R, n = 16;
+      sh.absarc(0, 0, 30, a1, a0, true);
+      for (let i = 0; i <= n; i++) { const a = a0 + (a1 - a0) * i / n, w = (a1 - a0) / n;
+        sh.lineTo(46 * Math.cos(a), 46 * Math.sin(a)); if (i < n) { sh.lineTo(55 * Math.cos(a + w * .25), 55 * Math.sin(a + w * .25)); sh.lineTo(55 * Math.cos(a + w * .45), 55 * Math.sin(a + w * .45)); } }
+      sh.closePath();
+      const gg = new THREE.ExtrudeGeometry(sh, { depth: 12, bevelEnabled: true, bevelThickness: .6, bevelSize: .5, bevelSegments: 1 }); gg.translate(0, 0, -6);
+      rs.add(mesh(gg, K.lock));
+      for (const a of [190, 225, 265, 300]) { const bb = mesh(new THREE.CylinderGeometry(3, 3, 4, 10), M.steel); bb.rotation.x = Math.PI / 2; bb.position.set(38 * Math.cos(a * D2R), 38 * Math.sin(a * D2R), s * 7); rs.add(bb); } }
+    // pawl housing on the THIGH rail; 3-tooth pawl slides radially into the sector
+    const pw = part({ name: `3-tooth pawl + latching solenoid + load sensor (${side})`, label: 'Pawl', price: 25 + 3 + 10, mass: '0.04 kg', spec: 'Spring-biased in; a bistable latching solenoid lifts it ONLY when it is unloaded (knee < 20° and extending, or the strain-gauge load sensor reads ~0). Lowering: lifted, the motor brakes the descent. At the angle: it drops into the nearest tooth (9° steps). Standing: it clicks over the teeth.', step: 2, parent: rig.hip[s], at: V(-82, -Lt + 6, s * RAT_Z), ex: V(-80, 0, s * 430), labelAt: V(-30, 50, s * 20) });
+    const hous = mesh(new RoundedBoxGeometry(34, 56, 18, 3, 5), M.act); pw.add(hous);
+    bolts(pw, 2, 18, s * 10, Math.PI / 2, 2.6);
+    K.pawl = new THREE.Group(); pw.add(K.pawl);
+    const blk = mesh(new RoundedBoxGeometry(16, 24, 12, 2, 3), K.lock); blk.position.x = 0; K.pawl.add(blk);
+    for (const dy of [-8, 0, 8]) { const tth = mesh(new THREE.ConeGeometry(4, 8, 4), K.lock); tth.rotation.z = -Math.PI / 2; tth.position.set(11, dy, 0); K.pawl.add(tth); }
+    K.sol = mesh(new THREE.CylinderGeometry(8, 8, 22, 16), M.act); K.sol.position.set(-12, 30, 0); pw.add(K.sol);
+    K.solLed = mesh(new THREE.SphereGeometry(3.5, 10, 8), M.sens.clone()); K.solLed.position.set(-12, 43, 0); pw.add(K.solLed);
+    const mh = part({ name: `Single-axis medial hinge (${side})`, label: 'Medial hinge', price: 0, mass: 'in medial bar set', spec: 'Coaxial with the actuator (dashed axis). The donor brace\'s polycentric hinge is discarded: two different axes would fight the actuator.', step: 2, parent: rig.knee[s], at: V(0, 0, -s * 66), ex: V(0, 0, -s * 120), labelAt: V(0, 60, 0) });
+    const mhd = mesh(new THREE.CylinderGeometry(24, 24, 10, 32), M.alu); mhd.rotation.x = Math.PI / 2; mh.add(mhd); bolts(mh, 4, 15, -s * 5.5, Math.PI / 4, 2.2);
+    const axis = new THREE.Line(new THREE.BufferGeometry().setFromPoints([V(0, 0, -s * 120), V(0, 0, s * (RAT_Z + 40))]),
+      new THREE.LineDashedMaterial({ color: 0x7dffd0, dashSize: 10, gapSize: 7, transparent: true, opacity: .8 }));
+    axis.computeLineDistances(); rig.knee[s].add(axis); K.axis = axis;
   }
-  // STEP 4: shin rail + heel stirrup
+  // STEP 3: shin rail to the ankle pivot, medial shank bar, ankle pivot, stirrup
   {
-    const len = Ls - 70;
-    const g = part({ name: `Shank upright (${side})`, label: 'Shin rail', price: 91.6 / 2, mass: '0.28 kg', spec: '7075-T6, 8 × 28 mm. Carries the same seat moment as the thigh rail and passes the load to the heel stirrup.', step: 3, parent: rig.knee[s], at: V(0, -(Ls + 30) / 2, s * latLeg), ex: V(0, -80, s * 240), labelAt: V(0, 0, s * 90) });
-    g.add(mesh(new RoundedBoxGeometry(28, len, 8, 2, 3), M.alu));
-    const st = part({ name: `Heel stirrup + shoe clip (${side})`, label: 'Heel stirrup', price: 60, mass: '0.25 kg (EST)', spec: 'Takes the seat load from the shank rail into the ground under your heel, the Chairless Chair load path. It is also the most expensive kilogram on the exo: mass on the foot costs >4× the same mass at the waist.', step: 3, parent: rig.ankle[s], at: V(0, 0, 0), ex: V(0, -160, s * 200), labelAt: V(-20, -40, s * 90) });
-    const vbar = mesh(new RoundedBoxGeometry(24, ankleH + 46, 8, 2, 3), M.alu); vbar.position.set(-10, -(ankleH) / 2 + 12, s * latLeg); st.add(vbar);
-    const plate = mesh(new RoundedBoxGeometry(110, 6, latLeg + 66, 2, 2), M.alu); plate.position.set(-25, -ankleH - 3, s * (latLeg - 28) / 2); st.add(plate);
+    const g = part({ name: `Shank upright (${side})`, label: 'Shin rail', price: 91.6 / 2, mass: '0.28 kg', spec: '7075-T6, 8 × 28 mm, bolted to the actuator output flange, down to the ankle pivot. With a working rear leg it carries ~62% of the seat load to the heel.', step: 3, parent: rig.knee[s], at: V(0, -(Ls + 20) / 2, s * latLeg), ex: V(0, -80, s * 240), labelAt: V(0, 0, s * 90) });
+    g.add(mesh(new RoundedBoxGeometry(28, Ls - 20, 8, 2, 3), M.alu));
+    const ms = part({ name: `Medial shank bar (${side})`, label: 'Medial bar', price: 20, mass: '0.04 kg', spec: '6 × 20 mm 7075, 0.10 m, from the medial hinge to the posterior shank bridge.', step: 3, parent: rig.knee[s], at: V(0, -55, -s * 66), ex: V(0, -40, -s * 200), labelAt: V(0, -30, -s * 40) });
+    ms.add(mesh(new RoundedBoxGeometry(20, 110, 6, 2, 2.5), M.alu));
+    const ap = part({ name: `Ankle pivot — free, ±30° (${side})`, label: 'Ankle pivot', price: 20, mass: '0.05 kg', spec: 'At the lateral malleolus. Free in the sagittal plane, so the shin rail is PINNED at the ankle: with the rear leg down the wearer\'s calves relax. Joins the shin rail to the stirrup.', step: 3, parent: rig.knee[s], at: V(0, -Ls, s * (latLeg + 7)), ex: V(0, -120, s * 260), labelAt: V(30, 0, s * 40) });
+    const apd = mesh(new THREE.CylinderGeometry(17, 17, 12, 28), M.steel); apd.rotation.x = Math.PI / 2; ap.add(apd); bolts(ap, 3, 9, s * 6.5, 0, 2);
+    const st = part({ name: `Heel stirrup + heel-counter strap (${side})`, label: 'Heel stirrup', price: 60, mass: '0.25 kg (EST)', spec: 'Hangs from the ankle pivot with the heel pad directly below it, strapped around the shoe\'s heel counter. The most expensive kilogram on the exo: foot mass costs >4× waist mass.', step: 3, parent: rig.ankle[s], at: V(0, 0, 0), ex: V(0, -160, s * 200), labelAt: V(-20, -40, s * 90) });
+    const vbar = mesh(new RoundedBoxGeometry(22, ankleH + 6, 8, 2, 3), M.alu); vbar.position.set(0, -ankleH / 2, s * latLeg); st.add(vbar);
+    const plate = mesh(new RoundedBoxGeometry(100, 6, latLeg + 60, 2, 2), M.alu); plate.position.set(-20, -ankleH - 3, s * (latLeg - 30) / 2); st.add(plate);
+    const hp = mesh(new RoundedBoxGeometry(70, 8, 64, 2, 3), M.dark); hp.position.set(-10, -ankleH + 3, 0); st.add(hp);
+    const tg = new THREE.TorusGeometry(52, 4, 8, 28, Math.PI); tg.rotateX(Math.PI / 2); tg.rotateY(-Math.PI / 2);
+    const strap = mesh(tg, M.dark); strap.position.set(-8, -ankleH + 38, 0); st.add(strap);
   }
-  // STEP 5: cuffs + haptic
+  // STEP 4: rigid shell cuffs + bridges + haptic
   {
-    const tc = part({ name: `Thigh cuff + strap (${side})`, label: 'Thigh cuff', price: 189.99 / 2, mass: '0.25 kg (EST)', spec: 'From a DonJoy hinged knee brace (donor). The open side faces forward and closes with the strap.', step: 4, parent: rig.hip[s], at: V(0, -Lt * .42, 0), ex: V(220, 0, s * 120), labelAt: V(60, 40, s * 60) });
-    tc.add(mesh(cuffGeo(84, 94, 74, 70, 0), M.fabric));
-    const strap = mesh(new THREE.CylinderGeometry(95, 95, 40, 40, 1, true, Math.PI / 2 - 0.62, 1.24), M.dark); strap.material = M.dark.clone(); strap.material.side = THREE.DoubleSide; tc.add(strap);
-    K.buzz = new THREE.Mesh(new THREE.TorusGeometry(104, 5, 12, 64), M.buzz.clone()); K.buzz.rotation.x = Math.PI / 2; tc.add(K.buzz);
-    const hap = mesh(new THREE.CylinderGeometry(11, 11, 5, 20), M.sens); hap.rotation.z = Math.PI / 2; hap.position.set(-95, 0, 0); tc.add(hap);
-    const sc = part({ name: `Shin cuff + strap (${side})`, label: 'Shin cuff', price: 0, mass: '0.20 kg (EST)', spec: 'Also from the donor brace. Opens to the back; the rigid shell sits on the shin bone.', step: 4, parent: rig.knee[s], at: V(0, -Ls * .3, 0), ex: V(220, 0, s * 120), labelAt: V(60, 40, s * 60) });
-    sc.add(mesh(cuffGeo(62, 72, 62, 80, 180), M.fabric));
+    const tc = part({ name: `Thigh shell cuff + strap (${side})`, label: 'Thigh cuff', price: 189.99 / 2, mass: '0.25 kg (EST)', spec: 'Rigid shell, silicone-lined, from the donor brace. Distal thigh, below the seat pad.', step: 4, parent: rig.hip[s], at: V(0, -Lt * .58, 0), ex: V(220, 0, s * 120), labelAt: V(60, 40, s * 60) });
+    tc.add(mesh(cuffGeo(80, 90, 70, 70, 0), M.fabric));
+    const strap = mesh(new THREE.CylinderGeometry(91, 91, 40, 40, 1, true, Math.PI / 2 - 0.62, 1.24), M.dark); strap.material = M.dark.clone(); strap.material.side = THREE.DoubleSide; tc.add(strap);
+    K.buzz = new THREE.Mesh(new THREE.TorusGeometry(100, 5, 12, 64), M.buzz.clone()); K.buzz.rotation.x = Math.PI / 2; tc.add(K.buzz);
+    const hap = mesh(new THREE.CylinderGeometry(11, 11, 5, 20), M.sens); hap.rotation.z = Math.PI / 2; hap.position.set(-91, 0, 0); tc.add(hap);
+    const sc = part({ name: `Shin shell cuff + strap (${side})`, label: 'Shin cuff', price: 0, mass: '0.20 kg (EST)', spec: 'Rigid shell on the tibial crest (front), silicone-lined; strap behind the calf.', step: 4, parent: rig.knee[s], at: V(0, -Ls * .33, 0), ex: V(220, 0, s * 120), labelAt: V(60, 40, s * 60) });
+    sc.add(mesh(cuffGeo(56, 66, 62, 80, 180), M.fabric));
+    const yb = -Lt + 120;
+    const tb = part({ name: `Anterior thigh bridge (${side})`, label: 'Thigh bridge', price: 0, mass: '0.04 kg', spec: 'Ties the lateral rail to the medial bar in front of the thigh, just above the patella.', step: 4, parent: rig.hip[s], at: V(0, 0, 0), ex: V(160, 0, 0), labelAt: V(90, yb + 30, 0) });
+    tb.add(tubeAlong([[0, yb, s * 72], [58, yb, s * 60], [80, yb, s * 4], [58, yb, -s * 50], [0, yb, -s * 63]], 4.5, M.alu));
+    const ybs = -110;
+    const sb = part({ name: `Posterior shank bridge (${side})`, label: 'Shank bridge', price: 0, mass: '0.04 kg', spec: 'Ties the shin rail to the medial bar behind the calf, below the knee.', step: 4, parent: rig.knee[s], at: V(0, 0, 0), ex: V(-160, 0, 0), labelAt: V(-80, ybs, 0) });
+    sb.add(tubeAlong([[0, ybs, s * 72], [-48, ybs, s * 56], [-68, ybs, 0], [-48, ybs, -s * 46], [0, ybs, -s * 63]], 4.5, M.alu));
   }
-  // STEP 6: fold-down seat pad (pivot on the thigh rail, axis along the thigh)
+  // STEP 5: seat pad (proximal, 200 x 180) + medial support arm
   {
-    const pv = part({ name: `Fold-down seat pad (${side})`, label: 'Seat pad', price: 35, mass: '0.18 kg (EST)', spec: 'Charcoal closed-cell foam cushion on an aluminium pan, with a hinge and over-centre detent on the thigh rail. Stowed, it lies flat on the outside of the rail. Deployed, it swings under the thigh. Centre of pressure 65% of the thigh length from the knee (0.30 m on a 95th-pct man): that lever sets every seat torque number.', step: 5, parent: rig.hip[s], at: V(-14, -(Lt - sPad), s * latLeg), ex: V(-260, 0, s * 140), labelAt: V(-60, 60, 0) });
-    // hinge block stays on the rail; the cushion moves between STOWED (flat on the outside of the
-    // thigh rail, like a side panel) and DEPLOYED (swung under the thigh). applyPose drives K.padMov.
+    const pv = part({ name: `Fold-down seat pad 200 × 180 mm (${side})`, label: 'Seat pad', price: 40, mass: '0.22 kg (EST)', spec: 'Charcoal closed-cell foam on an aluminium pan, at 75% of the thigh from the knee, under the gluteal fold. Hinged on the lateral rail; stowed it lies flat on the outside of the rail.', step: 5, parent: rig.hip[s], at: V(-14, -(1 - PAD_FRAC) * Lt, s * latLeg), ex: V(-260, 0, s * 140), labelAt: V(-60, 60, 0) });
     const hinge = mesh(new RoundedBoxGeometry(30, 70, 12, 2, 4), M.alu); hinge.position.set(4, 0, s * 4); pv.add(hinge);
     const mov = new THREE.Group(); pv.add(mov); K.padMov = mov;
-    const pad = mesh(new RoundedBoxGeometry(18, 150, 150, 5, 8), M.pad); mov.add(pad);
-    const trim = mesh(new RoundedBoxGeometry(20, 154, 10, 2, 4), M.trim); trim.position.z = s * 72; mov.add(trim);
-    K.padPivot = pv;
+    mov.add(mesh(new RoundedBoxGeometry(18, 200, 180, 5, 8), M.pad));
+    const trim = mesh(new RoundedBoxGeometry(20, 204, 10, 2, 4), M.trim); trim.position.z = s * 86; mov.add(trim);
+    const ma = part({ name: `Pad medial support arm (${side})`, label: 'Pad arm', price: 15, mass: '0.04 kg', spec: 'Swings back from the top of the medial bar under the pad\'s inner edge when the pad deploys, so the pad is supported on both sides.', step: 5, parent: rig.hip[s], at: V(0, -(1 - PAD_FRAC) * Lt - 20, -s * 66), ex: V(-160, 0, -s * 120), labelAt: V(-60, 30, 0) });
+    K.padArm = new THREE.Group(); ma.add(K.padArm);
+    const arm = mesh(new RoundedBoxGeometry(110, 14, 8, 2, 3), M.alu); arm.position.x = -55; K.padArm.add(arm);
   }
-  // STEP 7: foot sensors
+  // STEP 6: rear leg (kickstand)
   {
-    const fs = part({ name: `FSR insole — 4 × Interlink 402 (${side})`, label: 'Foot sensors', price: 4 * 2.99 + 10, mass: '0.04 kg', spec: 'Heel, 1st and 5th metatarsal, toe. Together with the shank IMU (BNO085) they decide gait phase, "standing still" for the seat lock, and stumble detection for fall catch.', step: 6, parent: rig.ankle[s], at: V(0, -ankleH + 6, 0), ex: V(0, -240, 0), labelAt: V(60, -30, s * 60) });
+    const rl = part({ name: `Rear leg — 3-section Ø16 carbon pole (${side})`, label: 'Rear leg', price: 60, mass: '0.30 kg (tube 0.13 kg)', spec: 'Uniform 24 / 20 / 16 × 1.5 mm 3-section carbon tube, hinged at the top of the thigh rail. Stowed 0.35 m along the outside of the rail; extends to 0.46 m (squat), 0.65 m (chair), 0.84 m (half-sit); one-way lock (extends freely, locks in compression), torsion-spring retract, deployed by the pad lever. Pivoting grippy rubber foot with a stowable spike for outdoors. The foot lands where the needed friction is ≤ 0.30: 0.34 / 0.39 / 0.31 m behind the heel. Chair: 284 N, 40% of the load. Buckling 3.2 kN at 0.84 m (SF 3.2 on the 1 kN design).', step: 6, parent: rig.hip[s], at: V(HINGE_LOCAL[0], HINGE_LOCAL[1], s * (latLeg + 30)), ex: V(-220, 0, s * 220), labelAt: V(-40, 40, s * 30) });
+    const boss = mesh(new THREE.CylinderGeometry(14, 14, 22, 24), M.alu); boss.rotation.x = Math.PI / 2; rl.add(boss); bolts(rl, 3, 8, s * 11.5, 0, 2);
+    const pole = new THREE.Group(); rl.add(pole); K.pole = pole;
+    const unit = new THREE.CylinderGeometry(1, 1, 1, 20); unit.translate(0, -0.5, 0);
+    K.sec = [12, 10, 8].map(r => { const m = mesh(unit, M.act); m.scale.set(r, 1, r); pole.add(m); return m; });
+    K.lockCol = mesh(new THREE.CylinderGeometry(13.5, 13.5, 14, 20), M.alu); pole.add(K.lockCol);
+    K.foot = new THREE.Group(); pole.add(K.foot);          // pivoting foot: stays flat on the ground at any leg angle
+    const knuckle = mesh(new THREE.SphereGeometry(9, 16, 12), M.alu); K.foot.add(knuckle);
+    const pad = mesh(new THREE.CylinderGeometry(24, 26, 10, 28), M.dark); pad.position.y = -7; K.foot.add(pad);
+    const spike = mesh(new THREE.ConeGeometry(4, 22, 12), M.steel); spike.position.set(20, 6, 0); spike.rotation.z = -Math.PI / 2.4; K.foot.add(spike);   // stowed spike (flips down outdoors)
+  }
+  // STEP 7: suspension yoke at the rail top (straps + cable are drawn live)
+  {
+    const yk = part({ name: `Suspension yoke + 2 straps (${side})`, label: 'Yoke + straps', price: 12.5, mass: '0.06 kg', spec: 'Two webbing straps per side from the belt, over the glute, to this yoke at the rail top. Anti-migration only: the leg units hang from the belt, seat loads never go through it. No rigid hip joint in P1 (v2 note: passive 3-DOF hip, flexion pivot coaxial with the greater trochanter).', step: 7, parent: rig.hip[s], at: V(-4, -50, s * (latLeg + 8)), ex: V(0, 160, s * 160), labelAt: V(0, 50, s * 40) });
+    yk.add(mesh(new RoundedBoxGeometry(44, 24, 12, 2, 4), M.dark));
+    K.yoke = yk;
+  }
+  // STEP 8: foot sensors + shank IMU
+  {
+    const fs = part({ name: `FSR insole — 4 × Interlink 402 (${side})`, label: 'Foot sensors', price: 4 * 2.99 + 10, mass: '0.04 kg', spec: 'Heel, 1st and 5th metatarsal, toe. With the shank IMU they decide gait phase, standing still (needed before the ratchet may drop), the lean-forward that starts a stand-up, and stumbles.', step: 8, parent: rig.ankle[s], at: V(0, -ankleH + 6, 0), ex: V(0, -240, 0), labelAt: V(60, -30, s * 60) });
     const ins = mesh(new RoundedBoxGeometry(footL * .98, 4, 96, 2, 1.5), M.dark); ins.position.x = footL * .27; fs.add(ins);
     K.fsr = [];
     for (const [x, z] of [[-30, 0], [footL * .5, -s * 24], [footL * .5, s * 26], [footL * .72, 0]]) {
       const m = new THREE.Mesh(new THREE.CylinderGeometry(10, 10, 3, 20), M.sens.clone()); m.position.set(x, 3, z); fs.add(m); K.fsr.push(m);
     }
-    const imu = part({ name: `Shank IMU — BNO085 (${side})`, label: 'IMU', price: 29.5, mass: '0.01 kg', spec: 'Gait phase and stumble detection. With the FSRs it gates the seat lock: no stillness, no lock.', step: 6, parent: rig.knee[s], at: V(36, -Ls * .52, s * 30), ex: V(160, 0, s * 60), labelAt: V(30, 30, 0) });
+    const imu = part({ name: `Shank IMU — BNO085 (${side})`, label: 'IMU', price: 29.5, mass: '0.01 kg', spec: 'On the shin rail. Gait phase and stillness; with the FSRs it gates the ratchet.', step: 8, parent: rig.knee[s], at: V(22, -Ls * .5, s * (latLeg + 12)), ex: V(160, 0, s * 60), labelAt: V(30, 30, 0) });
     imu.add(mesh(new RoundedBoxGeometry(14, 26, 22, 2, 3), M.act));
   }
 }
 for (const p of parts) p.base = p.g.position.clone();
 
+// ---------- live flexible parts: suspension straps + sleeved cables ----------
+const flex = new THREE.Group(); scene.add(flex);
+const M_strap = new THREE.MeshStandardMaterial({ color: 0x27303f, roughness: .85 });
+const M_cable = new THREE.MeshStandardMaterial({ color: 0x0d0f13, roughness: .5, metalness: .2 });
+const flexMeshes = [];
+function setTube(i, pts, r, mat) {
+  let m = flexMeshes[i];
+  if (!m) { m = new THREE.Mesh(undefined, mat); m.castShadow = true; flex.add(m); flexMeshes[i] = m; }
+  m.geometry?.dispose?.(); m.geometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 40, r, 6, false);
+}
+const W = (obj, x, y, z) => obj.localToWorld(V(x, y, z));
+function updateFlex() {
+  rig.pelvis.updateMatrixWorld(true);
+  let i = 0;
+  for (const s of [1, -1]) {
+    const yoke = W(knees[s].yoke, 0, 0, 0);
+    for (const a of beltAnchor[s]) {     // belt rear → over the glute → yoke
+      const A = W(rig.pelvis, ...a), mid = A.clone().lerp(yoke, .5).add(W(rig.pelvis, -60, 0, s * 25).sub(W(rig.pelvis, 0, 0, 0)));
+      setTube(i++, [A, mid, yoke], 3.2, M_strap);
+    }
+    const c = [W(rig.pelvis, -110, 140, s * 30), W(rig.pelvis, -40, 82, s * 192), W(rig.hip[s], 40, -20, s * (latLeg + 45)),
+      W(rig.hip[s], 16, -90, s * (latLeg + 6)), W(rig.hip[s], 16, -Lt * .5, s * (latLeg + 6)), W(rig.hip[s], 18, -Lt + 80, s * (latLeg + 6)),
+      W(rig.knee[s], -44, -26, s * (latLeg + 36)), W(rig.knee[s], 17, -90, s * (latLeg + 6)), W(rig.knee[s], 22, -Ls * .5 + 16, s * (latLeg + 12)),
+      W(rig.knee[s], 16, -Ls + 70, s * (latLeg + 6)), W(rig.ankle[s], 14, -30, s * (latLeg + 4)), W(rig.ankle[s], 30, -ankleH + 8, s * 46)];
+    setTube(i++, c, 4, M_cable);
+  }
+}
+
+// ---------- physics overlay: forces, CoM, support polygon ----------
+const ov = new THREE.Group(); scene.add(ov); ov.visible = false;
+const arrows = {};
+const mkArrow = (k, col) => { const a = new THREE.ArrowHelper(V(0, 1, 0), V(), 100, col, 34, 20); a.line.material.linewidth = 2; ov.add(a); arrows[k] = a; return a; };
+for (const s of [1, -1]) { mkArrow('seat' + s, 0xffb238); mkArrow('heel' + s, 0x5fd4a8); mkArrow('met' + s, 0x5fd4a8); mkArrow('rear' + s, 0x4aa8ff); }
+const comDot = new THREE.Mesh(new THREE.SphereGeometry(26, 24, 16), new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xff3df0, emissiveIntensity: 1.2 })); ov.add(comDot);
+const comFloor = new THREE.Mesh(new THREE.CircleGeometry(22, 24), new THREE.MeshBasicMaterial({ color: 0xff3df0 })); comFloor.rotation.x = -Math.PI / 2; ov.add(comFloor);
+const comLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints([V(), V(0, 1, 0)]), new THREE.LineDashedMaterial({ color: 0xff3df0, dashSize: 14, gapSize: 9 })); ov.add(comLine);
+const polyMat = new THREE.MeshBasicMaterial({ color: 0x2fe39a, transparent: true, opacity: .22, depthWrite: false, side: THREE.DoubleSide });
+const polyMesh = new THREE.Mesh(new THREE.BufferGeometry(), polyMat); ov.add(polyMesh);
+const polyLine = new THREE.LineLoop(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0x2fe39a })); ov.add(polyLine);
+const N2MM = 0.55;   // arrow length per newton
+function updateOverlay(P, st) {
+  ov.visible = $('overlay').checked && !!st;
+  if (!ov.visible) return;
+  const ax = pelvisX + footPts(P, 1).ankle[0];       // ankle world x (both ankles equal in seat poses)
+  const toW = (p, z) => V(ax + p[0] * 1000, p[1] * 1000 + 2, z);
+  for (const s of [1, -1]) {
+    const zc = s * hipW / 2, zr = s * (hipW / 2 + latLeg + 30);
+    const set = (k, from, dir, n) => { const a = arrows[k + s]; a.visible = n > 5; if (!a.visible) return; a.position.copy(from); a.setDirection(dir.clone().normalize()); a.setLength(Math.max(60, n * N2MM), 34, 20); };
+    const pad = toW(st.Pad, zc); pad.y -= 40;
+    set('seat', pad.clone().add(V(0, st.seatN * N2MM, 0)), V(0, -1, 0), st.seatN);
+    set('heel', toW([HEEL_X / 1000, 0], zc).sub(V(0, 0, 0)), V(0, 1, 0), st.Th);
+    set('met', toW([MET_X / 1000, 0], zc), V(0, 1, 0), st.Tm);
+    if (st.rear) set('rear', toW(st.rear.Rf, zr), V(st.rear.u[0], st.rear.u[1], 0), st.rear.N); else arrows['rear' + s].visible = false;
+  }
+  const cg = V(ax + st.cgX * 1000, st.cgY * 1000, 0);
+  comDot.position.copy(cg); comFloor.position.set(cg.x, 3, 0);
+  comLine.geometry.setFromPoints([V(cg.x, cg.y, 0), V(cg.x, 3, 0)]); comLine.computeLineDistances();
+  const back = st.rear ? ax + st.rear.Rf[0] * 1000 : ax + HEEL_X, front = ax + TOE_X;
+  const zb = st.rear ? hipW / 2 + latLeg + 30 : hipW / 2 + 50, zf = hipW / 2 + 50;
+  const pts = [V(back, 3, -zb), V(front, 3, -zf), V(front, 3, zf), V(back, 3, zb)];
+  polyLine.geometry.setFromPoints(pts);
+  polyMesh.geometry.dispose(); polyMesh.geometry = new THREE.BufferGeometry().setFromPoints([pts[0], pts[1], pts[2], pts[0], pts[2], pts[3]]);
+  const bad = Math.min(st.mBack, st.mFront) < 0.10;
+  const col = st.mBack < 0 || st.mFront < 0 ? 0xff3b30 : bad ? 0xff3b30 : 0x2fe39a;
+  polyMat.color.setHex(col); polyLine.material.color.setHex(col);
+}
+
 // =====================================================================
-//  POSES — joint angles (deg). Foot angle is set in WORLD terms (flat on
-//  the ground or on the slope) and the ankle is solved from it.
+//  POSES — joint angles (deg). Stance feet are flat on the ground (or the
+//  slope); swing feet follow the shank. The ankle is solved from that.
 // =====================================================================
 const wrap = x => x - Math.round(x);
 const bump = (ph, mu, sig) => Math.exp(-(wrap(ph - mu) ** 2) / (2 * sig * sig));
+const win = (ph, a, b, e = .07) => { const s1 = Math.min(1, Math.max(0, (ph - a) / e)), s2 = Math.min(1, Math.max(0, (ph - b) / e)); const sm = x => x * x * (3 - 2 * x); return sm(s1) * (1 - sm(s2)); };
 const GAITS = {
-  walk: ph => ({ hip: 8 + 18 * Math.cos(2 * Math.PI * ph), knee: 4 + 13 * bump(ph, .14, .06) + 56 * bump(ph, .72, .1), foot: 9 * bump(ph, 0, .04) - 18 * bump(ph, .6, .05) }),
-  hike: ph => ({ hip: 16 + 22 * Math.cos(2 * Math.PI * ph), knee: 8 + 20 * bump(ph, .14, .07) + 62 * bump(ph, .7, .1), foot: 6 * bump(ph, 0, .04) - 16 * bump(ph, .6, .05) }),
-  run:  ph => ({ hip: 12 + 28 * Math.cos(2 * Math.PI * (ph - .92)), knee: 12 + 30 * bump(ph, .16, .07) + 98 * bump(ph, .64, .12), foot: 4 * bump(ph, 0, .04) - 26 * bump(ph, .38, .06) }),
+  walk: ph => ({ hip: 8 + 18 * Math.cos(2 * Math.PI * (ph - .92)), knee: 4 + 13 * bump(ph, .14, .06) + 56 * bump(ph, .72, .1), foot: 9 * bump(ph, 0, .04) - 18 * bump(ph, .6, .05), sw: win(ph, .6, .93), ank: 12 }),
+  hike: ph => ({ hip: 16 + 22 * Math.cos(2 * Math.PI * (ph - .92)), knee: 8 + 20 * bump(ph, .14, .07) + 62 * bump(ph, .7, .1), foot: 6 * bump(ph, 0, .04) - 9 * bump(ph, .32, .1) - 16 * bump(ph, .6, .05), sw: win(ph, .6, .93), ank: 14 }),  // heel rise on the climb keeps the ankle pivot inside ±30°
+  run:  ph => ({ hip: 12 + 28 * Math.cos(2 * Math.PI * (ph - .92)), knee: 12 + 30 * bump(ph, .16, .07) + 98 * bump(ph, .64, .12), foot: 4 * bump(ph, 0, .04) - 9 * bump(ph, .22, .07) - 26 * bump(ph, .38, .06), sw: win(ph, .38, .92), ank: 8 }),  // heel rises through midstance
 };
 const GAIT_TRUNK = { walk: 3, hike: 12, run: 11 };
 const GAIT_ARM = { walk: [0.55, 15], hike: [0.5, 22], run: [0.9, 80] };
 
 function gaitPose(kind, ph, slope = 0) {
-  const P = { slope, pad: 0, bounce: 0, gw: 1, trunk: GAIT_TRUNK[kind] };
+  const P = { slope, pad: 0, rear: 0, bounce: 0, gw: 1, trunk: GAIT_TRUNK[kind] };
   for (const [s, off] of [[1, 0], [-1, .5]]) {
     const q = GAITS[kind]((ph + off) % 1);
-    P['hip' + s] = q.hip; P['knee' + s] = q.knee; P['foot' + s] = q.foot + slope;
+    const shankAbs = q.hip - q.knee;
+    P['hip' + s] = q.hip; P['knee' + s] = q.knee;
+    P['foot' + s] = (q.foot + slope) * (1 - q.sw) + (shankAbs + q.ank) * q.sw;
     const [amp, elb] = GAIT_ARM[kind];
     P['arm' + s] = -(q.hip - 8) * amp; P['elb' + s] = elb + (kind === 'run' ? 10 * Math.sin(2 * Math.PI * (ph + off)) : 6);
   }
-  if (kind === 'run') P.bounce = 38 * (bump(ph, .46, .06) + bump(ph, .96, .06));  // flight after each toe-off
+  if (kind === 'run') P.bounce = 38 * (bump(ph, .46, .06) + bump(ph, .96, .06));
   return P;
 }
-const SEAT_TRUNK = { 0: 0, 25: 4, 60: 10, 90: 18, 120: 32 };
-function seatPose(knee, pad = knee > 0 ? 1 : 0) {
-  const phi = knee > 0 ? leanDeg(knee) : 0;
-  const P = { slope: 0, pad, bounce: 0, gw: 0, trunk: SEAT_TRUNK[knee] ?? 0 };
-  for (const s of [1, -1]) { P['hip' + s] = knee - phi; P['knee' + s] = knee; P['foot' + s] = 0; P['arm' + s] = knee > 0 ? 18 + knee * .22 : 4; P['elb' + s] = knee > 0 ? 25 + knee * .2 : 10; }
+// seat pose from the v2 table; knee/phi/trunk can be overridden (used for the "rise one tooth" and the lean-forward)
+function seatPose(knee, o = {}) {
+  const T = SEATS[knee] || SEATS[0];
+  const phi = o.phi ?? T.phi, trunk = o.trunk ?? T.trunk, k = o.knee ?? knee;
+  const P = { slope: 0, pad: o.pad ?? (knee > 0 ? 1 : 0), rear: o.rear ?? T.rear, bounce: 0, gw: 0, trunk, _phi: phi };
+  for (const s of [1, -1]) { P['hip' + s] = k - phi; P['knee' + s] = k; P['foot' + s] = 0; P['arm' + s] = k > 0 ? 18 + k * .22 : 4; P['elb' + s] = k > 0 ? 25 + k * .2 : 10; }
   return P;
 }
 function lerpPose(A, B, t) { const o = {}; for (const k in B) o[k] = (A[k] ?? B[k]) + (B[k] - (A[k] ?? B[k])) * t; return o; }
 const smooth = t => t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t);
 
-// forward kinematics in the sagittal plane, used to put the lowest foot point on the ground
 function footPts(P, s) {
   const h = P['hip' + s] * D2R, k = P['knee' + s] * D2R, f = P['foot' + s] * D2R;
   const kx = Lt * Math.sin(h), ky = -Lt * Math.cos(h);
@@ -442,10 +626,9 @@ function footPts(P, s) {
   const rot = (x, y) => [ax + x * Math.cos(f) - y * Math.sin(f), ay + x * Math.sin(f) + y * Math.cos(f)];
   return { heel: rot(-55, -ankleH), toe: rot(footL - 75, -ankleH), ankle: [ax, ay] };
 }
-let pelvisX = 0;
+let pelvisX = 0, curStatics = null;
 function applyPose(P) {
   const tanS = Math.tan(P.slope * D2R), fp = { 1: footPts(P, 1), [-1]: footPts(P, -1) };
-  // seat poses: feet stay planted under the ankles (x = 0). Gait: pelvis stays put (treadmill).
   pelvisX = -(fp[1].ankle[0] + fp[-1].ankle[0]) / 2 * (1 - (P.gw || 0));
   let y = -1e9; const contact = {};
   for (const s of [1, -1]) for (const [x, yy] of [fp[s].heel, fp[s].toe]) y = Math.max(y, (pelvisX + x) * tanS - yy);
@@ -457,131 +640,166 @@ function applyPose(P) {
     rig.ankle[s].rotation.z = (P['foot' + s] - P['hip' + s] + P['knee' + s]) * D2R;
     rig.sh[s].rotation.z = P['arm' + s] * D2R;
     rig.el[s].rotation.z = P['elb' + s] * D2R;
-    { // pad: stowed flush on the rail's outer face → deployed under the thigh, on a swing arc
+    { // pad: stowed flush on the rail's outer face → deployed under the proximal thigh
       const t = smooth(P.pad), m = knees[s].padMov;
-      m.position.set(-6 + (-65 + 6) * t, 0, s * (16 + (-70 - 16) * t) + s * 55 * Math.sin(Math.PI * t));
+      m.position.set(-6 + (-81 + 6) * t, 0, s * (16 + (-100 - 16) * t) + s * 60 * Math.sin(Math.PI * t));
       m.rotation.y = s * (Math.PI / 2) * (1 - t);
+      knees[s].padArm.scale.x = Math.max(.02, t); knees[s].padArm.visible = t > .02;
     }
-    contact[s] = { heel: lift(fp[s].heel) < 14, toe: lift(fp[s].toe) < 14 };  // for the FSR display
+    contact[s] = { heel: lift(fp[s].heel) < 14, toe: lift(fp[s].toe) < 14 };
   }
   rig.trunk.rotation.z = -P.trunk * D2R;
   groundGrp.rotation.z = P.slope * D2R;
+  // statics for seat-type poses (feet planted) — drives the rear legs and the overlay
+  const seated = (P.gw || 0) < .01 && P.knee1 > 15;
+  const phi = P.knee1 - P.hip1;
+  curStatics = seated ? statics(P.knee1, phi, P.trunk, P.rear > .5) : null;
+  // rear legs: swing from stowed (along the rail) to the computed foot point on the floor
+  rig.pelvis.updateMatrixWorld(true);
+  for (const s of [1, -1]) {
+    const K = knees[s], t = smooth(P.rear || 0);
+    let ang = 0, len = 350;
+    if (t > 0.001) {
+      const st = curStatics && curStatics.rear ? curStatics : statics(Math.max(P.knee1, 20), phi, P.trunk, true);
+      const hw = rig.hip[s].localToWorld(V(HINGE_LOCAL[0], HINGE_LOCAL[1], 0));
+      const ax = pelvisX + fp[s].ankle[0];
+      const R = V(ax + st.rear.Rf[0] * 1000, 12 + 3, 0);
+      const d = R.sub(hw), h = P['hip' + s] * D2R;
+      const lx = d.x * Math.cos(-h) - d.y * Math.sin(-h), ly = d.x * Math.sin(-h) + d.y * Math.cos(-h);
+      ang = Math.atan2(lx, -ly) * t; len = 350 + (Math.hypot(d.x, d.y) - 350) * t;
+    }
+    K.pole.rotation.z = ang;
+    const l1 = Math.min(350, len), l2 = Math.min(340, len * .67), l3 = Math.min(330, len * .4);
+    K.sec[0].scale.y = l1; K.sec[0].position.y = 0;
+    K.sec[1].scale.y = l2; K.sec[1].position.y = -len * .33;
+    K.sec[2].scale.y = l3; K.sec[2].position.y = -(len - l3);
+    K.lockCol.position.y = -Math.min(len, 345); K.foot.position.y = -len; K.foot.rotation.z = -(ang + P['hip' + s] * D2R);   // keep the pad flat
+  }
   return contact;
 }
 
-const gaitP = gaitPose, seatP = seatPose, applyP = applyPose;
-
 // =====================================================================
-//  STATE DISPLAY — motor / lock / pads / feet, and the knee rings' colour
+//  STATE DISPLAY
 // =====================================================================
 const $ = id => document.getElementById(id);
 const COL = { assist: 0x2fe39a, regen: 0x4aa8ff, pos: 0xffb238, off: 0x3a4456, locked: 0xff4a3d };
-function setKneeVis(s, motor, lock, pawlIn, buzz) {
+// ratchet states: lifted | lowering | holding | riding | unloaded
+function setKneeVis(s, motor, rat, knee, buzz) {
   const K = knees[s];
   K.status.emissive.setHex(COL[motor] ?? COL.off); K.status.emissiveIntensity = motor === 'off' ? 0.6 : 2.2;
-  K.lock.emissive.setHex(lock === 'locked' ? 0x7a0d08 : lock === 'pos' ? 0x5a3a00 : 0x000000);
-  K.lock.emissiveIntensity = lock === 'free' ? 0 : 1.4;
-  K.pawl.position.x = 14 + 12 * pawlIn;  // slides toward the ring as it engages
-  K.pawl.position.y = -26 - 10 * pawlIn;
+  K.lock.emissive.setHex(rat === 'holding' ? 0x7a0d08 : rat === 'riding' ? 0x5a3a00 : 0x000000);
+  K.lock.emissiveIntensity = (rat === 'holding' || rat === 'riding') ? 1.4 : 0;
+  let pin = rat === 'holding' ? 1 : rat === 'riding' ? 1 - 0.75 * ((knee / 9) % 1) : 0;   // radial engagement
+  K.pawl.position.x = 8 * pin;
+  K.solLed.material.emissive.setHex(rat === 'lifted' || rat === 'lowering' || rat === 'unloaded' ? 0xffb238 : 0x1d7a5c);
   K.buzz.material.opacity = buzz; K.buzz.scale.setScalar(1 + 0.06 * buzz);
 }
 const pill = (cls, t) => `<span class="pill p-${cls}">${t}</span>`;
-function setFeet(contact) {
+function setFeet(contact, override) {
   for (const [s, id] of [[1, 'fL'], [-1, 'fR']]) {
-    const c = contact[s], bars = $(id).children;
+    const c = override || contact[s], bars = $(id).children;
     bars[0].style.height = (c.heel ? 18 : 3) + 'px'; bars[1].style.height = (c.toe ? 18 : 3) + 'px';
     knees[s].fsr.forEach((m, i) => m.material.emissiveIntensity = ((i === 0 ? c.heel : c.toe) ? 2.4 : 0.25));
   }
 }
 function showState(o) {
   $('sAct').textContent = o.act; $('sKnee').textContent = o.knee;
-  $('sMotor').innerHTML = o.motorHtml; $('sLock').innerHTML = o.lockHtml; $('sPads').innerHTML = o.padsHtml; $('sDraw').innerHTML = o.draw;
+  $('sMotor').innerHTML = o.motorHtml; $('sLock').innerHTML = o.lockHtml; $('sRear').innerHTML = o.rearHtml || pill('off', 'STOWED');
+  $('sPads').innerHTML = o.padsHtml; $('sBal').innerHTML = o.balHtml || '—'; $('sDraw').innerHTML = o.draw;
+}
+const RAT_TXT = { lifted: pill('off', 'LIFTED · knee free'), lowering: pill('pos', 'LIFTED · motor brakes the descent'), holding: pill('locked', 'HOLDING'), riding: pill('pos', 'RIDING ↑ click-click'), unloaded: pill('pos', 'UNLOADED → solenoid lifts') };
+function balHtml(st) {
+  if (!st) return '—';
+  const bad = Math.min(st.mBack, st.mFront) < .10, tip = st.mBack < 0 || st.mFront < 0;
+  return `${pill(tip ? 'locked' : bad ? 'locked' : 'free', tip ? 'TIPS' : bad ? 'THIN' : 'STABLE')} back ${(st.mBack * 100).toFixed(0)} cm · front ${(st.mFront * 100).toFixed(0)} cm`;
+}
+function rearHtml(P, st) {
+  if ((P.rear || 0) < .02) return pill('off', 'STOWED');
+  if (P.rear < .98 || !st?.rear) return pill('pos', 'DEPLOYING');
+  return pill('regen', `ON GROUND · ${st.rear.N.toFixed(0)} N`) + ` ${(st.rear.len * 100).toFixed(0)} cm`;
 }
 
 // =====================================================================
 //  ON-BODY TIMELINE: walk → hike uphill → run → stop → seat offer →
-//  Perch → Half-sit → Chair → Deep squat → stand. Draw figures come from
-//  energy_model.mjs (median man): walk ~22 W (15 Nm), hike up ~40 W
-//  (25 Nm), run ~58 W (mirror, no regen credit), sitting 5 W (pawl holds).
+//  Perch (no rear leg) → Half-sit → Chair → Deep squat (rear legs down) →
+//  lean forward → stand up. Draw figures from energy_model.mjs (median man).
 // =====================================================================
 const SEG = [
-  { k: 'walk',  name: 'Walk',          dur: 5.0, gait: 'walk', cad: .9,  speed: 1400, slope: 0, draw: '≈22 W at 15 Nm (EST, energy_model.mjs hike case)' },
+  { k: 'walk',  name: 'Walk',          dur: 5.0, gait: 'walk', cad: .9,  speed: 1400, slope: 0, draw: '≈22 W at 15 Nm (EST)' },
   { k: 'hike',  name: 'Hike uphill',   dur: 5.5, gait: 'hike', cad: .8,  speed: 1000, slope: 9, blend: 1.2, draw: '~40 W · 25 Nm assist (energy_model.mjs)' },
   { k: 'run',   name: 'Run',           dur: 5.5, gait: 'run',  cad: 1.4, speed: 3500, slope: 0, blend: 1.0, draw: '~58 W · 48 Nm peak (no regen credit)' },
   { k: 'stop',  name: 'Slowing to a stop', dur: 1.8, seat: 0, blend: 1.8, draw: '5–10 W (EST) · braking to a stop' },
   { k: 'still', name: 'Standing still',dur: 1.3, seat: 0, draw: '5 W idle' },
   { k: 'offer', name: 'Seat offer',    dur: 2.2, seat: 0, buzz: true, draw: '5 W idle' },
-  { k: 'perch', name: 'Perch 25°',     dur: 3.0, seat: 25, blend: 1.3, draw: '5 W · pawl holds, motors off' },
-  { k: 'half',  name: 'Half-sit 60°',  dur: 3.0, seat: 60, blend: 1.3, draw: '5 W · pawl holds, motors off' },
-  { k: 'chair', name: 'Chair 90°',     dur: 3.2, seat: 90, blend: 1.3, draw: '5 W · pawl holds 142 Nm/knee' },
-  { k: 'squat', name: 'Deep squat 120°',dur: 3.0, seat: 120, blend: 1.3, draw: '5 W · pawl holds, motors off' },
-  { k: 'up',    name: 'Standing up',   dur: 2.6, seat: 0, blend: 1.8, draw: 'short burst (EST) · motors assist the rise' },
+  { k: 'perch', name: 'Perch 25° · lean-assist (you balance)', dur: 3.2, seat: 25, blend: 1.3, draw: '5 W · ratchet holds, motors off' },
+  { k: 'half',  name: 'Half-sit 60°',  dur: 3.6, seat: 60, blend: 1.4, draw: '5 W · ratchet + rear legs hold' },
+  { k: 'chair', name: 'Chair 90°',     dur: 3.8, seat: 90, blend: 1.4, draw: '5 W · ratchet + rear legs hold' },
+  { k: 'squat', name: 'Deep squat 120°',dur: 3.6, seat: 120, blend: 1.4, draw: '5 W · ratchet + rear legs hold' },
+  { k: 'up',    name: 'Standing up',   dur: 3.4, up: true, draw: 'short burst (EST) · motors assist the rise' },
 ];
 let acc = 0; for (const s of SEG) { s.t0 = acc; acc += s.dur; }
 const BODY_T = acc;
-// gait phase and treadmill distance as functions of time (so scrubbing is exact)
-SEG.forEach((s, i) => {
-  const prev = SEG[i - 1];
-  s.ph0 = prev ? prev.ph0 + (prev.cad || 0) * prev.dur : 0;
-  s.d0 = prev ? prev.d0 + (prev.speed || 0) * prev.dur : 0;
-});
+SEG.forEach((s, i) => { const prev = SEG[i - 1]; s.ph0 = prev ? prev.ph0 + (prev.cad || 0) * prev.dur : 0; s.d0 = prev ? prev.d0 + (prev.speed || 0) * prev.dur : 0; s.pre = (prev && prev.seat > 0 && s.seat > 0) ? 0.55 : 0; });
 const segAt = t => { for (let i = SEG.length - 1; i >= 0; i--) if (t >= SEG[i].t0) return i; return 0; };
-function segPose(s, t) {
-  if (s.gait) { const ph = (s.ph0 + s.cad * (t - s.t0)) % 1; return gaitP(s.gait, ph, s.slope); }
-  return seatP(s.seat, s.seat > 0 ? 1 : 0);
-}
+const gaitAt = (s, t) => gaitPose(s.gait, (s.ph0 + s.cad * (t - s.t0)) % 1, s.slope);
+
 function bodyFrame(t) {
   const i = segAt(t), s = SEG[i], u = t - s.t0, prev = SEG[i - 1];
-  let P = segPose(s, t), b = 1;
-  if (prev && s.blend && u < s.blend) {
-    b = smooth(u / s.blend);
-    // the previous gait keeps cycling while we blend out of it
-    const Pp = prev.gait ? gaitP(prev.gait, (prev.ph0 + prev.cad * (t - prev.t0)) % 1, prev.slope) : segPose(prev, t);
-    P = lerpPose(Pp, P, b);
-  }
-  const contact = applyP(P);
-  // treadmill
-  const dist = s.d0 + (s.speed || 0) * u;
-  grid.position.x = -(dist % GRID_CELL);
-
-  // ---------- state machine for display ----------
-  let act = s.name, motor = 'off', lock = 'free', pawlIn = 0, buzz = 0, toast = '';
-  const ph = s.gait ? (s.ph0 + s.cad * u) % 1 : 0;
-  const perLeg = {};
-  for (const sd of [1, -1]) {
-    let m = 'off';
-    if (s.gait) {
-      const p = (ph + (sd > 0 ? 0 : .5)) % 1;
-      if (s.gait === 'run') m = p < .2 ? 'regen' : p < .38 ? 'assist' : 'off';
-      else m = p < .55 ? 'assist' : 'off';
+  let P, rat = 'lifted', motor = 'off', toast = '', buzz = 0, feetOverride = null;
+  const perLeg = { 1: 'off', [-1]: 'off' };
+  if (s.gait) {
+    P = gaitAt(s, t);
+    if (prev && s.blend && u < s.blend) P = lerpPose(prev.gait ? gaitAt(prev, t) : seatPose(0), P, smooth(u / s.blend));
+    const ph = (s.ph0 + s.cad * u) % 1;
+    for (const sd of [1, -1]) { const p = (ph + (sd > 0 ? 0 : .5)) % 1; perLeg[sd] = s.gait === 'run' ? (p < .2 ? 'regen' : p < .38 ? 'assist' : 'off') : (p < .55 ? 'assist' : 'off'); }
+  } else if (s.up) {
+    const A = seatPose(120), Lean = seatPose(120, { trunk: 54 }), S = seatPose(0, { pad: 0, rear: 0 });
+    if (u < .7) { P = lerpPose(A, Lean, smooth(u / .7)); rat = 'holding'; toast = 'Lean forward: the toe FSRs load, the CoM moves over the feet'; feetOverride = { heel: u < .35, toe: true }; }
+    else {
+      const b = smooth((u - .7) / 1.9); P = lerpPose(Lean, S, b);
+      P.rear = 1 - smooth((u - .7) / .9); P.pad = 1 - smooth((u - 1.2) / 1.0);
+      rat = P.knee1 > 20 ? 'riding' : 'lifted'; perLeg[1] = perLeg[-1] = b < .98 ? 'assist' : 'off';
+      toast = P.knee1 > 20 ? 'Quads + 48 Nm assist: the ratchet rides up (extension is always free), rear legs retract, pads fold' : 'Below 20° and extending → solenoid lifts the pawl → free to walk';
     }
-    perLeg[sd] = m;
+  } else if (s.seat > 0) {
+    const target = seatPose(s.seat);
+    if (u < s.pre) {               // rise one tooth so the pawl unloads, then lift it
+      const k = smooth(u / s.pre); P = seatPose(prev.seat, { knee: prev.seat - 5 * k }); rat = k < .7 ? 'riding' : 'unloaded'; perLeg[1] = perLeg[-1] = 'assist';
+      toast = 'Rise one tooth (extension is free) → pawl-load sensor ≈ 0 → only then the solenoid lifts';
+    } else if (u < s.pre + s.blend) {
+      const b = smooth((u - s.pre) / s.blend);
+      const from = s.pre ? seatPose(prev.seat, { knee: prev.seat - 5 }) : (prev.gait ? gaitAt(prev, t) : seatPose(0));
+      P = lerpPose(from, target, b); rat = 'lowering'; perLeg[1] = perLeg[-1] = 'regen';
+      toast = SEATS[s.seat].rear ? 'Lowering on motor braking · pads swing under the thighs · rear legs swing down and lock in compression' : 'Lowering on motor braking · pads fold down · Perch is a lean-assist: the knees are locked, your calves still balance you';
+    } else {
+      P = target; rat = 'holding';
+      const st = statics(s.seat, SEATS[s.seat].phi, SEATS[s.seat].trunk, !!SEATS[s.seat].rear);
+      toast = `${s.name}: pawl drops into the nearest tooth · knee lock ${st.MK.toFixed(0)} Nm` + (st.rear ? ` · rear leg ${st.rear.N.toFixed(0)} N (${(st.rear.N * st.rear.u[1] / (st.WB + st.Wf) * 100).toFixed(0)}%)` : ' · balance like standing') + ` · motors off`;
+    }
+  } else {
+    P = seatPose(0);
+    if (prev && s.blend && u < s.blend) P = lerpPose(prev.gait ? gaitAt(prev, t) : seatPose(0), P, smooth(u / s.blend));
+    if (s.k === 'stop') perLeg[1] = perLeg[-1] = u < 1.2 ? 'regen' : 'off';
+    if (s.k === 'still') toast = 'Both feet loaded, IMU quiet for 1 s → the ratchet may now drop';
+    if (s.k === 'offer') { buzz = Math.max(0, Math.sin(u * 14)) * (u < 1.5 ? 1 : 0); toast = u < 1.5 ? 'Seat offer · bzz-bzz · tap the belt button to sit' : 'Tapped → place memory: “trailhead bench” → demo all four angles'; }
   }
-  if (s.k === 'stop') { perLeg[1] = perLeg[-1] = u < 1.2 ? 'regen' : 'off'; }
-  if (s.k === 'still') toast = 'Both feet loaded, IMU quiet for 1 s → seat lock now ALLOWED';
-  if (s.k === 'offer') { buzz = Math.max(0, Math.sin(u * 14)) * (u < 1.5 ? 1 : 0); toast = u < 1.5 ? 'Seat offer · bzz-bzz · tap the belt button to sit' : 'Tapped → place memory: “trailhead bench” → demo all four angles'; }
-  if (s.seat > 0) {
-    const moving = s.blend && u < s.blend;
-    lock = moving ? 'pos' : 'locked';
-    pawlIn = moving ? 0 : smooth((u - s.blend) / 0.35);
-    perLeg[1] = perLeg[-1] = moving ? 'pos' : 'off';
-    if (moving) toast = 'Pawl released → motors position the knee → pads fold down';
-    else toast = `${s.name} locked · ${s.k === 'chair' ? '142 Nm per knee carried by the pawl, 0 W' : 'pawl carries the load, motors off'}`;
-  }
-  if (s.k === 'up') { lock = u < .3 ? 'pos' : 'free'; perLeg[1] = perLeg[-1] = u < 1.8 ? 'assist' : 'off'; toast = u < 1.8 ? 'Lean forward detected → unlock → motors help you rise, pads fold away' : 'Standing · ready to walk'; }
-  for (const sd of [1, -1]) setKneeVis(sd, perLeg[sd], lock, pawlIn, buzz);
-  setFeet(contact);
-  const motorTxt = m => m === 'assist' ? pill('assist', 'ASSIST') : m === 'regen' ? pill('regen', 'REGEN / BRAKE') : m === 'pos' ? pill('pos', 'POSITIONING') : pill('off', s.seat > 0 ? 'OFF · pawl holds' : 'TRANSPARENT');
+  const contact = applyPose(P);
+  grid.position.x = -((s.d0 + (s.speed || 0) * u) % GRID_CELL);
+  for (const sd of [1, -1]) setKneeVis(sd, perLeg[sd], rat, P['knee' + sd], buzz);
+  setFeet(contact, feetOverride);
+  updateFlex();
+  const st = curStatics && (s.seat > 0 || s.up) ? curStatics : null;
+  updateOverlay(P, st);
+  const motorTxt = m => m === 'assist' ? pill('assist', 'ASSIST') : m === 'regen' ? pill('regen', 'BRAKING / REGEN') : pill('off', rat === 'holding' ? 'OFF · ratchet holds' : 'TRANSPARENT');
   showState({
-    act: act + (s.slope ? ` · ${s.slope}° grade` : ''),
+    act: s.name + (s.slope ? ` · ${s.slope}° grade` : ''),
     knee: `${P.knee1.toFixed(0)}° / ${P['knee-1'].toFixed(0)}°`,
     motorHtml: perLeg[1] === perLeg[-1] ? motorTxt(perLeg[1]) : `L ${motorTxt(perLeg[1])} R ${motorTxt(perLeg[-1])}`,
-    lockHtml: lock === 'locked' ? pill('locked', 'LOCKED') : lock === 'pos' ? pill('pos', 'ENGAGING') : pill('free', 'FREE'),
-    padsHtml: P.pad > .98 ? pill('pos', 'DOWN') : P.pad > .02 ? pill('pos', 'FOLDING') : pill('off', 'STOWED'),
-    draw: s.draw,
+    lockHtml: RAT_TXT[rat] + (rat === 'holding' && st ? ` ${st.MK.toFixed(0)} Nm` : ''),
+    rearHtml: rearHtml(P, st), padsHtml: P.pad > .98 ? pill('pos', 'DOWN') : P.pad > .02 ? pill('pos', 'FOLDING') : pill('off', 'STOWED'),
+    balHtml: balHtml(st), draw: s.draw,
   });
-  showToast(toast);
-  setChip(i);
+  showToast(toast); setChip(i);
 }
 function showToast(t) { const el = $('toast'); if (t) { el.textContent = t; el.style.display = 'block'; } else el.style.display = 'none'; }
 
@@ -591,21 +809,22 @@ function showToast(t) { const el = $('toast'); if (t) { el.textContent = t; el.s
 const STEP_T = 2.4, ASM_T = STEPS.length * STEP_T + 2.0;
 const easeOutBack = x => { const c1 = 1.5, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
 function asmFrame(t) {
-  applyP(seatP(0, 0));
+  applyPose(seatPose(0));
   const cur = Math.min(STEPS.length - 1, Math.floor(t / STEP_T));
   for (const p of parts) {
-    const t0 = p.step * STEP_T + 0.15, k = (t - t0) / 1.35;
-    const vis = k > 0;
+    const t0 = p.step * STEP_T + 0.15, k = (t - t0) / 1.35, vis = k > 0;
     p.g.visible = vis;
     const off = vis ? 1 - easeOutBack(Math.min(1, k)) : 1;
-    p.g.position.copy(p.base).addScaledVector(p.ex, explodeT + 3.2 * off);  // off < 0 = the snap overshoot
+    p.g.position.copy(p.base).addScaledVector(p.ex, explodeT + 3.2 * off);
     p.g.scale.setScalar(vis ? 0.75 + 0.25 * Math.min(1, k * 1.4) : 1);
   }
-  for (const s of [1, -1]) setKneeVis(s, 'off', 'free', 0, 0);
+  for (const s of [1, -1]) { setKneeVis(s, 'off', 'lifted', 0, 0); knees[s].axis.visible = t > 2 * STEP_T + .8; }
+  flex.visible = t > 7 * STEP_T + 1.0; if (flex.visible) updateFlex();
+  ov.visible = false;
   const st = STEPS[cur], done = t >= STEPS.length * STEP_T;
   $('capStep').textContent = done ? 'COMPLETE' : `STEP ${cur + 1} / ${STEPS.length}`;
-  $('capTitle').textContent = done ? 'Prototype one: 7.2 kg worn · $3,759 in parts' : st.t;
-  $('capText').textContent = done ? '2.91 kg per leg, 1.42 kg on the belt. Click any part for its price, mass and why it is there.' : st.d;
+  $('capTitle').textContent = done ? 'Prototype one (v2 tripod): 8.96 kg worn · $4,200 in parts' : st.t;
+  $('capText').textContent = done ? '3.72 kg per leg, 1.52 kg on the belt (bom.mjs). Click any part for its price, mass and job.' : st.d;
   setChip(done ? -1 : cur);
 }
 
@@ -629,39 +848,49 @@ function startAnim(kind) {
   for (const m of bodyMeshes) m.visible = $('body').checked;
   setBodyGhost(kind === 'assembly' ? 0.16 : ($('xray').checked ? 0.25 : 1));
   for (const p of parts) { p.g.visible = true; p.g.scale.setScalar(1); }
+  flex.visible = true; for (const s of [1, -1]) knees[s].axis.visible = true;
   setChips(); markButtons(kind === 'assembly' ? 'aAsm' : 'aBody');
-  if (kind === 'assembly') flyTo([2100, 1500, 2600], [0, 760, 0]); else flyTo([1500, 1350, 3200], [0, 820, 0]);
+  if (kind === 'assembly') flyTo([2100, 1500, 2600], [0, 760, 0]); else flyTo([1300, 1300, 3300], [-150, 760, 0]);
   controls.autoRotate = kind === 'assembly'; $('spin').checked = controls.autoRotate;
 }
 function stopAnim() {
   ANIM = 'none'; playing = false; document.body.classList.remove('anim');
   $('transport').style.display = 'none'; $('caption').style.display = 'none'; showToast('');
   setBodyGhost($('xray').checked ? 0.25 : 1);
-  grid.position.x = 0; groundGrp.rotation.z = 0;
+  grid.position.x = 0; groundGrp.rotation.z = 0; flex.visible = explodeT < .02;
+  for (const s of [1, -1]) knees[s].axis.visible = true;
   for (const p of parts) { p.g.visible = true; p.g.scale.setScalar(1); p.g.position.copy(p.base).addScaledVector(p.ex, explodeT); }
 }
 function setBodyGhost(op) { M.skin.transparent = op < 1; M.skin.opacity = op; M.skin.depthWrite = op >= 1; M.skin.needsUpdate = true; }
 
 // static modes
-const MODES = { mStand: ['Standing', 0], mPerch: ['Perch 25°', 25], mHalf: ['Half-sit 60°', 60], mChair: ['Chair 90°', 90], mSquat: ['Deep squat 120°', 120] };
-const SEAT_NM = { 25: 44, 60: 102, 90: 142, 120: 168 };  // balanced static hold per knee, seat_torque_model.mjs
-const SEAT_DES = { 25: 214, 60: 439, 90: 507, 120: 507 };
+const MODES = { mStand: ['Standing', 0], mPerch: ['Perch 25° · lean-assist (you balance)', 25], mHalf: ['Half-sit 60°', 60], mChair: ['Chair 90°', 90], mSquat: ['Deep squat 120°', 120] };
+let curMode = 'mStand';
 function staticMode(id) {
-  stopAnim(); markButtons(id); $('state').style.display = 'block';
-  let P, act, lock = 'free', motor = 'off';
-  if (id === 'mRun') { P = gaitP('run', .2, 0); act = 'Run stride (static)'; motor = 'assist'; }
-  else { const [n, k] = MODES[id]; P = seatP(k, k > 0 ? 1 : 0); act = n; if (k > 0) lock = 'locked'; }
-  const contact = applyP(P);
-  for (const s of [1, -1]) setKneeVis(s, motor, lock, lock === 'locked' ? 1 : 0, 0);
-  setFeet(contact);
-  const k = id === 'mRun' ? 0 : MODES[id][1];
+  stopAnim(); markButtons(id); curMode = id; $('state').style.display = 'block';
+  let P, act, rat = 'lifted', motor = 'off', warn = '';
+  const rearOK = $('rearleg').checked;
+  if (id === 'mRun') { P = gaitPose('run', .2, 0); act = 'Run stride (static)'; motor = 'assist'; }
+  else {
+    const [n, k] = MODES[id]; act = n;
+    P = seatPose(k, { rear: k > 0 && SEATS[k].rear && rearOK ? 1 : 0 });
+    if (k > 0) rat = 'holding';
+    if (k > 25 && !rearOK) { warn = `${n} WITHOUT rear legs: the CoM falls behind the heel → it tips backward. Firmware allows only Perch.`; act += ' · NO REAR LEG'; }
+  }
+  const contact = applyPose(P);
+  for (const s of [1, -1]) setKneeVis(s, motor, rat, P['knee' + s], 0);
+  setFeet(contact); updateFlex();
+  const st = curStatics;
+  updateOverlay(P, st);
   showState({
     act, knee: `${P.knee1.toFixed(0)}° / ${P['knee-1'].toFixed(0)}°`,
-    motorHtml: id === 'mRun' ? pill('assist', 'ASSIST 48 Nm pk') : pill('off', k > 0 ? 'OFF · pawl holds' : 'TRANSPARENT'),
-    lockHtml: lock === 'locked' ? pill('locked', 'LOCKED') : pill('free', 'FREE'),
-    padsHtml: P.pad > .5 ? pill('pos', 'DOWN') : pill('off', 'STOWED'),
-    draw: k > 0 ? `hold ${SEAT_NM[k]} Nm/knee (balanced) · pawl rated ${SEAT_DES[k]} Nm` : id === 'mRun' ? '~58 W (energy_model.mjs)' : '5 W idle',
+    motorHtml: id === 'mRun' ? pill('assist', 'ASSIST 48 Nm pk') : pill('off', rat === 'holding' ? 'OFF · ratchet holds' : 'TRANSPARENT'),
+    lockHtml: RAT_TXT[rat] + (st && rat === 'holding' ? ` ${st.MK.toFixed(0)} Nm` : ''),
+    rearHtml: rearHtml(P, st), padsHtml: P.pad > .5 ? pill('pos', 'DOWN') : pill('off', 'STOWED'),
+    balHtml: balHtml(st),
+    draw: st ? `seat load ${st.seatN.toFixed(0)} N/leg · heel ${st.Th.toFixed(0)} N · ball ${st.Tm.toFixed(0)} N` + (st.rear ? ` · rear ${st.rear.N.toFixed(0)} N` : '') : id === 'mRun' ? '~58 W (energy_model.mjs)' : '5 W idle',
   });
+  showToast(warn);
 }
 function markButtons(id) { document.querySelectorAll('#panel button').forEach(b => b.classList.toggle('on', b.id === id)); }
 
@@ -674,7 +903,9 @@ $('vF').onclick = () => flyTo(...VIEWS.front); $('vB').onclick = () => flyTo(...
 $('vS').onclick = () => flyTo(...VIEWS.side); $('vT').onclick = () => flyTo(...VIEWS.top);
 $('aAsm').onclick = () => startAnim('assembly'); $('aBody').onclick = () => startAnim('body');
 for (const id of [...Object.keys(MODES), 'mRun']) $(id).onclick = () => staticMode(id);
-$('explode').oninput = e => { explodeT = e.target.value / 100; if (ANIM !== 'assembly') for (const p of parts) p.g.position.copy(p.base).addScaledVector(p.ex, explodeT); };
+$('explode').oninput = e => { explodeT = e.target.value / 100; if (ANIM !== 'assembly') { for (const p of parts) p.g.position.copy(p.base).addScaledVector(p.ex, explodeT); flex.visible = explodeT < .02; } };
+$('overlay').onchange = () => { if (ANIM === 'none') staticMode(curMode); };
+$('rearleg').onchange = () => { if (ANIM === 'none') staticMode(curMode); };
 $('labels').onchange = e => scene.traverse(o => { if (o.userData.isLabel) o.visible = e.target.checked; });
 $('spin').onchange = e => controls.autoRotate = e.target.checked;
 $('body').onchange = e => { for (const m of bodyMeshes) m.visible = e.target.checked; };
@@ -684,7 +915,7 @@ $('tRestart').onclick = () => { T = 0; playing = true; $('tPlay').textContent = 
 $('scrub').oninput = e => { T = e.target.value / 1000 * animLen(); playing = false; $('tPlay').textContent = '▶'; frame(0); };
 $('cX').onclick = () => $('card').style.display = 'none';
 controls.addEventListener('start', () => { if (ANIM !== 'assembly') { controls.autoRotate = false; $('spin').checked = false; } });
-$('dims').innerHTML = `Wearer: 95th-pct US man, 130 kg, 1.87 m<br>Chair hold <b>142 Nm/knee</b> → pawl rated <b>507 Nm</b><br><b>2.91 kg</b> per leg · <b>7.2 kg</b> worn<br>194 Wh (2 × 97 Wh) · run ~2.8 h · hike up ~4.2 h<br>Prototype one parts <b>$3,759</b> · all-in ~$6,400`;
+$('dims').innerHTML = `Wearer: 95th-pct US man, 130 kg, 1.87 m<br><b>Tripod seat</b>: heel + toes + rear leg per side<br>Chair: 40% down the rear leg (284 N), knee lock <b>79 Nm</b> (v1: 142)<br>Chair CoM <b>0.11 m</b> behind the heel, 0.28 m back margin<br>Perch = lean-assist (you balance); no rear legs → Perch only<br><b>3.72 kg</b>/leg · <b>8.96 kg</b> worn · parts <b>$4,200</b><br><span style="opacity:.7">numbers: seat_torque_model.mjs · bom.mjs</span>`;
 
 // click a part for its card
 const ray = new THREE.Raycaster(), ptr = new THREE.Vector2(); let down = null;
@@ -736,7 +967,7 @@ function loop() {
     a.download = (q.get('name') || 'run_sit_exo') + '.png'; a.click(); }, 900);
 }
 loop();
-window.__exo = { rig, parts, SEG, STEPS, bodyFrame, asmFrame, ready: true };
+window.__exo = { rig, parts, SEG, STEPS, bodyFrame, asmFrame, statics, knees, ready: true };
 </script>
 </body>
 </html>

@@ -2,35 +2,79 @@
 ##############################################################################
 # node seat_torque_model.mjs
 ##############################################################################
-=== SEAT MODE — knee torque to hold a 95th-percentile US man ===
-Person: 130.3 kg (NHANES 95th), 1.874 m (NHANES 95th) — both marginals, paired on purpose
-Thigh 0.459 m, shank 0.461 m (Winter fractions), pad CoP 0.298 m from knee (EST 65% of thigh)
-Load per leg, both legs sharing, 100% of mass above the shanks: 566 N
+=== SEAT v2 — TRIPOD STATICS, 95th-pct US man (130.3 kg, 1.874 m, NHANES) ===
+Exo worn: 3.72 kg per leg + 1.52 kg belt (bom.mjs). Ankle pivot FREE; shank lean capped at 20° (loaded dorsiflexion).
+Pad CoP at 0.75 x thigh from the knee (proximal). Rear-leg hinge at 0.85 x thigh (rail top).
 
-Mode        knee  bal.shank  hip ht   M balanced  M worst   x1.5 drop  x2 one-leg  LOCK DESIGN (xSF1.5)
-Perch         25°     9.8°   0.98 m      44 Nm     71 Nm     107 Nm      143 Nm     214 Nm
-Half-sit      60°    23.0°   0.87 m     102 Nm    146 Nm     220 Nm      293 Nm     439 Nm
-Chair         90°    32.9°   0.72 m     142 Nm    169 Nm     253 Nm      338 Nm     507 Nm
-Deep squat   120°    35.0°*  0.50 m     168 Nm    169 Nm     253 Nm      338 Nm     507 Nm
-  * shank lean capped at the EST ankle limit — the pad sits behind the heel, feet must take the rest
+Mode         knee lean  hip ht  rear foot  leg len  angle  mu req  N axial  %rear  %heel+toe  KNEE LOCK  CoM vs heel  margin back/front   verdict
+Perch          25°  10°  0.98 m     (stowed — no rear leg)                     0%    100%      52 Nm      5.4 cm   0.05 / 0.21 m   THIN MARGIN
+Half-sit       60°  15°  0.85 m  0.340 m   0.84 m   17°   0.30    196 N   28%     72%      78 Nm     -4.5 cm   0.29 / 0.31 m   OK
+Chair          90°  15°  0.64 m  0.390 m   0.65 m   17°   0.30    284 N   40%     60%      79 Nm    -11.1 cm   0.28 / 0.38 m   OK
+Deep squat    120°  20°  0.43 m  0.305 m   0.46 m   17°   0.30    213 N   30%     70%      94 Nm     -4.4 cm   0.26 / 0.31 m   OK
+
+Tipping angles (CoM height, then how far the whole system must tilt before it goes over):
+  Perch       CoM 1.00 m high → back 3°, forward 12°, sideways 11° (polygon half-width 0.20 m at the CoM)
+  Half-sit    CoM 0.90 m high → back 18°, forward 19°, sideways 12° (polygon half-width 0.20 m at the CoM)
+  Chair       CoM 0.74 m high → back 21°, forward 27°, sideways 14° (polygon half-width 0.19 m at the CoM)
+  Deep squat  CoM 0.57 m high → back 25°, forward 29°, sideways 19° (polygon half-width 0.20 m at the CoM)
+  Side check: shoes 0.3 m apart (EST), rear feet 0.34 m apart. A cross-slope of θ eats θ of the side margin.
+
+PERCH IS A LEAN-ASSIST, NOT HANDS-FREE SITTING: the knee lock takes the bend, but your own calves keep you balanced,
+exactly as when standing. Backward margin 5 cm (3° tilt). Lean on a wall or pole, or deploy the rear legs and use Half-sit.
+Perch has no rear leg: the wearer balances at the ankle exactly as when standing, 2 Nm per ankle (calf), CoM -0.1 cm behind the ankle.
+
+=== WITHOUT THE REAR LEG (stowed, broken, or soft ground) ===
+Perch       knee lock   52 Nm, ankle muscle   2 Nm, CoM    5.4 cm from the heel edge → inside the foot but thin: needs calf balance
+Half-sit    knee lock  145 Nm, ankle muscle  70 Nm, CoM   -4.5 cm from the heel edge → BEHIND the heel: tips backward. NOT ALLOWED.
+Chair       knee lock  190 Nm, ankle muscle 114 Nm, CoM  -11.1 cm from the heel edge → BEHIND the heel: tips backward. NOT ALLOWED.
+Deep squat  knee lock  168 Nm, ankle muscle  69 Nm, CoM   -4.4 cm from the heel edge → BEHIND the heel: tips backward. NOT ALLOWED.
+Firmware rule: with no rear leg detected on the ground (foot switch), ONLY Perch may lock.
+
+=== WHY v1 HAD TO GO ===
+v1 chair: shank lean 32.9° (past the ~20° comfortable dorsiflexion), pad CoP placed over the heel.
+Whole-body CoM 5.4 cm from the heel edge (the BACK edge of the support polygon) → backward margin ~5 cm, a 4° backward tilt to go over.
+A 3–4 cm lean back, a pack shift or a slope and you go over backward. "The feet take the rest" meant muscles,
+which contradicted the 100% load share it assumed. The rear leg moves the back edge ~0.4 m further back.
 
 === CAN THE MOTOR HOLD IT? ===
-Chair, balanced, static: 142 Nm per knee.
-CubeMars AK10-9 V2.0 KV100: 18 Nm rated / 48 Nm peak → 3.0x its PEAK. No.
-CubeMars AK80-64 KV80: 48 Nm rated / 120 Nm peak → 3.0x its RATED. No — and at 23 rpm it cannot follow a running knee anyway.
-Holding 48 Nm on the AK10-9 alone burns 92 W per knee as heat — minutes, not hours.
-VERDICT: the seat is held by a MECHANICAL lock. The motor only positions the knee so the lock can drop in.
+Chair with rear leg: 79 Nm per knee. AK10-9 peak 48 Nm → 1.7x its peak, and 92 W of heat at 48 Nm. Still a mechanical lock.
+v1 errors, for the record: v1 chair needed 160 Nm per knee in this model (v1 report: 142 Nm); the 48 Nm motor could never
+unload a pawl carrying that to let it lift, and a small solenoid cannot pull a loaded pawl out (~2 kN tooth friction).
+v2 never asks either: the ratchet lets the knee EXTEND, which unloads the pawl by itself.
+(AK80-64: 120 Nm peak, but 23 rpm cannot follow a running knee — rejected, see gait_assist_model.mjs.)
 
-=== LOCK SIZING (worst mode: Chair, 507 Nm design) ===
-Pawl on a toothed ring at r = 35 mm → tooth force 14.5 kN
-17-4PH H900, shear = 0.6 x 1310 MPa (handbook, VERIFY) → shear area ≥ 18 mm²
-SHEAR ONLY. Contact (Hertz) and tooth-bending checks are NOT done yet; plan on 3x this area until they are.
-So: e.g. two pawl teeth, each 10 mm wide x 3 mm engaged. The lock itself is small.
+=== ONE-WAY RATCHET (blocks flexion; extension always free) ===
+Fallback design load (rear leg slips, thigh horizontal, all weight on ONE leg, x1.5): 507 Nm — the lock and rails are still sized for this.
+v1 pawl   : 36T at r = 35 mm, 8 mm wide, 1 tooth/teeth loaded → 14.5 kN each, bending 1976 MPa vs 17-4PH H900 yield ~1170 MPa (VERIFY) → FAILS; step 10°
+v2 ratchet: 40T at r = 50 mm, 12 mm wide, 2 tooth/teeth loaded → 5.1 kN each, bending 359 MPa vs 17-4PH H900 yield ~1170 MPa (VERIFY) → SF 3.3; step 9°
+Contact (Hertz) stress is still NOT checked. Pawl-load sensor (strain gauge) on each pawl.
+Sequence: GAIT pawl lifted (latching solenoid) → LOWER under motor braking + quads, pawl lifted → at the target the
+pawl DROPS into the nearest tooth and takes the load → STAND: extension is free, the pawl clicks over the teeth,
+no release needed, works with power off → below 20° and extending the solenoid lifts it for walking.
+Going DEEPER from a seat: rise one tooth (extension is free) → pawl-load sensor reads ~0 → only then lift.
+(A 30 g solenoid cannot drag a pawl out under ~2 kN of tooth friction, so it never tries to.)
 
-=== THIGH UPRIGHT (the part that IS hard) ===
-Design moment 507 Nm at yield 503 MPa (7075-T6, VERIFY) → section modulus ≥ 1008 mm³
-One lateral 7075 bar 8 mm thick needs to be 28 mm deep → 0.28 kg per 450 mm thigh upright.
-A single 25x22 mm roll-wrapped carbon tube (Z ≈ 614 mm³) would see 826 MPa — beyond what we can count on from a roll-wrapped tube. Carbon tubes must go bilateral or much bigger.
+=== REAR LEG STRENGTH (stepped column, pinned both ends, solved numerically) ===
+Half-sit    length 0.84 m → 24/20/16 x 1.5 tube 3157 N (SF 3.2 on 1 kN design, 16x nominal 196 N); old trekking pole 16/14/12 would be 873 N
+Chair       length 0.65 m → 24/20/16 x 1.5 tube 5162 N (SF 5.2 on 1 kN design, 18x nominal 284 N); old trekking pole 16/14/12 would be 1428 N
+Deep squat  length 0.46 m → 24/20/16 x 1.5 tube 10204 N (SF 10.2 on 1 kN design, 48x nominal 213 N); old trekking pole 16/14/12 would be 2823 N
+Tube mass: 130 g for three 0.32 m sections at 1550 kg/m³ (EST density); + locks, hinge boss, spring, pivoting foot ≈ 0.30 kg per leg in bom.mjs.
+Self-check: one uniform Ø16 x 1.5 section at 0.83 m solves to 1820 N; Euler formula gives 1820 N.
+Nominal max 284 N; one-way lock (extends freely, locks in compression). E is EST: proof-test each pole to 1 kN at M1.
+
+=== REAR FOOT SLIP (friction NEEDED = tan of the leg angle) ===
+Worst mode needs mu = 0.30 (design cap 0.3). Pivoting rubber foot keeps full rubber contact at any leg angle.
+  rubber, dry concrete                           0.60–0.85  → holds, 2.0x margin at the low end   [SRC 17 (Engineering ToolBox)]
+  rubber, wet concrete                           0.45–0.75  → holds, 1.5x margin at the low end   [SRC 17 (Engineering ToolBox)]
+  rubber, wet concrete (low source)              0.30–0.30  → holds, 1.0x margin at the low end   [SRC 17 (Autodesk Robot help)]
+  wet interior tile, rated                       0.42–0.42  → holds, 1.4x margin at the low end   [SRC 17 (ANSI A326.3 minimum wet DCOF)]
+  wet tile below rating, wet polished stone, ice 0.00–0.30  → holds only at the upper end: not promised   [EST, unrated: no promise]
+Wet-floor limit, plainly: rated wet tile (≥0.42) and wet concrete hold; wet polished stone, unrated wet tile, mud and ice do NOT.
+There, flip down the spike tip (outdoors) or use Perch. The FSR + load check flags a rear foot that unloads or skids.
+
+=== THIGH UPRIGHT (sized for the fallback load) ===
+Fallback 507 Nm at 7075-T6 yield 503 MPa (VERIFY) → Z ≥ 1008 mm³ → lateral bar 8 x 28 mm (kept at 8 x 28).
+With the rear leg working, normal sitting puts only the KNEE LOCK column above on the rails.
 
 ##############################################################################
 # node gait_assist_model.mjs
@@ -117,56 +161,71 @@ All efficiencies, stride rates and the assist profile are EST. The bench (M1) re
 === MASS BUDGET (from bom.mjs) ===
 Part                                                   where    each      line
 Knee actuator — CubeMars AK10-9 V2.0 KV100             knee    0.960 x2   1.92 kg
-Seat lock — toothed ring + pawl, 17-4PH H900           knee    0.200 x2   0.40 kg
-Pawl actuator — bistable latching solenoid             knee    0.030 x2   0.06 kg
+One-way ratchet — 140° toothed sector + 3-tooth pawl,  knee    0.250 x2   0.50 kg
+Pawl lift — bistable latching solenoid                 knee    0.030 x2   0.06 kg
 Pawl-engaged hall sensor + magnet                      knee    0.005 x2   0.01 kg
+Pawl load sensor — strain gauge + HX711                knee    0.010 x2   0.02 kg
 Donor hinged knee brace — DonJoy (aluminium hinge)     knee    0.500 x2   1.00 kg
-Lateral uprights (finished, from B2)                   knee    0.280 x4   1.12 kg
-Heel stirrup + shoe clip                               foot    0.250 x2   0.50 kg
-Fold-down seat pad                                     thigh   0.180 x2   0.36 kg
+Lateral thigh upright (from B2)                        thigh   0.280 x2   0.56 kg
+Lateral shank upright (from B2)                        shank   0.280 x2   0.56 kg
+Heel stirrup + heel pad + shoe-heel-counter strap      foot    0.250 x2   0.50 kg
+Fold-down seat pad, 200 x 180 mm                       thigh   0.220 x2   0.44 kg
+Rear leg — 3-section uniform-wall carbon tube 24/20/16 thigh   0.300 x2   0.60 kg
+Medial bars + single-axis medial hinge + 2 bridges     thigh   0.240 x2   0.48 kg
+Ankle pivot (free, ±30° sagittal) at the lateral malle ankle   0.050 x2   0.10 kg
+Suspension yoke + 2 straps per side                    thigh   0.120 x1   0.12 kg
+Pad medial support arm                                 thigh   0.040 x2   0.08 kg
 Fasteners, bushings, thread-locker                     knee    0.100 x1   0.10 kg
 Teensy 4.1 (SparkFun DEV-16771)                        waist   0.010 x1   0.01 kg
 CAN transceiver — Waveshare SN65HVD230                 waist   0.005 x1   0.01 kg
-IMU — Adafruit BNO085 (#4754)                          knee    0.005 x3   0.01 kg
+IMU — Adafruit BNO085 (#4754), shank                   shank   0.005 x2   0.01 kg
+IMU — Adafruit BNO085 (#4754), pelvis                  waist   0.005 x1   0.01 kg
 FSR — Interlink 402                                    foot    0.002 x8   0.02 kg
 Insole carrier + foot harness                          foot    0.030 x2   0.06 kg
 BLE / phone link — Adafruit ESP32-S3 Feather (#5477)   waist   0.010 x1   0.01 kg
 Haptic disc — Adafruit #1201                           thigh   0.002 x2   0.00 kg
 Belt tap button + big red E-STOP                       waist   0.050 x1   0.05 kg
-Harness: CAN + power cable, XT30 / JST-GH, fuse, 5 V D knee    0.250 x1   0.25 kg
+Harness: 24 V + CAN per side in a braided sleeve, XT30 thigh   0.300 x1   0.30 kg
+12 V always-live rail for the pawl solenoids           waist   0.020 x1   0.02 kg
 Controller enclosure (printed)                         waist   0.100 x1   0.10 kg
 Cell — Molicel P45B 21700 4.5 Ah                       waist   0.070 x12   0.84 kg
 6S BMS + nickel + pack case                            waist   0.100 x2   0.20 kg
-Hip belt — Peak Design outdoor hip belt                waist   0.200 x1   0.20 kg
+Hip belt — Peak Design outdoor hip belt                waist   0.280 x1   0.28 kg
 
-PER LEG: 2.91 kg   BELT: 1.42 kg   TOTAL WORN: 7.23 kg
+PER LEG: 3.72 kg   BELT: 1.52 kg   TOTAL WORN: 8.96 kg
 
 Compare (vendor / press numbers, see RESEARCH_REPORT):
   Dnsys Z1 knee unit      ~0.68 kg per leg  (powered, no seat)
   Hypershell X Ultra      1.8 kg total w/o battery (hip, no seat)
   Noonee Chairless Chair  2.95 kg total     (seat, no motor)
-  Run + Sit Exo P1        2.91 kg per leg, 7.2 kg total  (both)
+  Run + Sit Exo P1 (v2)   3.72 kg per leg, 9.0 kg total  (both; v1 was 2.91 / 7.2 before the rear legs, medial bars and ankle pivots)
 
-Waist-equivalent load (distal mass weighted up): 9.3 kg — the foot stirrups alone count as 2.3 kg.
-  vs a 87.4 kg wearer: ~10.6% extra load if walking cost scales with load (EST, first-order).
-  vs a 130.3 kg wearer: ~7.1% extra load if walking cost scales with load (EST, first-order).
+Waist-equivalent load (distal mass weighted up): 11.1 kg — the foot stirrups alone count as 2.3 kg.
+  vs a 87.4 kg wearer: ~12.7% extra load if walking cost scales with load (EST, first-order).
+  vs a 130.3 kg wearer: ~8.5% extra load if walking cost scales with load (EST, first-order).
+
+TARGET vs ACTUAL: plan target ~3.55 kg per leg; bom.mjs says 3.72 kg (170 g over). Where it could come from (all EST until weighed):
+  -120 g  Donor brace: its polycentric hinges are discarded, but B1 counts the whole 0.50 kg brace
+  - 50 g  Harness C9: ~1/3 of the 0.30 kg runs on the belt, not the legs (accounting, not a real saving)
+  - 20 g  Medial bars B8 6 x 20 → 6 x 16 mm (lightly loaded with the rear leg; needs the fallback check first)
+  = -190 g per leg → 3.53 kg IF the weighing confirms it. Until then the honest P1 number is 3.72 kg per leg.
 Sobering cross-check: Donelan 2008's 1.6 kg knee harvester raised walking cost 19.2% just by being worn.
 Assist must beat the mass penalty before the exo helps at all. Cut the foot mass first: it is the expensive kilogram.
 
 ##############################################################################
 # node bom.mjs
 ##############################################################################
-A KNEE ACTUATION + SEAT LOCK     2.39 kg   $1,813.80
-B STRUCTURE                      3.08 kg   $1,413.18
-C SENSING + CONTROL              0.52 kg     $295.31
-D POWER + BELT                   1.24 kg     $236.95
-TOTAL parts, one exo            7.23 kg   $3,759.24
+A KNEE ACTUATION + SEAT LOCK     2.51 kg   $1,891.80
+B STRUCTURE                      4.54 kg   $1,768.18
+C SENSING + CONTROL              0.59 kg     $303.31
+D POWER + BELT                   1.32 kg     $236.95
+TOTAL parts, one exo            8.96 kg   $4,200.24
 
 ##############################################################################
 # node project_cost.mjs
 ##############################################################################
 === 1. ONE EXO, PARTS ONLY (bom.mjs) ===
-Prototype one (P1), both legs:   $3,759
+Prototype one (P1), both legs:   $4,200
 
 === 2. WHAT THE PARTS LIST DOES NOT INCLUDE (all EST) ===
   Knee test stand: aluminium dummy leg, load cell + HX711, clamps    $400
@@ -175,19 +234,20 @@ Prototype one (P1), both legs:   $3,759
   Spare lock ring + pawl set                                        $180
   Overhead safety harness + rope + anchor for first sit tests       $250
   Filament, foam, straps, Velcro, test fixtures                     $120
-  Shipping, duties, sales tax (~10% of parts)                       $376
+  Shipping, duties, sales tax (~10% of parts)                       $420
   Breakage allowance (M2–M4 exist to find failures)                 $500
-  SUBTOTAL                                                        $2,645
+  SUBTOTAL                                                        $2,689
 
-P1 WORN AND TESTED, ALL IN:     $6,404   (labour $0 — assumes you build it)
+P1 WORN AND TESTED, ALL IN:     $6,889   (labour $0 — assumes you build it)
 
 === 3. YOU DO NOT BUILD THE WHOLE EXO FIRST ===
-  M1  one knee on a dummy-leg stand: actuator + lock + controller + stand       $1,613
-  M2  one leg, worn, walking/stairs only, no seat                                 $853
-  M3  both legs + belt + packs, running and hiking assist                       $1,880
-  M4  seat modes under an overhead harness, then free                             $500
+  M1  one knee on a dummy-leg stand: actuator + lock + controller + stand       $1,652
+  M2  one leg, worn, walking/stairs only, no seat                                 $938
+  M3  both legs + belt + packs, running and hiking assist                       $2,100
+  M4  rear legs + seat modes, under an overhead harness first                     $680
   (Steps overlap with the parts list; they show when the money moves, not extra money.)
 
-  The cheapest useful thing: M1, ~$1,613. It answers the two questions that
-  decide the project — does the pawl drop in cleanly at every angle under load, and does
-  the motor stay cool through a simulated hour of hiking — before anything is worn.
+  The cheapest useful thing: M1, ~$1,652. It answers the two questions that
+  decide the project — does the 3-tooth ratchet hold 507 Nm and drop in cleanly at every tooth,
+  and does the motor stay cool through a simulated hour of hiking — before anything is worn.
+  M1 also buckle-tests the real rear-leg pole (1 kN design) and measures rubber-foot friction.

@@ -29,28 +29,74 @@ export const PERSON = {
 // NOTE: the 95th pct weight and 95th pct stature are separate marginals [SRC 1];
 // pairing them is deliberately conservative (long lever AND heavy body).
 
-// ---------- SEAT GEOMETRY ----------
+// ---------- SEAT GEOMETRY (v2: TRIPOD — heel, toes, rear leg) ----------
+// v1 balanced the seat over the heel (the REAR EDGE of the foot) — ~3 cm of backward
+// margin. v2 adds a rear leg ("kickstand") hinged at the proximal thigh rail, so each
+// leg stands on three points and the seat closes its loads inside the leg unit.
 export const SEAT = {
-  // Thigh pad centre of pressure, measured from the knee axis along the thigh, as a
-  // fraction of thigh length. Chairless Chair puts the seat under the proximal
-  // thigh / buttock [SRC 8]. 0.65 is EST — the pad position is a design choice.
-  padCoPFrac: 0.65,
-  // Share of body weight the device carries when seated. Luger 2019 measured the
-  // Chairless Chair carrying UP TO 64% of body mass [SRC 9]. We design to 100% of
-  // everything above the shanks (worst case: feet unloaded) — EST, conservative.
-  designLoadShare: 1.0,
+  // Pad centre of pressure, from the knee along the thigh, as a fraction of thigh
+  // length. v2 moves the pad PROXIMAL, under the gluteal fold. 0.75 is EST (design choice).
+  padCoPFrac: 0.75,
+  // Rear-leg hinge on the thigh rail, fraction of thigh length from the knee (rail top). EST
+  rearHingeFrac: 0.85,
+  // Rear foot target behind the heel edge, m. Plan range 0.40–0.45; the model trims it
+  // per mode so the friction the rear foot needs stays at or below rearMuDesign. EST
+  rearBackMax: 0.42,
+  // Friction the rear foot may NEED (= tan of the leg angle; a pinned strut's ground force runs along it).
+  // Sourced rubber friction [SRC 17]: dry concrete 0.6–0.85, wet concrete 0.45–0.75 (Engineering ToolBox;
+  // Autodesk lists wet concrete as low as 0.30); wet-rated interior tile must test ≥ 0.42 wet DCOF (ANSI A326.3).
+  // Design: need ≤ 0.30, i.e. ≥ 2x margin on dry concrete (0.6) and at the low end of wet concrete. Wood and
+  // dry tile not found in a source (EST: similar to dry concrete for rubber).
+  rearMuDesign: 0.30,
+  frictionTable: [
+    ['rubber, dry concrete', 0.6, 0.85, 'SRC 17 (Engineering ToolBox)'],
+    ['rubber, wet concrete', 0.45, 0.75, 'SRC 17 (Engineering ToolBox)'],
+    ['rubber, wet concrete (low source)', 0.30, 0.30, 'SRC 17 (Autodesk Robot help)'],
+    ['wet interior tile, rated', 0.42, 0.42, 'SRC 17 (ANSI A326.3 minimum wet DCOF)'],
+    ['wet tile below rating, wet polished stone, ice', 0, 0.3, 'EST, unrated: no promise'],
+  ],
+  // Rear leg v3: UNIFORM-WALL 3-section telescoping carbon tube, 24/20/16 mm OD x 1.5 mm wall (IDs 21/17/13,
+  // 0.5 mm radial clearance per joint for a bushing), each section ~0.32 m, 65 mm overlaps. Replaces the tapering
+  // trekking pole (16/14/12 mm [SRC 15]) which buckles at ~0.9 kN at 0.83 m. Tube stock: 3K roll-wrapped metric
+  // carbon tube, e.g. 20 x 17 mm listed ~US$10 per 500 mm [SRC 18]. E 70 GPa (EST, roll-wrapped 3K).
+  rearTube: { E: 70e9, stowedLen: 0.35, maxLen: 0.85, designAxialN: 1000, rhoCarbon: 1550,
+    sections: [{ od: 0.024, wall: 0.0015 }, { od: 0.020, wall: 0.0015 }, { od: 0.016, wall: 0.0015 }],
+    old: [{ od: 0.016, wall: 0.0015 }, { od: 0.014, wall: 0.0012 }, { od: 0.012, wall: 0.0010 }] },
+  // Rear foot: pivoting rubber cane tip (Blue Jay 360°, $18.95) + flip-down steel ice/trail spike tip
+  // (HealthSmart retractable ice tip, $20.59) [SRC 19]. Carbide spike = option, not found sourced.
+
+  // Lateral stance (front view). EST: shoe centres 0.30 m apart (about hip width), shoe 0.10 m wide.
+  // Rear feet 0.34 m apart (plan value, set by the thigh-rail spacing + a small splay).
+  stance: { shoeCentreSep: 0.30, shoeWidth: 0.10, rearFootSep: 0.34 },
+  // Foot contact geometry relative to the ankle axis (m), 95th-pct shoe. EST
+  heelX: -0.055, metX: 0.15, toeX: 0.21,
+  // Head-arms-trunk centre of mass above the hip along the trunk axis. EST (~mid-trunk).
+  hatCoMAboveHip: 0.30,
   // Load factor for dropping into the seat instead of lowering into it. EST.
   sitImpactFactor: 1.5,
   // Lock safety factor on top of the worst case. EST (typical machine-design 1.5–2).
   lockSF: 1.5,
+  // Comfortable LOADED ankle dorsiflexion is ~20° (the exo ankle pivot is free, so the
+  // wearer's own ankle sets the shank lean). EST — the v1 value of 35° was too much.
+  maxShankLeanDeg: 20,
+  // knee = flexion, phi = shank lean (≤ 20°), trunk = forward trunk lean (EST, visual + CoM),
+  // rear = uses the rear leg. Perch is the no-rear-leg fallback mode.
   modes: [
-    { key: 'perch',   name: 'Perch',      knee: 25 },
-    { key: 'halfsit', name: 'Half-sit',   knee: 60 },
-    { key: 'chair',   name: 'Chair',      knee: 90 },
-    { key: 'squat',   name: 'Deep squat', knee: 120 },
+    { key: 'perch',   name: 'Perch',      knee: 25,  phi: 10, trunk: 4,  rear: false },
+    { key: 'halfsit', name: 'Half-sit',   knee: 60,  phi: 15, trunk: 10, rear: true },
+    { key: 'chair',   name: 'Chair',      knee: 90,  phi: 15, trunk: 18, rear: true },
+    { key: 'squat',   name: 'Deep squat', knee: 120, phi: 20, trunk: 32, rear: true },
   ],
-  // Max comfortable loaded ankle dorsiflexion used to bound shank lean. EST.
-  maxShankLeanDeg: 35,
+  // v1 chair pose for the honesty check: shank lean 32.9° put the pad CoP over the heel.
+  v1Chair: { key: 'v1chair', name: 'v1 chair (heel balance)', knee: 90, phi: 32.9, trunk: 18, rear: false, padFrac: 0.65 },
+};
+
+// ---------- ONE-WAY RATCHET (the seat lock, v2) ----------
+// Blocks FLEXION, extension always free: you can always stand up, power or no power.
+export const RATCHET = {
+  v1: { r: 0.035, teeth: 36, width: 0.008, teethEngaged: 1 },   // v1 pawl: one tooth at r = 35 mm
+  v2: { r: 0.050, teeth: 40, width: 0.012, teethEngaged: 3, effectiveTeeth: 2 }, // 3-tooth pawl; assume only 2 share load (tolerance) — EST
+  toothThickFrac: 0.6, toothHeightFrac: 0.4,  // tooth base thickness and height as fractions of pitch — EST
 };
 
 // ---------- GAIT BIOMECHANICS ----------
@@ -130,6 +176,8 @@ export const MAT = {
   steel174_H900_UTS: 1310e6,
   // Shear strength taken as 0.6 x UTS (common design rule) [EST]
   shearFrac: 0.6,
+  // 17-4 PH H900 yield ~1170 MPa (ASM handbook value, from memory — VERIFY)
+  steel174_H900_yield: 1170e6,
   // 7075-T6 aluminium UTS ~572 MPa (handbook value, from memory — VERIFY)
   al7075_UTS: 572e6,
   // 7075-T6 yield ~503 MPa, density 2810 kg/m^3 (handbook values, from memory — VERIFY)
