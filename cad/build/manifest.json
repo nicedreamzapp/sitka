@@ -1,0 +1,3760 @@
+{
+ "parts": [
+  {
+   "name": "thigh_shell_l",
+   "seg": "thigh_l",
+   "module": "basic",
+   "mat": "carbon",
+   "label": "Thigh shell (carbon, laced)",
+   "printed": false,
+   "group": "thigh_shell",
+   "note": null,
+   "volume_cm3": 270.92
+  },
+  {
+   "name": "thigh_liner_l",
+   "seg": "thigh_l",
+   "module": "basic",
+   "mat": "foam",
+   "label": "Spacer mesh + TPU lattice liner",
+   "printed": true,
+   "group": "liner",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 837.24
+  },
+  {
+   "name": "thigh_cuff_l",
+   "seg": "thigh_l",
+   "module": "basic",
+   "mat": "carbon",
+   "label": "Posterior thigh cuff (lift anchor, 200 cm2)",
+   "printed": false,
+   "group": "thigh_cuff",
+   "note": null,
+   "volume_cm3": 52.71
+  },
+  {
+   "name": "thigh_cuff_liner_l",
+   "seg": "thigh_l",
+   "module": "basic",
+   "mat": "foam",
+   "label": null,
+   "printed": true,
+   "group": "liner",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 174.84
+  },
+  {
+   "name": "thigh_strap0_l",
+   "seg": "thigh_l",
+   "module": "basic",
+   "mat": "fabric",
+   "label": "Thigh strap",
+   "printed": false,
+   "group": "strap",
+   "note": null,
+   "volume_cm3": 46.91
+  },
+  {
+   "name": "thigh_buckle0_l",
+   "seg": "thigh_l",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "buckle",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 5.47
+  },
+  {
+   "name": "thigh_strap1_l",
+   "seg": "thigh_l",
+   "module": "basic",
+   "mat": "fabric",
+   "label": null,
+   "printed": false,
+   "group": "strap",
+   "note": null,
+   "volume_cm3": 41.51
+  },
+  {
+   "name": "thigh_buckle1_l",
+   "seg": "thigh_l",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "buckle",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 5.53
+  },
+  {
+   "name": "thigh_arm_lat_l",
+   "seg": "thigh_l",
+   "module": "basic",
+   "mat": "carbon",
+   "label": "Hinge arm (thigh side)",
+   "printed": false,
+   "group": "hinge_arm",
+   "note": null,
+   "volume_cm3": 18.05
+  },
+  {
+   "name": "thigh_arm_med_l",
+   "seg": "thigh_l",
+   "module": "basic",
+   "mat": "carbon",
+   "label": null,
+   "printed": false,
+   "group": "hinge_arm",
+   "note": null,
+   "volume_cm3": 18.32
+  },
+  {
+   "name": "knee_manifold_l",
+   "seg": "thigh_l",
+   "module": "basic",
+   "mat": "carbon_gloss",
+   "label": "M1 cam clutch (locks with power off) + mode lever",
+   "printed": true,
+   "group": "manifold",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 77.61
+  },
+  {
+   "name": "mode_lever_l",
+   "seg": "thigh_l",
+   "module": "basic",
+   "mat": "accent",
+   "label": "Mode lever WALK / SIT-LIFT / FREE",
+   "printed": false,
+   "group": "lever",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 1.89
+  },
+  {
+   "name": "tendon_fairlead_l",
+   "seg": "thigh_l",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "fairlead",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 11.22
+  },
+  {
+   "name": "sit_leaf_l",
+   "seg": "thigh_l",
+   "module": "basic",
+   "mat": "leaf",
+   "label": "Sit leaf spring 350 N (stores 44 J)",
+   "printed": false,
+   "group": "sit_leaf",
+   "note": null,
+   "volume_cm3": 17.79
+  },
+  {
+   "name": "sit_leaf_root_l",
+   "seg": "thigh_l",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "leaf_clamp",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 13.59
+  },
+  {
+   "name": "sit_leaf_link_l",
+   "seg": "thigh_l",
+   "module": "basic",
+   "mat": "cable",
+   "label": null,
+   "printed": false,
+   "group": "cable_static",
+   "note": null,
+   "volume_cm3": 0.36
+  },
+  {
+   "name": "ea_clutch_l",
+   "seg": "thigh_l",
+   "module": "upgrade",
+   "mat": "electronics",
+   "label": "Electroadhesive stance clutch (fails open)",
+   "printed": false,
+   "group": "ea",
+   "note": null,
+   "volume_cm3": 7.04
+  },
+  {
+   "name": "seat_cup_l",
+   "seg": "thigh_l",
+   "module": "basic",
+   "mat": "carbon",
+   "label": "Seat cup under the sit bone (400 cm2)",
+   "printed": false,
+   "group": "seat_cup",
+   "note": null,
+   "volume_cm3": 113.43
+  },
+  {
+   "name": "seat_cup_liner_l",
+   "seg": "thigh_l",
+   "module": "basic",
+   "mat": "foam",
+   "label": "Gel + TPU lattice cup liner (15 kPa)",
+   "printed": true,
+   "group": "liner",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 494.5
+  },
+  {
+   "name": "strut_clevis_l",
+   "seg": "thigh_l",
+   "module": "basic",
+   "mat": "alu",
+   "label": "Strut hinge (ball clevis)",
+   "printed": false,
+   "group": "clevis",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 23.57
+  },
+  {
+   "name": "strut_clip_l",
+   "seg": "thigh_l",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "clip",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 8.42
+  },
+  {
+   "name": "dring_cc_l",
+   "seg": "thigh_l",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "dring",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 0.53
+  },
+  {
+   "name": "dring_m3_l",
+   "seg": "thigh_l",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "dring",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 0.53
+  },
+  {
+   "name": "dring_t3_l",
+   "seg": "thigh_l",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "dring",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 0.53
+  },
+  {
+   "name": "dring_ham_l",
+   "seg": "thigh_l",
+   "module": "coupling",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "dring",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 0.53
+  },
+  {
+   "name": "knee_hub_lat_l",
+   "seg": "knee_l",
+   "module": "basic",
+   "mat": "alu",
+   "label": "Geared bicentric knee hinge",
+   "printed": false,
+   "group": "hub",
+   "note": null,
+   "volume_cm3": 10.33
+  },
+  {
+   "name": "condyle_pad_lat_l",
+   "seg": "knee_l",
+   "module": "basic",
+   "mat": "foam",
+   "label": null,
+   "printed": false,
+   "group": "liner",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 12.37
+  },
+  {
+   "name": "knee_hub_med_l",
+   "seg": "knee_l",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "hub",
+   "note": null,
+   "volume_cm3": 10.33
+  },
+  {
+   "name": "condyle_pad_med_l",
+   "seg": "knee_l",
+   "module": "basic",
+   "mat": "foam",
+   "label": null,
+   "printed": false,
+   "group": "liner",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 11.53
+  },
+  {
+   "name": "knee_arc_l",
+   "seg": "knee_l",
+   "module": "basic",
+   "mat": "alu",
+   "label": "80 mm grooved arc (artificial kneecap)",
+   "printed": false,
+   "group": "arc",
+   "note": null,
+   "volume_cm3": 16.59
+  },
+  {
+   "name": "knee_yoke_l",
+   "seg": "knee_l",
+   "module": "basic",
+   "mat": "carbon",
+   "label": null,
+   "printed": false,
+   "group": "yoke",
+   "note": null,
+   "volume_cm3": 14.35
+  },
+  {
+   "name": "knee_guide_l",
+   "seg": "knee_l",
+   "module": "coupling",
+   "mat": "alu",
+   "label": "Hamstring/calf band guide (40 mm behind the axis)",
+   "printed": false,
+   "group": "guide",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 2.28
+  },
+  {
+   "name": "shin_liner_l",
+   "seg": "shin_l",
+   "module": "basic",
+   "mat": "foam",
+   "label": null,
+   "printed": true,
+   "group": "liner",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 142.49
+  },
+  {
+   "name": "calf_liner_l",
+   "seg": "shin_l",
+   "module": "basic",
+   "mat": "foam",
+   "label": null,
+   "printed": true,
+   "group": "liner",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 171.22
+  },
+  {
+   "name": "ptb_shell_l",
+   "seg": "shin_l",
+   "module": "basic",
+   "mat": "carbon",
+   "label": "Below-kneecap pad (PTB, 100 cm2, 14 kPa)",
+   "printed": false,
+   "group": "ptb",
+   "note": null,
+   "volume_cm3": 55.07
+  },
+  {
+   "name": "calf_cuff_l",
+   "seg": "shin_l",
+   "module": "basic",
+   "mat": "carbon",
+   "label": "Calf pad (120 cm2)",
+   "printed": false,
+   "group": "calf",
+   "note": null,
+   "volume_cm3": 64.47
+  },
+  {
+   "name": "shin_arm_lat_l",
+   "seg": "shin_l",
+   "module": "basic",
+   "mat": "carbon",
+   "label": null,
+   "printed": false,
+   "group": "hinge_arm",
+   "note": null,
+   "volume_cm3": 28.11
+  },
+  {
+   "name": "shin_arm_med_l",
+   "seg": "shin_l",
+   "module": "basic",
+   "mat": "carbon",
+   "label": null,
+   "printed": false,
+   "group": "hinge_arm",
+   "note": null,
+   "volume_cm3": 27.32
+  },
+  {
+   "name": "shin_strap0_l",
+   "seg": "shin_l",
+   "module": "basic",
+   "mat": "fabric",
+   "label": null,
+   "printed": false,
+   "group": "strap",
+   "note": null,
+   "volume_cm3": 18.81
+  },
+  {
+   "name": "shin_strap1_l",
+   "seg": "shin_l",
+   "module": "basic",
+   "mat": "fabric",
+   "label": null,
+   "printed": false,
+   "group": "strap",
+   "note": null,
+   "volume_cm3": 10.5
+  },
+  {
+   "name": "shin_anchor_l",
+   "seg": "shin_l",
+   "module": "basic",
+   "mat": "alu",
+   "label": "Tendon anchor (below kneecap)",
+   "printed": false,
+   "group": "anchor",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 0.99
+  },
+  {
+   "name": "runband_clip_l",
+   "seg": "shin_l",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "clip",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 0.63
+  },
+  {
+   "name": "dring_ham_calf_l",
+   "seg": "shin_l",
+   "module": "coupling",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "dring",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 0.44
+  },
+  {
+   "name": "m4_clutch_l",
+   "seg": "shin_l",
+   "module": "upgrade",
+   "mat": "carbon_gloss",
+   "label": "M4 ankle clutch (Collins type, no power)",
+   "printed": false,
+   "group": "m4",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 19.67
+  },
+  {
+   "name": "m4_spring_l",
+   "seg": "shin_l",
+   "module": "upgrade",
+   "mat": "leaf",
+   "label": "M4 calf spring leaf",
+   "printed": false,
+   "group": "m4",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 6.58
+  },
+  {
+   "name": "shoe_l",
+   "seg": "foot_l",
+   "module": "body",
+   "mat": "shoe",
+   "label": null,
+   "printed": false,
+   "group": "shoe",
+   "note": "reference shoe"
+  },
+  {
+   "name": "m4_heelclip_l",
+   "seg": "foot_l",
+   "module": "upgrade",
+   "mat": "alu",
+   "label": "M4 heel clip",
+   "printed": false,
+   "group": "m4",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 15.12
+  },
+  {
+   "name": "thigh_shell_r",
+   "seg": "thigh_r",
+   "module": "basic",
+   "mat": "carbon",
+   "label": "Thigh shell (carbon, laced)",
+   "printed": false,
+   "group": "thigh_shell",
+   "note": null,
+   "volume_cm3": 270.89
+  },
+  {
+   "name": "thigh_liner_r",
+   "seg": "thigh_r",
+   "module": "basic",
+   "mat": "foam",
+   "label": "Spacer mesh + TPU lattice liner",
+   "printed": true,
+   "group": "liner",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 837.11
+  },
+  {
+   "name": "thigh_cuff_r",
+   "seg": "thigh_r",
+   "module": "basic",
+   "mat": "carbon",
+   "label": "Posterior thigh cuff (lift anchor, 200 cm2)",
+   "printed": false,
+   "group": "thigh_cuff",
+   "note": null,
+   "volume_cm3": 52.71
+  },
+  {
+   "name": "thigh_cuff_liner_r",
+   "seg": "thigh_r",
+   "module": "basic",
+   "mat": "foam",
+   "label": null,
+   "printed": true,
+   "group": "liner",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 174.84
+  },
+  {
+   "name": "thigh_strap0_r",
+   "seg": "thigh_r",
+   "module": "basic",
+   "mat": "fabric",
+   "label": "Thigh strap",
+   "printed": false,
+   "group": "strap",
+   "note": null,
+   "volume_cm3": 46.91
+  },
+  {
+   "name": "thigh_buckle0_r",
+   "seg": "thigh_r",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "buckle",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 5.47
+  },
+  {
+   "name": "thigh_strap1_r",
+   "seg": "thigh_r",
+   "module": "basic",
+   "mat": "fabric",
+   "label": null,
+   "printed": false,
+   "group": "strap",
+   "note": null,
+   "volume_cm3": 41.5
+  },
+  {
+   "name": "thigh_buckle1_r",
+   "seg": "thigh_r",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "buckle",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 5.53
+  },
+  {
+   "name": "thigh_arm_lat_r",
+   "seg": "thigh_r",
+   "module": "basic",
+   "mat": "carbon",
+   "label": "Hinge arm (thigh side)",
+   "printed": false,
+   "group": "hinge_arm",
+   "note": null,
+   "volume_cm3": 18.04
+  },
+  {
+   "name": "thigh_arm_med_r",
+   "seg": "thigh_r",
+   "module": "basic",
+   "mat": "carbon",
+   "label": null,
+   "printed": false,
+   "group": "hinge_arm",
+   "note": null,
+   "volume_cm3": 18.35
+  },
+  {
+   "name": "knee_manifold_r",
+   "seg": "thigh_r",
+   "module": "basic",
+   "mat": "carbon_gloss",
+   "label": "M1 cam clutch (locks with power off) + mode lever",
+   "printed": true,
+   "group": "manifold",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 77.61
+  },
+  {
+   "name": "mode_lever_r",
+   "seg": "thigh_r",
+   "module": "basic",
+   "mat": "accent",
+   "label": "Mode lever WALK / SIT-LIFT / FREE",
+   "printed": false,
+   "group": "lever",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 1.89
+  },
+  {
+   "name": "tendon_fairlead_r",
+   "seg": "thigh_r",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "fairlead",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 11.22
+  },
+  {
+   "name": "sit_leaf_r",
+   "seg": "thigh_r",
+   "module": "basic",
+   "mat": "leaf",
+   "label": "Sit leaf spring 350 N (stores 44 J)",
+   "printed": false,
+   "group": "sit_leaf",
+   "note": null,
+   "volume_cm3": 17.79
+  },
+  {
+   "name": "sit_leaf_root_r",
+   "seg": "thigh_r",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "leaf_clamp",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 13.59
+  },
+  {
+   "name": "sit_leaf_link_r",
+   "seg": "thigh_r",
+   "module": "basic",
+   "mat": "cable",
+   "label": null,
+   "printed": false,
+   "group": "cable_static",
+   "note": null,
+   "volume_cm3": 0.36
+  },
+  {
+   "name": "ea_clutch_r",
+   "seg": "thigh_r",
+   "module": "upgrade",
+   "mat": "electronics",
+   "label": "Electroadhesive stance clutch (fails open)",
+   "printed": false,
+   "group": "ea",
+   "note": null,
+   "volume_cm3": 7.04
+  },
+  {
+   "name": "seat_cup_r",
+   "seg": "thigh_r",
+   "module": "basic",
+   "mat": "carbon",
+   "label": "Seat cup under the sit bone (400 cm2)",
+   "printed": false,
+   "group": "seat_cup",
+   "note": null,
+   "volume_cm3": 113.67
+  },
+  {
+   "name": "seat_cup_liner_r",
+   "seg": "thigh_r",
+   "module": "basic",
+   "mat": "foam",
+   "label": "Gel + TPU lattice cup liner (15 kPa)",
+   "printed": true,
+   "group": "liner",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 495.49
+  },
+  {
+   "name": "strut_clevis_r",
+   "seg": "thigh_r",
+   "module": "basic",
+   "mat": "alu",
+   "label": "Strut hinge (ball clevis)",
+   "printed": false,
+   "group": "clevis",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 23.57
+  },
+  {
+   "name": "strut_clip_r",
+   "seg": "thigh_r",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "clip",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 8.42
+  },
+  {
+   "name": "dring_cc_r",
+   "seg": "thigh_r",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "dring",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 0.53
+  },
+  {
+   "name": "dring_m3_r",
+   "seg": "thigh_r",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "dring",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 0.53
+  },
+  {
+   "name": "dring_t3_r",
+   "seg": "thigh_r",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "dring",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 0.53
+  },
+  {
+   "name": "dring_ham_r",
+   "seg": "thigh_r",
+   "module": "coupling",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "dring",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 0.53
+  },
+  {
+   "name": "knee_hub_lat_r",
+   "seg": "knee_r",
+   "module": "basic",
+   "mat": "alu",
+   "label": "Geared bicentric knee hinge",
+   "printed": false,
+   "group": "hub",
+   "note": null,
+   "volume_cm3": 10.33
+  },
+  {
+   "name": "condyle_pad_lat_r",
+   "seg": "knee_r",
+   "module": "basic",
+   "mat": "foam",
+   "label": null,
+   "printed": false,
+   "group": "liner",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 12.34
+  },
+  {
+   "name": "knee_hub_med_r",
+   "seg": "knee_r",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "hub",
+   "note": null,
+   "volume_cm3": 10.33
+  },
+  {
+   "name": "condyle_pad_med_r",
+   "seg": "knee_r",
+   "module": "basic",
+   "mat": "foam",
+   "label": null,
+   "printed": false,
+   "group": "liner",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 11.52
+  },
+  {
+   "name": "knee_arc_r",
+   "seg": "knee_r",
+   "module": "basic",
+   "mat": "alu",
+   "label": "80 mm grooved arc (artificial kneecap)",
+   "printed": false,
+   "group": "arc",
+   "note": null,
+   "volume_cm3": 16.59
+  },
+  {
+   "name": "knee_yoke_r",
+   "seg": "knee_r",
+   "module": "basic",
+   "mat": "carbon",
+   "label": null,
+   "printed": false,
+   "group": "yoke",
+   "note": null,
+   "volume_cm3": 14.25
+  },
+  {
+   "name": "knee_guide_r",
+   "seg": "knee_r",
+   "module": "coupling",
+   "mat": "alu",
+   "label": "Hamstring/calf band guide (40 mm behind the axis)",
+   "printed": false,
+   "group": "guide",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 2.28
+  },
+  {
+   "name": "shin_liner_r",
+   "seg": "shin_r",
+   "module": "basic",
+   "mat": "foam",
+   "label": null,
+   "printed": true,
+   "group": "liner",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 142.44
+  },
+  {
+   "name": "calf_liner_r",
+   "seg": "shin_r",
+   "module": "basic",
+   "mat": "foam",
+   "label": null,
+   "printed": true,
+   "group": "liner",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 164.77
+  },
+  {
+   "name": "ptb_shell_r",
+   "seg": "shin_r",
+   "module": "basic",
+   "mat": "carbon",
+   "label": "Below-kneecap pad (PTB, 100 cm2, 14 kPa)",
+   "printed": false,
+   "group": "ptb",
+   "note": null,
+   "volume_cm3": 55.06
+  },
+  {
+   "name": "calf_cuff_r",
+   "seg": "shin_r",
+   "module": "basic",
+   "mat": "carbon",
+   "label": "Calf pad (120 cm2)",
+   "printed": false,
+   "group": "calf",
+   "note": null,
+   "volume_cm3": 62.09
+  },
+  {
+   "name": "shin_arm_lat_r",
+   "seg": "shin_r",
+   "module": "basic",
+   "mat": "carbon",
+   "label": null,
+   "printed": false,
+   "group": "hinge_arm",
+   "note": null,
+   "volume_cm3": 28.28
+  },
+  {
+   "name": "shin_arm_med_r",
+   "seg": "shin_r",
+   "module": "basic",
+   "mat": "carbon",
+   "label": null,
+   "printed": false,
+   "group": "hinge_arm",
+   "note": null,
+   "volume_cm3": 27.92
+  },
+  {
+   "name": "shin_strap0_r",
+   "seg": "shin_r",
+   "module": "basic",
+   "mat": "fabric",
+   "label": null,
+   "printed": false,
+   "group": "strap",
+   "note": null,
+   "volume_cm3": 18.73
+  },
+  {
+   "name": "shin_strap1_r",
+   "seg": "shin_r",
+   "module": "basic",
+   "mat": "fabric",
+   "label": null,
+   "printed": false,
+   "group": "strap",
+   "note": null,
+   "volume_cm3": 10.52
+  },
+  {
+   "name": "shin_anchor_r",
+   "seg": "shin_r",
+   "module": "basic",
+   "mat": "alu",
+   "label": "Tendon anchor (below kneecap)",
+   "printed": false,
+   "group": "anchor",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 0.99
+  },
+  {
+   "name": "runband_clip_r",
+   "seg": "shin_r",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "clip",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 0.63
+  },
+  {
+   "name": "dring_ham_calf_r",
+   "seg": "shin_r",
+   "module": "coupling",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "dring",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 0.44
+  },
+  {
+   "name": "m4_clutch_r",
+   "seg": "shin_r",
+   "module": "upgrade",
+   "mat": "carbon_gloss",
+   "label": "M4 ankle clutch (Collins type, no power)",
+   "printed": false,
+   "group": "m4",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 19.76
+  },
+  {
+   "name": "m4_spring_r",
+   "seg": "shin_r",
+   "module": "upgrade",
+   "mat": "leaf",
+   "label": "M4 calf spring leaf",
+   "printed": false,
+   "group": "m4",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 6.34
+  },
+  {
+   "name": "shoe_r",
+   "seg": "foot_r",
+   "module": "body",
+   "mat": "shoe",
+   "label": null,
+   "printed": false,
+   "group": "shoe",
+   "note": "reference shoe"
+  },
+  {
+   "name": "m4_heelclip_r",
+   "seg": "foot_r",
+   "module": "upgrade",
+   "mat": "alu",
+   "label": "M4 heel clip",
+   "printed": false,
+   "group": "m4",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 15.13
+  },
+  {
+   "name": "hip_belt",
+   "seg": "pelvis",
+   "module": "basic",
+   "mat": "fabric",
+   "label": "Hip belt (Dock)",
+   "printed": false,
+   "group": "belt",
+   "note": null,
+   "volume_cm3": 927.2
+  },
+  {
+   "name": "belt_buckle",
+   "seg": "pelvis",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "buckle",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 24.93
+  },
+  {
+   "name": "lumbar_plate",
+   "seg": "pelvis",
+   "module": "basic",
+   "mat": "carbon",
+   "label": "Lumbar plate (Dock)",
+   "printed": false,
+   "group": "belt",
+   "note": null,
+   "volume_cm3": 43.1
+  },
+  {
+   "name": "lumbar_standoff_l",
+   "seg": "pelvis",
+   "module": "basic",
+   "mat": "alu",
+   "label": "Lumbar standoff (lift tendon)",
+   "printed": false,
+   "group": "standoff",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 14.38
+  },
+  {
+   "name": "glute_guide_l",
+   "seg": "pelvis",
+   "module": "basic",
+   "mat": "alu",
+   "label": "Glute guide (100 mm lever)",
+   "printed": false,
+   "group": "standoff",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 14.48
+  },
+  {
+   "name": "m3_standoff_l",
+   "seg": "pelvis",
+   "module": "basic",
+   "mat": "alu",
+   "label": "M3 hip-flexor standoff",
+   "printed": false,
+   "group": "standoff",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 17.34
+  },
+  {
+   "name": "belt_sideclip_l",
+   "seg": "pelvis",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "clip",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 6.14
+  },
+  {
+   "name": "lumbar_standoff_r",
+   "seg": "pelvis",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "standoff",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 14.35
+  },
+  {
+   "name": "glute_guide_r",
+   "seg": "pelvis",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "standoff",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 14.48
+  },
+  {
+   "name": "m3_standoff_r",
+   "seg": "pelvis",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "standoff",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 17.35
+  },
+  {
+   "name": "belt_sideclip_r",
+   "seg": "pelvis",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "clip",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 6.14
+  },
+  {
+   "name": "back_panel",
+   "seg": "chest",
+   "module": "basic",
+   "mat": "carbon",
+   "label": "Back panel (Dock, 600 cm2)",
+   "printed": false,
+   "group": "panel",
+   "note": null,
+   "volume_cm3": 220.41
+  },
+  {
+   "name": "back_panel_liner",
+   "seg": "chest",
+   "module": "basic",
+   "mat": "foam",
+   "label": null,
+   "printed": true,
+   "group": "liner",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 506.61
+  },
+  {
+   "name": "port_knee_l",
+   "seg": "chest",
+   "module": "basic",
+   "mat": "alu",
+   "label": "Cable port (6 per Dock)",
+   "printed": false,
+   "group": "port",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 0.99
+  },
+  {
+   "name": "port_knee_r",
+   "seg": "chest",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "port",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 0.99
+  },
+  {
+   "name": "port_hip_l",
+   "seg": "chest",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "port",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 0.99
+  },
+  {
+   "name": "port_hip_r",
+   "seg": "chest",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "port",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 0.99
+  },
+  {
+   "name": "port_shoulder_l",
+   "seg": "chest",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "port",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 0.99
+  },
+  {
+   "name": "port_shoulder_r",
+   "seg": "chest",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "port",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 0.99
+  },
+  {
+   "name": "m2_leaf",
+   "seg": "chest",
+   "module": "basic",
+   "mat": "leaf",
+   "label": "M2 lift leaf 3.1 N/mm (slack below 35 deg)",
+   "printed": false,
+   "group": "m2",
+   "note": null,
+   "volume_cm3": 17.85
+  },
+  {
+   "name": "m2_leaf_root",
+   "seg": "chest",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "leaf_clamp",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 15.74
+  },
+  {
+   "name": "whiffletree",
+   "seg": "chest",
+   "module": "basic",
+   "mat": "accent",
+   "label": "Whiffletree (equal L/R share)",
+   "printed": false,
+   "group": "m2",
+   "note": null,
+   "volume_cm3": 9.28
+  },
+  {
+   "name": "panel_guide_l",
+   "seg": "chest",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "standoff",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 5.31
+  },
+  {
+   "name": "panel_guide_r",
+   "seg": "chest",
+   "module": "basic",
+   "mat": "alu",
+   "label": null,
+   "printed": false,
+   "group": "standoff",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 5.31
+  },
+  {
+   "name": "p1_motor",
+   "seg": "chest",
+   "module": "upgrade",
+   "mat": "motor",
+   "label": "P1: one AK10-9 + hub drum, 2 dog clutches",
+   "printed": false,
+   "group": "p1",
+   "note": null,
+   "volume_cm3": 295.41
+  },
+  {
+   "name": "p1_drum",
+   "seg": "chest",
+   "module": "upgrade",
+   "mat": "accent",
+   "label": null,
+   "printed": false,
+   "group": "p1",
+   "note": null,
+   "volume_cm3": 50.27
+  },
+  {
+   "name": "p1_dogclutch_l",
+   "seg": "chest",
+   "module": "upgrade",
+   "mat": "motor",
+   "label": null,
+   "printed": false,
+   "group": "p1",
+   "note": null,
+   "volume_cm3": 20.6
+  },
+  {
+   "name": "bowden_panel_l",
+   "seg": "chest",
+   "module": "upgrade",
+   "mat": "bowden",
+   "label": null,
+   "printed": false,
+   "group": "bowden",
+   "note": null,
+   "volume_cm3": 3.24
+  },
+  {
+   "name": "p1_dogclutch_r",
+   "seg": "chest",
+   "module": "upgrade",
+   "mat": "motor",
+   "label": null,
+   "printed": false,
+   "group": "p1",
+   "note": null,
+   "volume_cm3": 20.6
+  },
+  {
+   "name": "bowden_panel_r",
+   "seg": "chest",
+   "module": "upgrade",
+   "mat": "bowden",
+   "label": null,
+   "printed": false,
+   "group": "bowden",
+   "note": null,
+   "volume_cm3": 3.23
+  },
+  {
+   "name": "p1_battery",
+   "seg": "pelvis",
+   "module": "upgrade",
+   "mat": "motor",
+   "label": "97 Wh pack (under the FAA 100 Wh line)",
+   "printed": false,
+   "group": "p1",
+   "note": null,
+   "volume_cm3": 229.22
+  },
+  {
+   "name": "m5_cassette_l",
+   "seg": "chest",
+   "module": "upgrade",
+   "mat": "carbon_gloss",
+   "label": "M5 shoulder spring cassette",
+   "printed": false,
+   "group": "m5",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 90.75
+  },
+  {
+   "name": "m5_armcuff_l",
+   "seg": "uarm_l",
+   "module": "upgrade",
+   "mat": "carbon",
+   "label": "M5 arm cuff",
+   "printed": false,
+   "group": "m5",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 34.67
+  },
+  {
+   "name": "m5_armliner_l",
+   "seg": "uarm_l",
+   "module": "upgrade",
+   "mat": "foam",
+   "label": null,
+   "printed": true,
+   "group": "m5",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 88.8
+  },
+  {
+   "name": "m5_cassette_r",
+   "seg": "chest",
+   "module": "upgrade",
+   "mat": "carbon_gloss",
+   "label": null,
+   "printed": false,
+   "group": "m5",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 90.8
+  },
+  {
+   "name": "m5_armcuff_r",
+   "seg": "uarm_r",
+   "module": "upgrade",
+   "mat": "carbon",
+   "label": null,
+   "printed": false,
+   "group": "m5",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 34.63
+  },
+  {
+   "name": "m5_armliner_r",
+   "seg": "uarm_r",
+   "module": "upgrade",
+   "mat": "foam",
+   "label": null,
+   "printed": true,
+   "group": "m5",
+   "note": null,
+   "stl": true,
+   "volume_cm3": 88.66
+  }
+ ],
+ "anchors": {
+  "knee_x_l": {
+   "lat": 0.08202877847437243,
+   "med": 0.08351581892164944
+  },
+  "t1_manifold_l": {
+   "seg": "thigh_l",
+   "p": [
+    0.0319789773779506,
+    0.12826067274145836,
+    0.293
+   ]
+  },
+  "t1_fairlead_l": {
+   "seg": "thigh_l",
+   "p": [
+    0.01252243354593095,
+    0.11914299660976992,
+    0.366
+   ]
+  },
+  "strut_pin_l": {
+   "seg": "thigh_l",
+   "p": [
+    0.036590880255181826,
+    -0.1365590242060073,
+    0.05
+   ]
+  },
+  "strut_stow_l": {
+   "seg": "thigh_l",
+   "p": [
+    0.08303015862410719,
+    -0.0648702694995877,
+    0.302
+   ]
+  },
+  "t3_cuff_l": {
+   "seg": "thigh_l",
+   "p": [
+    1.2247182522600275e-17,
+    -0.10000583458942808,
+    0.222
+   ]
+  },
+  "m3_thigh_l": {
+   "seg": "thigh_l",
+   "p": [
+    0.03242109081030627,
+    0.15252924000830212,
+    0.15
+   ]
+  },
+  "cc_thigh_l": {
+   "seg": "thigh_l",
+   "p": [
+    0.07856265094349173,
+    -0.019587868857806723,
+    0.372
+   ]
+  },
+  "ham_cup_l": {
+   "seg": "thigh_l",
+   "p": [
+    0.052727109716258165,
+    -0.09132603296481777,
+    0.15
+   ]
+  },
+  "calfband_thigh_l": {
+   "seg": "thigh_l",
+   "p": [
+    0.06133900777684332,
+    -0.05522989067548638,
+    0.395
+   ]
+  },
+  "bowden_thigh_l": {
+   "seg": "thigh_l",
+   "p": [
+    0.08608330232427878,
+    0.13776208108342305,
+    0.205
+   ]
+  },
+  "bowden_hip_l": {
+   "seg": "thigh_l",
+   "p": [
+    0.09659627036840876,
+    -0.017032528701760072,
+    0.08
+   ]
+  },
+  "cupstrap_l": {
+   "seg": "thigh_l",
+   "p": [
+    0.03639926703029213,
+    -0.0900913473006652,
+    -0.045
+   ]
+  },
+  "arc_l": {
+   "seg": "knee_l",
+   "r": 0.0816,
+   "lo": -33,
+   "hi": 60
+  },
+  "knee_guide_l": {
+   "seg": "knee_l",
+   "p": [
+    0.09402877847437242,
+    -0.049,
+    0.0
+   ]
+  },
+  "t1_shin_l": {
+   "seg": "shin_l",
+   "p": [
+    0.0,
+    0.06055171199459295,
+    0.105
+   ]
+  },
+  "ham_calf_l": {
+   "seg": "shin_l",
+   "p": [
+    0.07898381255146265,
+    -0.0532752542586473,
+    0.25
+   ]
+  },
+  "runband_l": {
+   "seg": "shin_l",
+   "p": [
+    -0.051750259903772675,
+    -0.005439171491986031,
+    0.3
+   ]
+  },
+  "m4_spring_l": {
+   "seg": "shin_l",
+   "p": [
+    1.0924068164225728e-17,
+    -0.08920178595029594,
+    0.404
+   ]
+  },
+  "heel_l": {
+   "seg": "foot_l",
+   "p": [
+    0.010402434860010329,
+    -0.08376455059606802,
+    0.04184380751848221
+   ]
+  },
+  "knee_x_r": {
+   "lat": 0.08175429103863104,
+   "med": 0.0817970591695517
+  },
+  "t1_manifold_r": {
+   "seg": "thigh_r",
+   "p": [
+    -0.03197754426329729,
+    0.1282549248325313,
+    0.293
+   ]
+  },
+  "t1_fairlead_r": {
+   "seg": "thigh_r",
+   "p": [
+    -0.012498939580213966,
+    0.11891946645746351,
+    0.366
+   ]
+  },
+  "strut_pin_r": {
+   "seg": "thigh_r",
+   "p": [
+    -0.036575686808372886,
+    -0.1365023214905742,
+    0.05
+   ]
+  },
+  "strut_stow_r": {
+   "seg": "thigh_r",
+   "p": [
+    -0.08303015862410719,
+    -0.0648702694995877,
+    0.302
+   ]
+  },
+  "t3_cuff_r": {
+   "seg": "thigh_r",
+   "p": [
+    -1.2247182522600275e-17,
+    -0.10000583458942808,
+    0.222
+   ]
+  },
+  "m3_thigh_r": {
+   "seg": "thigh_r",
+   "p": [
+    -0.03242109081030627,
+    0.15252924000830212,
+    0.15
+   ]
+  },
+  "cc_thigh_r": {
+   "seg": "thigh_r",
+   "p": [
+    -0.07856265094349173,
+    -0.019587868857806723,
+    0.372
+   ]
+  },
+  "ham_cup_r": {
+   "seg": "thigh_r",
+   "p": [
+    -0.05294596411128646,
+    -0.09170509989646652,
+    0.15
+   ]
+  },
+  "calfband_thigh_r": {
+   "seg": "thigh_r",
+   "p": [
+    -0.06133900746048547,
+    -0.05522989039063649,
+    0.395
+   ]
+  },
+  "bowden_thigh_r": {
+   "seg": "thigh_r",
+   "p": [
+    -0.08608330232427878,
+    0.13776208108342305,
+    0.205
+   ]
+  },
+  "bowden_hip_r": {
+   "seg": "thigh_r",
+   "p": [
+    -0.09659433528703654,
+    -0.017032187494704285,
+    0.08
+   ]
+  },
+  "cupstrap_r": {
+   "seg": "thigh_r",
+   "p": [
+    -0.03651983288929046,
+    -0.09038975827324283,
+    -0.045
+   ]
+  },
+  "arc_r": {
+   "seg": "knee_r",
+   "r": 0.0816,
+   "lo": -33,
+   "hi": 60
+  },
+  "knee_guide_r": {
+   "seg": "knee_r",
+   "p": [
+    -0.09375429103863103,
+    -0.049,
+    0.0
+   ]
+  },
+  "t1_shin_r": {
+   "seg": "shin_r",
+   "p": [
+    0.0,
+    0.06055171199459295,
+    0.105
+   ]
+  },
+  "ham_calf_r": {
+   "seg": "shin_r",
+   "p": [
+    -0.07753325185774856,
+    -0.052296838716540284,
+    0.25
+   ]
+  },
+  "runband_r": {
+   "seg": "shin_r",
+   "p": [
+    0.051750259667242685,
+    -0.0054391714671257274,
+    0.3
+   ]
+  },
+  "m4_spring_r": {
+   "seg": "shin_r",
+   "p": [
+    -1.075568027917809e-17,
+    -0.08782679452285029,
+    0.404
+   ]
+  },
+  "heel_r": {
+   "seg": "foot_r",
+   "p": [
+    -0.010402434860010329,
+    -0.08376455059606802,
+    0.04184380751848221
+   ]
+  },
+  "t3_lumbar_l": {
+   "seg": "pelvis",
+   "p": [
+    -0.09485690127550525,
+    -0.11929697245772018,
+    0.117
+   ]
+  },
+  "t3_glute_l": {
+   "seg": "pelvis",
+   "p": [
+    -0.16971919252241385,
+    -0.08759916566008828,
+    0.05
+   ]
+  },
+  "m3_belt_l": {
+   "seg": "pelvis",
+   "p": [
+    -0.11593390220580005,
+    0.18316464445722802,
+    0.072
+   ]
+  },
+  "cc_belt_l": {
+   "seg": "pelvis",
+   "p": [
+    -0.19375992406933765,
+    0.024635011355556707,
+    0.105
+   ]
+  },
+  "cupstrap_belt_l": {
+   "seg": "pelvis",
+   "p": [
+    -0.1853374445852841,
+    -0.0152197861952336,
+    0.064
+   ]
+  },
+  "harness_belt_l": {
+   "seg": "pelvis",
+   "p": [
+    -0.10578117847547133,
+    0.2018270464110138,
+    0.14
+   ]
+  },
+  "panelstrap_belt_l": {
+   "seg": "pelvis",
+   "p": [
+    -0.07417322663070366,
+    -0.10707765150326352,
+    0.148
+   ]
+  },
+  "bowden_belt_l": {
+   "seg": "pelvis",
+   "p": [
+    -0.17812711645374496,
+    -0.01983296830483265,
+    0.112
+   ]
+  },
+  "t3_lumbar_r": {
+   "seg": "pelvis",
+   "p": [
+    0.09532248383334273,
+    -0.12010338510301245,
+    0.117
+   ]
+  },
+  "t3_glute_r": {
+   "seg": "pelvis",
+   "p": [
+    0.16969564278411872,
+    -0.08758076658805024,
+    0.05
+   ]
+  },
+  "m3_belt_r": {
+   "seg": "pelvis",
+   "p": [
+    0.11595083949728052,
+    0.18318482953519866,
+    0.072
+   ]
+  },
+  "cc_belt_r": {
+   "seg": "pelvis",
+   "p": [
+    0.1938713883418204,
+    0.024623295988437963,
+    0.105
+   ]
+  },
+  "cupstrap_belt_r": {
+   "seg": "pelvis",
+   "p": [
+    0.18534607127437389,
+    -0.015222589176432197,
+    0.064
+   ]
+  },
+  "harness_belt_r": {
+   "seg": "pelvis",
+   "p": [
+    0.10578831381780203,
+    0.2018376249910503,
+    0.14
+   ]
+  },
+  "panelstrap_belt_r": {
+   "seg": "pelvis",
+   "p": [
+    0.07417839678055099,
+    -0.10708825188135697,
+    0.148
+   ]
+  },
+  "bowden_belt_r": {
+   "seg": "pelvis",
+   "p": [
+    0.17812617723663254,
+    -0.019832626457760225,
+    0.112
+   ]
+  },
+  "port_knee_l": {
+   "seg": "chest",
+   "p": [
+    -0.09287503992950587,
+    -0.07457002337716163,
+    -0.056
+   ]
+  },
+  "port_knee_r": {
+   "seg": "chest",
+   "p": [
+    0.09287638576817382,
+    -0.07457226322884335,
+    -0.056
+   ]
+  },
+  "port_hip_l": {
+   "seg": "chest",
+   "p": [
+    -0.05000559036759121,
+    -0.08356091619268112,
+    -0.062
+   ]
+  },
+  "port_hip_r": {
+   "seg": "chest",
+   "p": [
+    0.050006038799735426,
+    -0.08356238294813413,
+    -0.062
+   ]
+  },
+  "port_shoulder_l": {
+   "seg": "chest",
+   "p": [
+    -0.12470530268918027,
+    -0.10488321433354549,
+    0.175
+   ]
+  },
+  "port_shoulder_r": {
+   "seg": "chest",
+   "p": [
+    0.12470750110450529,
+    -0.10488647361829907,
+    0.175
+   ]
+  },
+  "t3_whiffle_l": {
+   "seg": "chest",
+   "p": [
+    -0.020630854145924683,
+    -0.11628946534623592,
+    0.058
+   ]
+  },
+  "t3_panel_l": {
+   "seg": "chest",
+   "p": [
+    -0.07527590528636571,
+    -0.08907245146210803,
+    -0.027
+   ]
+  },
+  "harness_top_l": {
+   "seg": "chest",
+   "p": [
+    -0.07361019811428611,
+    -0.10219163363003843,
+    0.196
+   ]
+  },
+  "panelstrap_top_l": {
+   "seg": "chest",
+   "p": [
+    -0.07362541663553747,
+    -0.07095447456571873,
+    -0.072
+   ]
+  },
+  "cc_panel_l": {
+   "seg": "chest",
+   "p": [
+    -0.1421434804997144,
+    -0.08940000354937962,
+    0.185
+   ]
+  },
+  "harness_shoulder_l": {
+   "seg": "chest",
+   "p": [
+    -0.041596550106693365,
+    0.11745370194490445,
+    0.315
+   ]
+  },
+  "harness_chest_l": {
+   "seg": "chest",
+   "p": [
+    -0.06660896506808334,
+    0.18659662674214295,
+    0.2
+   ]
+  },
+  "harness_low_l": {
+   "seg": "chest",
+   "p": [
+    -0.08111322636353985,
+    0.2204922292274864,
+    0.02
+   ]
+  },
+  "t3_whiffle_r": {
+   "seg": "chest",
+   "p": [
+    0.020630854145924634,
+    -0.11628946534623592,
+    0.058
+   ]
+  },
+  "t3_panel_r": {
+   "seg": "chest",
+   "p": [
+    0.07527744974044949,
+    -0.08907592036277591,
+    -0.027
+   ]
+  },
+  "harness_top_r": {
+   "seg": "chest",
+   "p": [
+    0.07365235899390384,
+    -0.10229598546890885,
+    0.196
+   ]
+  },
+  "panelstrap_top_r": {
+   "seg": "chest",
+   "p": [
+    0.07362814582178814,
+    -0.0709600702267728,
+    -0.072
+   ]
+  },
+  "cc_panel_r": {
+   "seg": "chest",
+   "p": [
+    0.14214315159746482,
+    -0.08939961157894215,
+    0.185
+   ]
+  },
+  "harness_shoulder_r": {
+   "seg": "chest",
+   "p": [
+    0.04148533547782522,
+    0.11735356384328645,
+    0.315
+   ]
+  },
+  "harness_chest_r": {
+   "seg": "chest",
+   "p": [
+    0.06653894128480357,
+    0.18648456526390625,
+    0.2
+   ]
+  },
+  "harness_low_r": {
+   "seg": "chest",
+   "p": [
+    0.08111279764745047,
+    0.22049148666943758,
+    0.02
+   ]
+  },
+  "m5_pivot_l": {
+   "seg": "chest",
+   "p": [
+    -0.18003166106224888,
+    -0.08210123572210686,
+    0.205
+   ]
+  },
+  "m5_cuff_l": {
+   "seg": "uarm_l",
+   "p": [
+    0.061191709737930755,
+    -0.04780820327961643,
+    0.15
+   ]
+  },
+  "m5_pivot_r": {
+   "seg": "chest",
+   "p": [
+    0.18008225781247575,
+    -0.0821467932406394,
+    0.205
+   ]
+  },
+  "m5_cuff_r": {
+   "seg": "uarm_r",
+   "p": [
+    -0.06119170241699013,
+    -0.047808197559870744,
+    0.15
+   ]
+  }
+ },
+ "frames": {
+  "stand": {
+   "pelvis": [
+    [
+     -1.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     -1.0000000000000002,
+     0.0,
+     -9.023276550977551e-17
+    ],
+    [
+     0.0,
+     5.551115123125783e-17,
+     0.9999999999999999,
+     1.0382829904556274
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "chest": [
+    [
+     -1.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     -1.0,
+     -2.7755575615628914e-17,
+     0.035199038684368106
+    ],
+    [
+     0.0,
+     0.0,
+     1.0,
+     1.2734417915344238
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "thigh_l": [
+    [
+     0.9955265065646072,
+     -0.007223384596568117,
+     0.09420614333597892,
+     0.11491274833679202
+    ],
+    [
+     1.2708326785424616e-18,
+     -0.9970732665304891,
+     -0.076451953344699,
+     0.010977700352668774
+    ],
+    [
+     0.09448266892541163,
+     0.07610994603328856,
+     -0.9926128658180594,
+     1.0323220491409302
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "thigh_r": [
+    [
+     0.9955265065646072,
+     0.007223384596568117,
+     -0.09420614333597892,
+     -0.11491274833679202
+    ],
+    [
+     -1.2708326785424616e-18,
+     -0.9970732665304891,
+     -0.076451953344699,
+     0.010977700352668774
+    ],
+    [
+     -0.09448266892541163,
+     0.07610994603328856,
+     -0.9926128658180594,
+     1.0323220491409302
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "shin_l": [
+    [
+     0.9941710235153912,
+     0.004023827075785635,
+     0.10773943019166053,
+     0.15971015393733975
+    ],
+    [
+     -6.802229811438208e-19,
+     -0.9993033009320778,
+     0.03732174629157912,
+     -0.02537714876234531
+    ],
+    [
+     0.1078145444843112,
+     -0.03710419871008097,
+     -0.9934783854899528,
+     0.5603092908859252
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "shin_r": [
+    [
+     0.9941710235153912,
+     -0.004023827075785635,
+     -0.10773943019166053,
+     -0.15971015393733975
+    ],
+    [
+     6.802229811438208e-19,
+     -0.9993033009320778,
+     0.03732174629157912,
+     -0.02537714876234531
+    ],
+    [
+     -0.1078145444843112,
+     -0.03710419871008097,
+     -0.9934783854899528,
+     0.5603092908859252
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "knee_l": [
+    [
+     0.9948710790882334,
+     -0.0017924806634964947,
+     0.10113517195756208,
+     0.15971015393733975
+    ],
+    [
+     0.00019077283284560105,
+     -0.9998079450976274,
+     -0.019596849884263152,
+     -0.02537714876234531
+    ],
+    [
+     0.1011508754264683,
+     0.01951563303434167,
+     -0.9946796672636515,
+     0.5603092908859252
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "knee_r": [
+    [
+     0.9948710790882334,
+     0.0017924806634964947,
+     -0.10113517195756208,
+     -0.15971015393733975
+    ],
+    [
+     -0.00019077283284560105,
+     -0.9998079450976274,
+     -0.019596849884263152,
+     -0.02537714876234531
+    ],
+    [
+     -0.1011508754264683,
+     0.01951563303434167,
+     -0.9946796672636515,
+     0.5603092908859252
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "foot_l": [
+    [
+     1.0,
+     0.0,
+     5.204170427930421e-18,
+     0.2096461057662964
+    ],
+    [
+     -3.469446951953614e-18,
+     -1.0,
+     0.0,
+     -0.008078962564468377
+    ],
+    [
+     3.469446951953614e-18,
+     0.0,
+     -1.0,
+     0.09984380751848221
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "foot_r": [
+    [
+     1.0,
+     0.0,
+     -5.204170427930421e-18,
+     -0.2096461057662964
+    ],
+    [
+     3.469446951953614e-18,
+     -1.0,
+     0.0,
+     -0.008078962564468377
+    ],
+    [
+     -3.469446951953614e-18,
+     0.0,
+     -1.0,
+     0.09984380751848221
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "uarm_l": [
+    [
+     0.9743023560467667,
+     -0.011486219892474914,
+     0.22495107413457882,
+     0.19674435257911693
+    ],
+    [
+     -8.960432331119447e-18,
+     -0.9986989322844099,
+     -0.05099453553058322,
+     -0.015133939683437342
+    ],
+    [
+     0.22524413200285393,
+     0.0496840961129578,
+     -0.9730347227060909,
+     1.5289784669876099
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "uarm_r": [
+    [
+     0.9743023560467667,
+     0.011486219892474914,
+     -0.22495107413457882,
+     -0.19674435257911693
+    ],
+    [
+     8.960432331119447e-18,
+     -0.9986989322844099,
+     -0.05099453553058322,
+     -0.015133939683437342
+    ],
+    [
+     -0.22524413200285393,
+     0.0496840961129578,
+     -0.9730347227060909,
+     1.5289784669876099
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ]
+  },
+  "walk": {
+   "pelvis": [
+    [
+     -1.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     -0.9993908201337842,
+     -0.034899453488433596,
+     -8.720304446273263e-17
+    ],
+    [
+     0.0,
+     -0.034899454847609535,
+     0.9993908240665104,
+     1.0320823192596436
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "chest": [
+    [
+     -1.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     -0.999390815911055,
+     -0.03489950578609649,
+     0.026970634236931773
+    ],
+    [
+     0.0,
+     -0.03489942017964387,
+     0.9993908334703637,
+     1.2683261632919312
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "thigh_l": [
+    [
+     0.9944393217264951,
+     -0.0470708119002832,
+     0.09420613612139364,
+     0.11491276323795321
+    ],
+    [
+     -0.000501716584189948,
+     -0.8966576661479062,
+     -0.44272423449153125,
+     0.01117906440049411
+    ],
+    [
+     0.1053099261554188,
+     0.44021507118393066,
+     -0.8916951086968219,
+     1.0265084505081177
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "thigh_r": [
+    [
+     0.9954334261843,
+     0.015412463982401151,
+     -0.09420613593406921,
+     -0.11491277068853381
+    ],
+    [
+     0.0032133157984027046,
+     -0.9917306319971183,
+     -0.1282964175299341,
+     0.011179051361978066
+    ],
+    [
+     -0.09540446031783861,
+     0.12740780941695684,
+     -0.9872512493665608,
+     1.0265084505081177
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "shin_l": [
+    [
+     0.9904981033287068,
+     0.08547379694415115,
+     0.10773935574718295,
+     0.15971018373966214
+    ],
+    [
+     0.0012999570374136286,
+     -0.789191245657668,
+     0.6141458917508433,
+     -0.19934760034084315
+    ],
+    [
+     0.13752041551848596,
+     -0.6081704172742141,
+     -0.7818035107409129,
+     0.6024847030639647
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "shin_r": [
+    [
+     0.9941188871267304,
+     -0.010943371575652106,
+     -0.10773940039672907,
+     -0.15971019864082334
+    ],
+    [
+     0.002490024517894438,
+     -0.9923081876909224,
+     0.1237670505349315,
+     -0.04982916265726088
+    ],
+    [
+     -0.10826513000149013,
+     -0.12330745484395739,
+     -0.9864449776933678,
+     0.5570454001426696
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "knee_l": [
+    [
+     0.9926185373236694,
+     0.017258780744321932,
+     0.12004404961778976,
+     0.15971018373966214
+    ],
+    [
+     0.005064717120894273,
+     -0.9948580829244592,
+     0.10115208094920847,
+     -0.19934760034084315
+    ],
+    [
+     0.12117255465617728,
+     -0.09979744148568803,
+     -0.9876019859594282,
+     0.6024847030639647
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "knee_r": [
+    [
+     0.9948004248611488,
+     0.002662586445497998,
+     -0.10180876843129949,
+     -0.15971019864082334
+    ],
+    [
+     0.0024427288106910736,
+     -0.9999944079100873,
+     -0.0022841244517761376,
+     -0.04982916265726088
+    ],
+    [
+     -0.10181428078631766,
+     0.0020235567632345295,
+     -0.9948013658243493,
+     0.5570454001426696
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "foot_l": [
+    [
+     0.9999701574664472,
+     -0.0034861024915929344,
+     0.006910741886241479,
+     0.2096460610628128
+    ],
+    [
+     -0.0034874510872070393,
+     -0.9999938084511659,
+     0.00020094123274633224,
+     0.08530173450708389
+    ],
+    [
+     0.006909962495793969,
+     -0.0002252505658592585,
+     -0.9999759778611205,
+     0.24012801051139832
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "foot_r": [
+    [
+     1.000000188167174,
+     -0.0001009200192384728,
+     0.00020001833747606938,
+     -0.20964613556861877
+    ],
+    [
+     -0.00010092665450349078,
+     -1.0000000729462533,
+     -6.158135531453279e-06,
+     0.007535399403423077
+    ],
+    [
+     0.0001999966259584908,
+     6.088369853107789e-06,
+     -0.9999998389761698,
+     0.09983982890844345
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "uarm_l": [
+    [
+     0.9899557955856885,
+     0.0716618613032588,
+     0.12186901375576295,
+     0.1967444419860841
+    ],
+    [
+     0.0499959834337373,
+     -0.9837654548154038,
+     0.17235377860507406,
+     -0.0322497934103012
+    ],
+    [
+     0.1322417499903031,
+     -0.16452971275373807,
+     -0.9774669201689632,
+     1.5219504833221436
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "uarm_r": [
+    [
+     0.9851447795578826,
+     0.12098559088728962,
+     -0.12186893295899306,
+     -0.1967444419860841
+    ],
+    [
+     0.08383097557988042,
+     -0.9581880594634101,
+     -0.2735827558259399,
+     -0.03224978968501092
+    ],
+    [
+     -0.14987306418420288,
+     0.25930237552765856,
+     -0.9540964801075884,
+     1.5219504833221436
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ]
+  },
+  "run": {
+   "pelvis": [
+    [
+     -1.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     -0.990268154033647,
+     -0.13917302550760188,
+     -7.749182992043556e-17
+    ],
+    [
+     0.0,
+     -0.13917298812004103,
+     0.990268185352856,
+     0.9621297121047973
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "chest": [
+    [
+     -1.0000001192093038,
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     -0.9902682165999819,
+     -0.13917301022640552,
+     0.0021287151612341126
+    ],
+    [
+     0.0,
+     -0.13917299695352298,
+     0.9902682885696013,
+     1.199898600578308
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "thigh_l": [
+    [
+     0.9898215684685479,
+     -0.10667014147397182,
+     0.0942061737233383,
+     0.11491276323795321
+    ],
+    [
+     0.008844454079515552,
+     -0.6145717117887576,
+     -0.7888117012340718,
+     0.011700488626956948
+    ],
+    [
+     0.14203891142181077,
+     0.7816158969594883,
+     -0.6073725431887408,
+     0.9577546119689941
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "thigh_r": [
+    [
+     0.9940895936532342,
+     0.05395603052977682,
+     -0.0942061212607967,
+     -0.11491275578737262
+    ],
+    [
+     0.010488424558726511,
+     -0.9114239761082947,
+     -0.4113349375161298,
+     0.011700462549924863
+    ],
+    [
+     -0.10805559688030993,
+     0.4079155365588874,
+     -0.9066028862118324,
+     0.9577546119689941
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "shin_l": [
+    [
+     0.973648722587856,
+     0.20099889529983406,
+     0.10773906516381893,
+     0.15971019864082334
+    ],
+    [
+     0.009107581544972184,
+     -0.5063241116424485,
+     0.8622952942593786,
+     -0.36339950561523426
+    ],
+    [
+     0.22787141768856717,
+     -0.8385916987482034,
+     -0.49481232300327754,
+     0.6689333319664001
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "shin_r": [
+    [
+     0.9934724901664429,
+     -0.03748049143216636,
+     -0.10773941532249151,
+     -0.15971018373966214
+    ],
+    [
+     0.005677367225318309,
+     -0.9270637762224925,
+     0.37486062421826233,
+     -0.1838998049497604
+    ],
+    [
+     -0.11393130411792053,
+     -0.3730253713004405,
+     -0.9207995793317112,
+     0.5266418457031249
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "knee_l": [
+    [
+     0.9822182993036929,
+     0.04359893255492279,
+     0.18260981789879968,
+     0.15971019864082334
+    ],
+    [
+     0.03211489893318074,
+     -0.997343430662102,
+     0.06538130146808506,
+     -0.36339950561523426
+    ],
+    [
+     0.1849752572088307,
+     -0.05835421488821804,
+     -0.9810091435992362,
+     0.6689333319664001
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "knee_r": [
+    [
+     0.9938474335481056,
+     0.009623503989201357,
+     -0.11033887347990486,
+     -0.15971018373966214
+    ],
+    [
+     0.0074779108622919106,
+     -0.9997751458202411,
+     -0.019842848818951254,
+     -0.1838998049497604
+    ],
+    [
+     -0.11050502105777928,
+     0.018895660112469324,
+     -0.9936959265036434,
+     0.5266418457031249
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "foot_l": [
+    [
+     0.9943356862295372,
+     -0.04774034812877938,
+     0.0949606757202025,
+     0.20964600145816803
+    ],
+    [
+     -0.012692766645415136,
+     -0.940389106251465,
+     -0.33986428012103753,
+     0.03626415878534318
+    ],
+    [
+     0.1055251283783378,
+     0.33673335011558747,
+     -0.9356682692702956,
+     0.43959367275238037
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "foot_r": [
+    [
+     0.9999996985679707,
+     0.00046463759482883935,
+     -0.0009209320998468384,
+     -0.2096461057662964
+    ],
+    [
+     0.0004645203726918179,
+     -1.0000000626369139,
+     2.7994009182241708e-05,
+     -0.010156342759728425
+    ],
+    [
+     -0.0009208887632496023,
+     -2.8623713538178386e-05,
+     -0.9999997051446043,
+     0.09986215084791183
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "uarm_l": [
+    [
+     0.9703843814404028,
+     0.12299242939975236,
+     0.20791156732906896,
+     0.19674436748027813
+    ],
+    [
+     0.039317300528659505,
+     -0.9296183697811101,
+     0.36642053996787133,
+     -0.08327823132276534
+    ],
+    [
+     0.23834527002610462,
+     -0.34739427591239574,
+     -0.9069228042474412,
+     1.4459433555603027
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "uarm_r": [
+    [
+     0.9474917673225002,
+     0.26852549879994697,
+     -0.17364814090134106,
+     -0.19674436748027813
+    ],
+    [
+     0.16231757944346764,
+     -0.8717199097794619,
+     -0.4623392041846999,
+     -0.08327824622392656
+    ],
+    [
+     -0.2755222941044969,
+     0.40987645910940335,
+     -0.8695338320561039,
+     1.4459433555603027
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ]
+  },
+  "chair": {
+   "pelvis": [
+    [
+     -1.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     -0.984807751370862,
+     0.17364820417507443,
+     -1.036633199214397e-16
+    ],
+    [
+     0.0,
+     0.17364823342841967,
+     0.9848076765615346,
+     0.635242462158203
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "chest": [
+    [
+     -0.9999998807906962,
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     -0.9848078037786624,
+     0.17364818135232596,
+     0.07549915462732312
+    ],
+    [
+     0.0,
+     0.1736483032139485,
+     0.9848076949917532,
+     0.8607164621353149
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "thigh_l": [
+    [
+     0.9875167215701244,
+     -0.12623756790800236,
+     0.09420618873805811,
+     0.11491274833679202
+    ],
+    [
+     0.0685363550217697,
+     -0.19413560069228541,
+     -0.9785776389492674,
+     0.009775895625352863
+    ],
+    [
+     0.14182204295477285,
+     0.9728183845016724,
+     -0.18305995624455562,
+     0.6274658441543579
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "thigh_r": [
+    [
+     0.9875167215701244,
+     0.12623756790800236,
+     -0.09420618873805811,
+     -0.11491274833679202
+    ],
+    [
+     -0.0685363550217697,
+     -0.19413560069228541,
+     -0.9785776389492674,
+     0.009775895625352863
+    ],
+    [
+     -0.14182204295477285,
+     0.9728183845016724,
+     -0.18305995624455562,
+     0.6274658441543579
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "shin_l": [
+    [
+     0.987825103822627,
+     0.11222204367447788,
+     0.10773905773177964,
+     0.15971019864082334
+    ],
+    [
+     0.0762903111534733,
+     -0.9530082348363103,
+     0.29318139756080114,
+     -0.4555626511573791
+    ],
+    [
+     0.13557787969867396,
+     -0.2813925788331841,
+     -0.9499667551778178,
+     0.540416121482849
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "shin_r": [
+    [
+     0.987825103822627,
+     -0.11222204367447788,
+     -0.10773905773177964,
+     -0.15971019864082334
+    ],
+    [
+     -0.0762903111534733,
+     -0.9530082348363103,
+     0.29318139756080114,
+     -0.4555626511573791
+    ],
+    [
+     -0.13557787969867396,
+     -0.2813925788331841,
+     -0.9499667551778178,
+     0.540416121482849
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "knee_l": [
+    [
+     0.9880204439349713,
+     -0.01001745462403967,
+     0.15399757455686605,
+     0.15971019864082334
+    ],
+    [
+     0.0710331299526756,
+     -0.8563766133885546,
+     -0.5114424605860138,
+     -0.4555626511573791
+    ],
+    [
+     0.137003273010788,
+     0.5162545366812822,
+     -0.8454060305795827,
+     0.540416121482849
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "knee_r": [
+    [
+     0.9880204439349713,
+     0.01001745462403967,
+     -0.15399757455686605,
+     -0.15971019864082334
+    ],
+    [
+     -0.0710331299526756,
+     -0.8563766133885546,
+     -0.5114424605860138,
+     -0.4555626511573791
+    ],
+    [
+     -0.137003273010788,
+     0.5162545366812822,
+     -0.8454060305795827,
+     0.540416121482849
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "foot_l": [
+    [
+     0.9996809462606792,
+     0.011389155166874295,
+     -0.022551850875902012,
+     0.20964598655700684
+    ],
+    [
+     0.01137349789246608,
+     -0.9999352157075451,
+     -0.0008243937159649883,
+     -0.3196765184402466
+    ],
+    [
+     -0.022559552375803624,
+     0.0005674956442960899,
+     -0.9997454622358298,
+     0.10011783242225647
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "foot_r": [
+    [
+     0.9996809462606792,
+     -0.011389155166874295,
+     0.022551850875902012,
+     -0.20964598655700684
+    ],
+    [
+     -0.01137349789246608,
+     -0.9999352157075451,
+     -0.0008243937159649883,
+     -0.3196765184402466
+    ],
+    [
+     0.022559552375803624,
+     0.0005674956442960899,
+     -0.9997454622358298,
+     0.10011783242225647
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "uarm_l": [
+    [
+     0.9732071756638182,
+     -0.09818507351258846,
+     0.20791162805008298,
+     0.1967444121837617
+    ],
+    [
+     -0.007562183136394348,
+     -0.9174200127699655,
+     -0.39784844805709035,
+     0.07030429691076279
+    ],
+    [
+     0.22980511931929923,
+     0.38561687734919015,
+     -0.8935821571098332,
+     1.1211109161376953
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "uarm_r": [
+    [
+     0.9732071756638182,
+     0.09818507351258846,
+     -0.20791162805008298,
+     -0.1967444121837617
+    ],
+    [
+     0.007562183136394348,
+     -0.9174200127699655,
+     -0.39784844805709035,
+     0.07030429691076279
+    ],
+    [
+     -0.22980511931929923,
+     0.38561687734919015,
+     -0.8935821571098332,
+     1.1211109161376953
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ]
+  },
+  "stoop": {
+   "pelvis": [
+    [
+     -1.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     -0.669130578371391,
+     -0.743144839210373,
+     2.9665376831336244e-18
+    ],
+    [
+     0.0,
+     -0.743144903629831,
+     0.6691305222430045,
+     0.99956077337265
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "chest": [
+    [
+     -1.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     -0.2756373152890991,
+     -0.9612613771880554,
+     -0.17370210587978363
+    ],
+    [
+     0.0,
+     -0.9612613877655254,
+     0.27563729434580253,
+     1.1536779403686523
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "thigh_l": [
+    [
+     0.9902577129684333,
+     -0.10254186999272155,
+     0.09420609919350625,
+     0.114912785589695
+    ],
+    [
+     -0.08438396586885409,
+     -0.9800792357841666,
+     -0.1797898700927604,
+     0.011775292456150065
+    ],
+    [
+     0.11076530597341404,
+     0.17008849364690176,
+     -0.9791835818990144,
+     1.0037301778793335
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "thigh_r": [
+    [
+     0.9902577129684333,
+     0.10254186999272155,
+     -0.09420609919350625,
+     -0.114912785589695
+    ],
+    [
+     0.08438396586885409,
+     -0.9800792357841666,
+     -0.1797898700927604,
+     0.011775292456150065
+    ],
+    [
+     -0.11076530597341404,
+     0.17008849364690176,
+     -0.9791835818990144,
+     1.0037301778793335
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "shin_l": [
+    [
+     0.9930684660592222,
+     -0.04698072150842213,
+     0.10773932581656363,
+     0.15971018373966214
+    ],
+    [
+     -0.07843060792486645,
+     -0.947589145047171,
+     0.30971581461126085,
+     -0.07371936738491056
+    ],
+    [
+     0.08754191058589694,
+     -0.3160191866891087,
+     -0.94470521505603,
+     0.5381035208702086
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "shin_r": [
+    [
+     0.9930684660592222,
+     0.04698072150842213,
+     -0.10773932581656363,
+     -0.15971018373966214
+    ],
+    [
+     0.07843060792486645,
+     -0.947589145047171,
+     0.30971581461126085,
+     -0.07371936738491056
+    ],
+    [
+     -0.08754191058589694,
+     -0.3160191866891087,
+     -0.94470521505603,
+     0.5381035208702086
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "knee_l": [
+    [
+     0.9916532884193278,
+     -0.07560521346627783,
+     0.10443949092107005,
+     0.15971018373966214
+    ],
+    [
+     -0.08286414024319333,
+     -0.9943058330618119,
+     0.0670033178358568,
+     -0.07371936738491056
+    ],
+    [
+     0.09877899487689729,
+     -0.07509834908954403,
+     -0.9922716100620511,
+     0.5381035208702086
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "knee_r": [
+    [
+     0.9916532884193278,
+     0.07560521346627783,
+     -0.10443949092107005,
+     -0.15971018373966214
+    ],
+    [
+     0.08286414024319333,
+     -0.9943058330618119,
+     0.0670033178358568,
+     -0.07371936738491056
+    ],
+    [
+     -0.09877899487689729,
+     -0.07509834908954403,
+     -0.9922716100620511,
+     0.5381035208702086
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "foot_l": [
+    [
+     0.9997441124064104,
+     -0.010186079990801327,
+     0.020202687869644645,
+     0.209646075963974
+    ],
+    [
+     -0.010198627758906837,
+     -0.999948010608935,
+     0.0005202131070404237,
+     0.06983023881912231
+    ],
+    [
+     0.02019630515479091,
+     -0.0007262279551740192,
+     -0.9997954749534541,
+     0.10024383664131165
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "foot_r": [
+    [
+     0.9997441124064104,
+     0.010186079990801327,
+     -0.020202687869644645,
+     -0.209646075963974
+    ],
+    [
+     0.010198627758906837,
+     -0.999948010608935,
+     0.0005202131070404237,
+     0.06983023881912231
+    ],
+    [
+     -0.02019630515479091,
+     -0.0007262279551740192,
+     -0.9997954749534541,
+     0.10024383664131165
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "uarm_l": [
+    [
+     0.8350647598285296,
+     -0.5457111578075571,
+     0.06975618536457666,
+     0.19674432277679452
+    ],
+    [
+     -0.5470435464174362,
+     -0.8371034236292102,
+     3.762178777979589e-07,
+     -0.43321305513381964
+    ],
+    [
+     0.05839305328503745,
+     -0.03816010590776708,
+     -0.9975636961127891,
+     1.1757301092147827
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "uarm_r": [
+    [
+     0.8350647598285296,
+     0.5457111578075571,
+     -0.06975618536457666,
+     -0.19674432277679452
+    ],
+    [
+     0.5470435464174362,
+     -0.8371034236292102,
+     3.762178777979589e-07,
+     -0.43321305513381964
+    ],
+    [
+     -0.05839305328503745,
+     -0.03816010590776708,
+     -0.9975636961127891,
+     1.1757301092147827
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     1.0
+    ]
+   ]
+  }
+ },
+ "poses": {
+  "stand": {
+   "label": "Standing",
+   "mode": "WALK"
+  },
+  "walk": {
+   "label": "Walking, mid-stance",
+   "mode": "WALK"
+  },
+  "run": {
+   "label": "Running, mid-stance",
+   "mode": "RUN"
+  },
+  "chair": {
+   "label": "Chair, 10 deg recline",
+   "mode": "SIT"
+  },
+  "stoop": {
+   "label": "Stoop lift",
+   "mode": "LIFT"
+  }
+ }
+}

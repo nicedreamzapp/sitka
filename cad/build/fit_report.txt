@@ -1,0 +1,49 @@
+stand  strut_l: length 0.360 m (stowed)
+stand  strut_r: length 0.360 m (stowed)
+stand  T1 l: wrap 2 deg, phi 14..16, on arc: True
+stand  T1 r: wrap 2 deg, phi 14..16, on arc: True
+stand  CABLE calf_band_r: enters body by 3 mm
+stand  PART thigh_shell_l: into body 3.8 mm at (0.213, -0.07, 0.937)
+stand  PART thigh_liner_l: into body 7.6 mm at (0.208, -0.076, 0.935)
+stand  PART seat_cup_liner_l: into body 2.7 mm at (0.104, 0.106, 1.077)
+stand  PART knee_arc_l: into body 3.7 mm at (0.174, -0.065, 0.497)
+stand  PART thigh_shell_r: into body 3.4 mm at (-0.212, -0.075, 0.937)
+stand  PART thigh_liner_r: into body 8.0 mm at (-0.208, -0.073, 0.937)
+stand  PART knee_arc_r: into body 3.7 mm at (-0.174, -0.065, 0.497)
+walk   strut_l: length 0.360 m (stowed)
+walk   strut_r: length 0.360 m (stowed)
+walk   T1 l: wrap 59 deg, phi -15..44, on arc: True
+walk   T1 r: wrap 10 deg, phi 10..20, on arc: True
+walk   PART thigh_shell_l: into body 5.2 mm at (0.217, -0.01, 0.907)
+walk   PART thigh_liner_l: into body 6.9 mm at (0.205, -0.109, 0.97)
+walk   PART thigh_shell_r: into body 3.2 mm at (-0.211, -0.081, 0.936)
+walk   PART thigh_liner_r: into body 7.9 mm at (-0.207, -0.078, 0.936)
+run    strut_l: length 0.360 m (stowed)
+run    strut_r: length 0.360 m (stowed)
+run    T1 l: wrap 107 deg, phi -39..68, on arc: False
+run    T1 r: wrap 42 deg, phi -6..35, on arc: True
+run    PART thigh_shell_l: into body 1.9 mm at (0.205, -0.119, 0.961)
+run    PART thigh_liner_l: into body 5.5 mm at (0.2, -0.12, 0.963)
+run    PART thigh_strap1_l: into body 1.0 mm at (0.17, -0.203, 0.695)
+run    FLOAT knee_arc_l: nearest skin 34 mm, at (0.145, -0.432, 0.705)
+run    PART thigh_shell_r: into body 2.5 mm at (-0.208, -0.106, 0.899)
+run    PART thigh_liner_r: into body 7.1 mm at (-0.204, -0.103, 0.898)
+chair  strut_l: length 0.474 m (deployed)
+chair  strut_r: length 0.474 m (deployed)
+chair  T1 l: wrap 91 deg, phi -31..60, on arc: True
+chair  T1 r: wrap 91 deg, phi -31..60, on arc: True
+chair  PART thigh_shell_l: into body 1.6 mm at (0.203, -0.106, 0.691)
+chair  PART thigh_liner_l: into body 4.9 mm at (0.198, -0.106, 0.694)
+chair  PART thigh_shell_r: into body 1.1 mm at (-0.206, -0.103, 0.686)
+chair  PART thigh_liner_r: into body 5.7 mm at (-0.198, -0.106, 0.693)
+chair  PART hip_belt: into body 12.6 mm at (-0.136, -0.115, 0.717)
+chair  PART m3_standoff_l: into body 2.8 mm at (0.108, -0.149, 0.724)
+chair  PART m3_standoff_r: into body 2.9 mm at (-0.108, -0.149, 0.724)
+stoop  strut_l: length 0.360 m (stowed)
+stoop  strut_r: length 0.360 m (stowed)
+stoop  T1 l: wrap 24 deg, phi 3..27, on arc: True
+stoop  T1 r: wrap 24 deg, phi 3..27, on arc: True
+stoop  PART thigh_shell_l: into body 2.0 mm at (0.205, -0.087, 0.919)
+stoop  PART thigh_liner_l: into body 5.6 mm at (0.2, -0.09, 0.92)
+stoop  PART thigh_shell_r: into body 1.5 mm at (-0.204, -0.092, 0.919)
+stoop  PART thigh_liner_r: into body 6.1 mm at (-0.2, -0.089, 0.919)

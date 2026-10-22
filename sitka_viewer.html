@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sitka render two: kinetics-first exo, contoured CAD</title>
+<style>
+:root{--ink:#e9edf2;--mut:#9aa3ad;--glass:rgba(20,23,28,.62);--line:rgba(255,255,255,.13);--acc:#d2602a}
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#b9bfc6;font:13px/1.35 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;color:var(--ink)}
+#stage{position:fixed;inset:0}
+#stage canvas{display:block}
+.bar{position:fixed;left:14px;right:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;pointer-events:none}
+.bar>*{pointer-events:auto}
+#top{top:12px}#bottom{bottom:12px}
+.grp{display:inline-flex;gap:4px;padding:5px;border-radius:12px;background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line)}
+.grp button{all:unset;cursor:pointer;padding:6px 10px;border-radius:8px;color:var(--mut);font-weight:600;white-space:nowrap}
+.grp button:hover{color:var(--ink);background:rgba(255,255,255,.06)}
+.grp button.on{color:#fff;background:rgba(255,255,255,.14)}
+.title{padding:7px 12px;border-radius:12px;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(14px);font-weight:700;letter-spacing:.2px}
+.title small{color:var(--mut);font-weight:500;margin-left:8px}
+.ex{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;color:var(--mut);font-weight:600}
+.ex input{width:120px;accent-color:var(--acc)}
+#readout{position:fixed;right:14px;top:108px;width:280px;padding:10px 12px;border-radius:12px;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(14px)}
+#readout .ttl{font-weight:700;margin-bottom:6px}
+#readout .row{display:flex;justify-content:space-between;gap:10px;padding:2px 0;border-top:1px solid rgba(255,255,255,.06)}
+#readout .row span{color:var(--mut)}#readout .row b{font-weight:600;text-align:right}
+#labels{position:fixed;inset:0;pointer-events:none}
+#leaders{position:fixed;inset:0;pointer-events:none}
+#leaders path{fill:none;stroke:rgba(20,22,26,.55);stroke-width:1}
+#leaders circle{fill:#14161a}
+.lbl{position:absolute;padding:2px 8px;border-radius:999px;background:rgba(20,23,28,.72);color:#eef1f4;font-size:11.5px;font-weight:600;white-space:nowrap;border:1px solid rgba(255,255,255,.12)}
+#tip{position:fixed;display:none;pointer-events:none;padding:6px 9px;border-radius:9px;background:rgba(15,17,21,.86);border:1px solid var(--line);max-width:320px}
+#tip b{display:block}#tip span{color:var(--mut);font-size:11.5px}
+#loading{position:fixed;inset:0;display:grid;place-items:center;color:#2a2e34;font-weight:600;font-size:15px}
+.legend{display:inline-flex;gap:12px;padding:7px 12px;border-radius:12px;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(14px);color:var(--mut);font-weight:600}
+#hud{position:fixed;left:14px;top:108px;width:330px;display:none;padding:10px 12px;border-radius:12px;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(14px)}
+#hud .ttl{font-weight:700;margin-bottom:4px}#hud .cap{color:var(--mut);margin-bottom:6px}
+#hud .hrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 0}
+#hud .hrow i{flex:0 0 120px;height:6px;border-radius:4px;background:rgba(255,255,255,.1);overflow:hidden}
+#hud .hrow b{display:block;height:100%;background:linear-gradient(90deg,#ff7a1a,#ffd06b)}
+#animbar{top:58px}
+#animbar .grp.scrub{padding:6px 12px;display:inline-flex;align-items:center;gap:8px;color:var(--mut);font-weight:600}
+#animbar input{width:260px;accent-color:var(--acc)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+</style></head>
+<body>
+<div id="stage"></div>
+<svg id="leaders"></svg>
+<div id="labels"></div>
+<div id="loading">Loading Sitka…</div>
+<div class="bar" id="top">
+  <div class="title">Sitka <small>render two · kinetics-first · 1.87 m / 130 kg wearer</small></div>
+  <div class="grp" id="poses"></div>
+  <div class="grp" id="views"></div>
+</div>
+<div id="readout"></div>
+<div class="bar" id="animbar">
+  <div class="grp" id="anims"></div>
+  <div class="grp" id="animctl"></div>
+  <div class="grp scrub">Scrub <input id="scrub" type="range" min="0" max="1" step="0.001" value="0"></div>
+</div>
+<div id="hud"></div>
+<div class="bar" id="bottom">
+  <div class="grp" id="mods"></div>
+  <div class="grp ex">Explode <input id="explode" type="range" min="0" max="1" step="0.01" value="0"></div>
+  <div class="legend"><span><i style="background:#1d1f23"></i>carbon</span><span><i style="background:#253a52"></i>leaf spring</span><span><i style="background:#a8adb3"></i>anodized alu</span><span><i style="background:#dca540"></i>tendon</span><span><i style="background:#2e918b"></i>elastic band</span><span><i style="background:#8f959c"></i>foam liner</span><span><i style="background:#7fb2ff"></i>upgrade (ghost)</span></div>
+</div>
+<div id="tip"></div>
+<script src="cad/viewer/sitka_data.js"></script>
+<script src="cad/viewer/sitka_viewer.bundle.js"></script>
+</body></html>

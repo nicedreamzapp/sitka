@@ -18,6 +18,14 @@ The research this design leans on hardest: Schache et al. 2011 (running knee kin
 Donelan et al. 2008 (knee energy harvesting), Luger et al. 2019 (Chairless Chair),
 NHANES 2015–2018 and ANSUR II (body size). Full list in `RESEARCH_REPORT_2026-10-21.md`.
 
+
+## Render two CAD (cad/, sitka_viewer.html)
+
+- Reference wearer: the **MakeHuman base mesh and targets (CC0)**, generated headless through the
+  MPFB Blender extension (GPL-3.0, used as a tool only; none of its code is in this repo).
+- Parts: **build123d** / OpenCascade (Apache-2.0 / LGPL), trimesh (MIT).
+- Viewer: **three.js r170** (MIT), bundled into `cad/viewer/sitka_viewer.bundle.js`.
+
 ---
 
 If your work is listed here and you'd like the wording changed, or if something's

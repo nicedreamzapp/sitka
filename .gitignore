@@ -5,3 +5,9 @@
 *.csg
 # Node
 node_modules/
+# CAD build environment (recreate: uv venv -p 3.12 cad/.venv; Blender profile with MPFB)
+cad/.venv/
+cad/.blender/
+__pycache__/
+cad/step/sitka_assembly_*.step
+cad/step/
