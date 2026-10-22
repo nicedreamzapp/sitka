@@ -1,4 +1,4 @@
-# Contributing to Run + Sit Exo
+# Contributing to Sitka
 
 Thank you for helping build an open exoskeleton. This project belongs to everyone who improves it.
 

@@ -32,7 +32,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   line('  Dnsys Z1 knee unit      ~0.68 kg per leg  (powered, no seat)');
   line('  Hypershell X Ultra      1.8 kg total w/o battery (hip, no seat)');
   line('  Noonee Chairless Chair  2.95 kg total     (seat, no motor)');
-  line(`  Run + Sit Exo P1 (v2)   ${fmt(b.perLeg, 2)} kg per leg, ${fmt(b.total, 1)} kg total  (both; v1 was 2.91 / 7.2 before the rear legs, medial bars and ankle pivots)`);
+  line(`  Sitka P1 (v2)   ${fmt(b.perLeg, 2)} kg per leg, ${fmt(b.total, 1)} kg total  (both; v1 was 2.91 / 7.2 before the rear legs, medial bars and ankle pivots)`);
   line('');
   line(`Waist-equivalent load (distal mass weighted up): ${fmt(b.equiv, 1)} kg — the foot stirrups alone count as ${fmt((b.byLoc.foot || 0) * W.foot, 1)} kg.`);
   for (const m of [PERSON.massMedian, PERSON.mass95])

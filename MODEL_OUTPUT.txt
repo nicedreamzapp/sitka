@@ -214,7 +214,7 @@ Compare (vendor / press numbers, see RESEARCH_REPORT):
   Dnsys Z1 knee unit      ~0.68 kg per leg  (powered, no seat)
   Hypershell X Ultra      1.8 kg total w/o battery (hip, no seat)
   Noonee Chairless Chair  2.95 kg total     (seat, no motor)
-  Run + Sit Exo P1 (v2)   3.85 kg per leg, 9.2 kg total  (both; v1 was 2.91 / 7.2 before the rear legs, medial bars and ankle pivots)
+  Sitka P1 (v2)   3.85 kg per leg, 9.2 kg total  (both; v1 was 2.91 / 7.2 before the rear legs, medial bars and ankle pivots)
 
 Waist-equivalent load (distal mass weighted up): 11.4 kg — the foot stirrups alone count as 2.3 kg.
   vs a 87.4 kg wearer: ~13.0% extra load if walking cost scales with load (EST, first-order).

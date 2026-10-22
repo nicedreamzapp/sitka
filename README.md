@@ -1,9 +1,9 @@
-# Run + Sit Exo: Open Powered Knee Exoskeleton with a Seat Built In
+# Sitka: Open Powered Knee Exoskeleton with a Seat Built In
 *Motorized knees that help you walk, hike and run, then lock at the angle you pick so you can sit anywhere. Designed in America, given away to everyone.*
 
-![Run + Sit Exo P1, chair mode](renders/mode_chair_quarter.png)
+![Sitka P1, chair mode](renders/mode_chair_quarter.png)
 
-### ▶ [Open the live 3D viewer](https://nicedreamzapp.github.io/run-sit-exo/run_sit_exo_viewer.html) · [watch it assemble](https://nicedreamzapp.github.io/run-sit-exo/run_sit_exo_viewer.html?anim=assembly) · [watch it walk, hike, run and sit](https://nicedreamzapp.github.io/run-sit-exo/run_sit_exo_viewer.html?anim=body)
+### ▶ [Open the live 3D viewer](https://nicedreamzapp.github.io/sitka/run_sit_exo_viewer.html) · [watch it assemble](https://nicedreamzapp.github.io/sitka/run_sit_exo_viewer.html?anim=assembly) · [watch it walk, hike, run and sit](https://nicedreamzapp.github.io/sitka/run_sit_exo_viewer.html?anim=body)
 *Runs in any browser, no install. Click any part for its price, mass and why it's there.*
 
 > **Mission:** This project is about freedom of movement. Go farther on your own legs, and rest wherever you are: on a trail with no bench, at a shop bench all day, in a line that never ends. The machine works for the person wearing it, quietly, and never against anyone. We build it to give people more say in how far they can go and when they can stop.
@@ -74,7 +74,7 @@ Numbers for a **130 kg, 1.87 m man** (US 95th percentile for both, NHANES), wear
 Pawls never drop at a walk or a run, and anything deeper than Perch needs both rear feet on the ground.
 
 ## How it holds you up when you sit
-See the side-view force diagram: **[sit_diagram.html](https://nicedreamzapp.github.io/run-sit-exo/sit_diagram.html)**.
+See the side-view force diagram: **[sit_diagram.html](https://nicedreamzapp.github.io/sitka/sit_diagram.html)**.
 
 Each leg unit stands on three points: your heel, the ball of your foot, and the rear foot about 0.30–0.39 m behind your heel. In chair mode, for a 130 kg man:
 - **40% of the load goes down the rear leg** (284 N axial per leg). It is a strut, pinned at both ends, so it only ever pushes along its length. At 17° from vertical it needs a friction coefficient of 0.30 at the foot: half of rubber on dry concrete (0.6–0.85), and inside wet concrete (0.45–0.75) and wet-rated tile (≥0.42).
@@ -161,13 +161,13 @@ This is experimental assistive hardware, not a medical device. Anyone with a kne
 | File | What it is |
 |------|-----------|
 | `index.html` | Redirects the GitHub Pages site to the viewer |
-| `run_sit_exo_viewer.html` | **The live CAD** ([open it](https://nicedreamzapp.github.io/run-sit-exo/run_sit_exo_viewer.html)). Orbit, switch modes, explode, click any part for price and spec. **▶ Assembly** builds it in 7 steps; **▶ On body** walks, hikes, runs, stops, offers a seat, sits in all four angles and stands up, with motor, lock, pad and foot-sensor state live |
+| `run_sit_exo_viewer.html` | **The live CAD** ([open it](https://nicedreamzapp.github.io/sitka/run_sit_exo_viewer.html)). Orbit, switch modes, explode, click any part for price and spec. **▶ Assembly** builds it in 7 steps; **▶ On body** walks, hikes, runs, stops, offers a seat, sits in all four angles and stands up, with motor, lock, pad and foot-sensor state live |
 | `run_sit_exo_assembly.html` / `run_sit_exo_onbody.html` | Open the viewer straight into either animation |
 | `run_sit_exo.scad` | Parametric OpenSCAD model; `mode` = stand / perch / halfsit / chair / squat / run |
 | `render_all.sh` → `renders/*.png` | Renders every view and mode with the OpenSCAD CLI |
 | `params.mjs` | Every input, each tagged `[SRC n]`, `[CALC]` or `[EST]` |
 | `seat_torque_model.mjs` | Seat tripod statics per angle (with and without the rear leg), tipping margins front/back/side, ratchet tooth stress, rear-leg buckling, upright sizing |
-| `sit_diagram.html` | Side-view force diagram of how the seat holds you up ([open it](https://nicedreamzapp.github.io/run-sit-exo/sit_diagram.html)) |
+| `sit_diagram.html` | Side-view force diagram of how the seat holds you up ([open it](https://nicedreamzapp.github.io/sitka/sit_diagram.html)) |
 | `gait_assist_model.mjs` | Assist share per activity, speed check, inertia, fall catch |
 | `energy_model.mjs` | Runtime for walk, hike, run and sit; regen; a day-hike budget |
 | `mass_budget.mjs` | Mass per leg and belt, and its metabolic weighting |
@@ -178,7 +178,7 @@ This is experimental assistive hardware, not a medical device. Anyone with a kne
 | `RESEARCH_REPORT_2026-10-21.md` | Sources, prior art, licences, what we could not find |
 
 **Run the numbers:** `node run_all.mjs` (Node 18+, no dependencies).
-**View the CAD:** [live viewer](https://nicedreamzapp.github.io/run-sit-exo/run_sit_exo_viewer.html), or open `run_sit_exo_viewer.html` locally in any browser; no install, no account. Options: `?anim=assembly|body` · `?mode=chair` · `?view=side` · `?labels=1` · `?shot=1` (download a PNG).
+**View the CAD:** [live viewer](https://nicedreamzapp.github.io/sitka/run_sit_exo_viewer.html), or open `run_sit_exo_viewer.html` locally in any browser; no install, no account. Options: `?anim=assembly|body` · `?mode=chair` · `?view=side` · `?labels=1` · `?shot=1` (download a PNG).
 **Re-render:** `bash render_all.sh` (OpenSCAD 2021.01+).
 
 ## How to contribute

@@ -1,4 +1,4 @@
-// Run + Sit Exo — parametric CAD, prototype one (P1)
+// Sitka — parametric CAD, prototype one (P1)
 // CERN-OHL-S-2.0 — see LICENSE.
 //
 // Pose is a parameter. Render any mode from the command line, e.g.

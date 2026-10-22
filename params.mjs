@@ -1,4 +1,4 @@
-// Run + Sit Exo — shared inputs. EVERY number here carries its source or is
+// Sitka — shared inputs. EVERY number here carries its source or is
 // flagged EST (our estimate, to be replaced by a measurement). The models import
 // from this one file so there is never a second copy of a number to drift.
 //

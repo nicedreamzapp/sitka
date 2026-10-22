@@ -1,4 +1,4 @@
-# Run + Sit Exo: Research Report
+# Sitka: Research Report
 **Date:** October 21, 2026 · **Method:** three parallel research passes (prior art, purchasable parts, biomechanics), each required to cite a URL or DOI for every number and to write "not found" rather than guess. One extra direct fetch for the actuator constants. Every number the models use is tagged in `params.mjs` as `[SRC n]` (below), `[CALC]` or `[EST]`.
 
 ## Bottom line
