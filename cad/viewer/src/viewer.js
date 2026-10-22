@@ -281,7 +281,7 @@ function freeRect() {
     if (ui.open.info) r = $('info').getBoundingClientRect().left - 6;
   }
   if (r - l < W * 0.35) { l = 0; r = W; }
-  if (b - t < H * 0.3) { t = 0; b = H; }
+  if (b - t < H * 0.18) { t = 0; b = H; }
   return { l, r, t, b, W, H };
 }
 // shift the projection so the orbit target sits in the middle of the free area
