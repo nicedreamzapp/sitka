@@ -1,0 +1,174 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Sitka kinetics: springs, clutches and cables, full body</title>
+<style>body{margin:0;background:#0e1116;color:#e6e9ef;font:16px/1.5 -apple-system,system-ui,sans-serif}.p{max-width:1400px;margin:0 auto;padding:22px}h1{font-size:26px;margin:0 0 6px}.c{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:10px}.k{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px 16px}.k b{color:#f2b84b}.g{color:#5fd4a8;font-weight:700}.v{color:#c792ea;font-weight:700}.bl{color:#7fb2ff;font-weight:700}.lg span{display:inline-block;margin-right:18px;font-size:14px}</style></head>
+<body><div class="p"><h1>Kinetics first: springs and clutches do the work, one optional motor climbs</h1>
+<div style="color:#9aa3b2">130 kg / 1.87 m wearer, side view facing right. Left: walking (mid-stance, near leg). Right: chair mode, 10° recline. Numbers per leg / per side, from KINETICS.md (EST until measured).</div>
+<div class="lg" style="margin-top:6px"><span><b style="color:#5fd4a8">green</b> = basic passive modules (build first)</span><span><b style="color:#c792ea">purple</b> = couplings (only when two modules dock)</span><span><b style="color:#7fb2ff">blue dashed</b> = optional motor tier</span><span><b style="color:#ff6b6b">red box</b> = clutch</span><span><b style="color:#f2b84b">amber</b> = compression</span><span><b style="color:#6b7380">gray dashed</b> = switched off</span></div>
+<svg viewBox="0 30 1400 900" width="100%"><defs>
+<marker id="ay" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#f2b84b"/></marker>
+<filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<line x1="690" y1="40" x2="690" y2="920" stroke="#2a313c" stroke-width="2"/>
+<text x="40" y="62" fill="#e6e9ef" font-size="20" font-weight="700">WALKING</text>
+<text x="730" y="62" fill="#e6e9ef" font-size="20" font-weight="700">SITTING</text>
+
+<!-- ===================== WALKING FIGURE ===================== -->
+<line x1="60" y1="880" x2="660" y2="880" stroke="#3a4250" stroke-width="3"/>
+<!-- soft tissue -->
+<line x1="330" y1="175" x2="330" y2="420" stroke="#c9ced8" stroke-width="110" stroke-linecap="round" opacity=".28"/>
+<line x1="330" y1="420" x2="345" y2="640" stroke="#c9ced8" stroke-width="70" stroke-linecap="round" opacity=".35"/>
+<line x1="345" y1="640" x2="340" y2="845" stroke="#c9ced8" stroke-width="46" stroke-linecap="round" opacity=".35"/>
+<line x1="330" y1="420" x2="300" y2="640" stroke="#c9ced8" stroke-width="64" stroke-linecap="round" opacity=".15"/>
+<line x1="300" y1="640" x2="220" y2="830" stroke="#c9ced8" stroke-width="40" stroke-linecap="round" opacity=".15"/>
+<circle cx="338" cy="100" r="42" fill="none" stroke="#c9ced8" stroke-width="3" opacity=".8"/>
+<!-- bones: trailing leg faint -->
+<g stroke="#ffffff" stroke-linecap="round" opacity=".35"><line x1="330" y1="420" x2="300" y2="640" stroke-width="4"/><line x1="300" y1="640" x2="220" y2="830" stroke-width="4"/><line x1="220" y1="830" x2="200" y2="852" stroke-width="3"/><line x1="220" y1="830" x2="268" y2="878" stroke-width="3"/></g>
+<!-- bones: stance leg + trunk + arm -->
+<g stroke="#ffffff" stroke-linecap="round"><line x1="330" y1="420" x2="345" y2="640" stroke-width="6"/><line x1="345" y1="640" x2="340" y2="845" stroke-width="6"/><line x1="340" y1="845" x2="318" y2="876" stroke-width="3"/><line x1="340" y1="845" x2="408" y2="878" stroke-width="3"/>
+<line x1="330" y1="420" x2="332" y2="175" stroke-width="4" stroke-dasharray="10 6"/>
+<line x1="332" y1="180" x2="322" y2="300" stroke-width="3"/><line x1="322" y1="300" x2="356" y2="395" stroke-width="3"/></g>
+<circle cx="330" cy="420" r="7" fill="#fff"/><circle cx="345" cy="640" r="6" fill="#fff"/><circle cx="340" cy="845" r="5" fill="#fff"/>
+
+<!-- DOCK: back panel + belt (basic, green) -->
+<g filter="url(#glow)">
+<line x1="282" y1="400" x2="280" y2="170" stroke="#5fd4a8" stroke-width="10" stroke-linecap="round"/>
+<rect x="268" y="398" width="112" height="22" rx="8" fill="none" stroke="#5fd4a8" stroke-width="4"/>
+</g>
+<text x="262" y="160" fill="#5fd4a8" font-size="14" text-anchor="end" font-weight="700">DOCK: back panel + belt</text>
+<text x="262" y="177" fill="#9aa3b2" font-size="12" text-anchor="end">6 cable ports, 0.7 kg</text>
+
+<!-- M2 lift tendon: slack in walking -->
+<path d="M282,190 L270,330 Q262,430 300,470 L318,540" fill="none" stroke="#5fd4a8" stroke-width="3" stroke-dasharray="7 6" opacity=".9"/>
+<rect x="263" y="185" width="22" height="14" rx="3" fill="#18202a" stroke="#5fd4a8" stroke-width="2"/>
+<text x="250" y="300" fill="#5fd4a8" font-size="14" text-anchor="end" font-weight="700">M2 lift tendon</text>
+<text x="250" y="317" fill="#9aa3b2" font-size="12" text-anchor="end">slack below 35° of bend:</text>
+<text x="250" y="332" fill="#9aa3b2" font-size="12" text-anchor="end">walking never feels it</text>
+<text x="250" y="347" fill="#9aa3b2" font-size="12" text-anchor="end">stoop 90°: 30 Nm/side, 60 Nm</text>
+<text x="250" y="362" fill="#9aa3b2" font-size="12" text-anchor="end">= box feels ~12 kg lighter</text>
+
+<!-- M3 hip flexor band on trailing leg (stretched in late stance) -->
+<path d="M372,412 Q380,440 362,470 L340,540" fill="none" stroke="#5fd4a8" stroke-width="4" filter="url(#glow)"/>
+<circle cx="372" cy="436" r="5" fill="#18202a" stroke="#5fd4a8" stroke-width="2"/>
+<text x="420" y="452" fill="#5fd4a8" font-size="14" font-weight="700">M3 hip-flexor band</text>
+<text x="420" y="469" fill="#9aa3b2" font-size="12">14 N/mm, r 60 mm: 18 Nm at 20° extension</text>
+<text x="420" y="484" fill="#9aa3b2" font-size="12">stores 3 J in late stance, swings the leg</text>
+<line x1="416" y1="458" x2="378" y2="440" stroke="#5fd4a8" stroke-width="1.5"/>
+
+<!-- strut stowed -->
+<line x1="312" y1="458" x2="304" y2="580" stroke="#f2b84b" stroke-width="6" stroke-linecap="round" opacity=".7"/>
+<circle cx="312" cy="458" r="6" fill="#18202a" stroke="#f2b84b" stroke-width="2"/>
+<text x="250" y="560" fill="#f2b84b" font-size="13" text-anchor="end" font-weight="700">strut stowed</text>
+<text x="250" y="575" fill="#9aa3b2" font-size="12" text-anchor="end">along the thigh</text>
+
+<!-- M1 knee: arc + tendon + stance branch with EA clutch -->
+<path d="M368,606 A40 40 0 0 1 380,668" fill="none" stroke="#5fd4a8" stroke-width="6" stroke-linecap="round" filter="url(#glow)"/>
+<path d="M356,540 L370,606 A40 40 0 0 1 382,666 L368,700" fill="none" stroke="#ff6b6b" stroke-width="4"/>
+<rect x="346" y="526" width="24" height="18" rx="3" fill="#18202a" stroke="#ff6b6b" stroke-width="3"/>
+<circle cx="368" cy="700" r="5" fill="#ff6b6b"/>
+<text x="420" y="560" fill="#5fd4a8" font-size="14" font-weight="700">M1 knee: 80 mm arc + tendon</text>
+<text x="420" y="577" fill="#9aa3b2" font-size="12">stance leaf 15.6 N/mm (smart tier):</text>
+<text x="420" y="592" fill="#9aa3b2" font-size="12">26 Nm at 15° loading bend, 3.4 J back</text>
+<text x="420" y="607" fill="#ff6b6b" font-size="12" font-weight="700">electroadhesive clutch, 26 g, fails OPEN</text>
+<text x="420" y="622" fill="#9aa3b2" font-size="12">knee absorbs net energy: NO motor on flat</text>
+<line x1="416" y1="566" x2="372" y2="540" stroke="#5fd4a8" stroke-width="1.5"/>
+
+<!-- coupling: hamstring band (trailing leg) -->
+<path d="M304,462 L276,600 Q272,640 282,660 L262,720" fill="none" stroke="#c792ea" stroke-width="3"/>
+<text x="250" y="640" fill="#c792ea" font-size="14" text-anchor="end" font-weight="700">hamstring band</text>
+<text x="250" y="657" fill="#9aa3b2" font-size="12" text-anchor="end">hip + knee docked</text>
+<text x="250" y="672" fill="#9aa3b2" font-size="12" text-anchor="end">taut in late swing, 126 N:</text>
+<text x="250" y="687" fill="#9aa3b2" font-size="12" text-anchor="end">10 Nm hip ext., 2.6 J</text>
+
+<!-- coupling: calf band (stance leg, needs ankle module) -->
+<path d="M326,600 Q318,700 322,820 L322,858" fill="none" stroke="#c792ea" stroke-width="3"/>
+<rect x="306" y="852" width="24" height="12" rx="3" fill="#18202a" stroke="#c792ea" stroke-width="2"/>
+<text x="420" y="760" fill="#c792ea" font-size="14" font-weight="700">calf band (knee + M4 ankle)</text>
+<text x="420" y="777" fill="#9aa3b2" font-size="12">Collins-type clutch-spring, heel clip</text>
+<text x="420" y="792" fill="#9aa3b2" font-size="12">−7% walking in the Nature 2015 study</text>
+<text x="420" y="807" fill="#9aa3b2" font-size="12">optional: puts mass on the foot</text>
+<line x1="416" y1="766" x2="326" y2="760" stroke="#c792ea" stroke-width="1.5"/>
+
+<!-- running band -->
+<path d="M232,846 Q290,866 330,866" fill="none" stroke="#c792ea" stroke-width="3" stroke-dasharray="4 4"/>
+<text x="150" y="905" fill="#c792ea" font-size="13" font-weight="700">running band, shoe to shoe: −6.4% running, 50 g (RUN only)</text>
+
+<!-- M5 shoulder -->
+<rect x="296" y="182" width="22" height="34" rx="5" fill="#18202a" stroke="#c792ea" stroke-width="2"/>
+<path d="M318,200 Q330,240 324,262" fill="none" stroke="#c792ea" stroke-width="3"/>
+<text x="400" y="190" fill="#c792ea" font-size="14" font-weight="700">M5 shoulder springs (upgrade)</text>
+<text x="400" y="207" fill="#9aa3b2" font-size="12">arm load → panel → belt</text>
+<text x="400" y="222" fill="#9aa3b2" font-size="12">deltoid up to −16% overhead</text>
+<line x1="396" y1="196" x2="326" y2="230" stroke="#c792ea" stroke-width="1.5"/>
+
+<!-- optional motor hub + bowden -->
+<rect x="236" y="225" width="36" height="66" rx="6" fill="#18202a" stroke="#7fb2ff" stroke-width="2" stroke-dasharray="5 4"/>
+<text x="230" y="240" fill="#7fb2ff" font-size="13" text-anchor="end" font-weight="700">P1: ONE motor</text>
+<text x="230" y="256" fill="#9aa3b2" font-size="12" text-anchor="end">2 dog clutches pick</text>
+<text x="230" y="271" fill="#9aa3b2" font-size="12" text-anchor="end">the stance leg (or both)</text>
+<path d="M272,282 Q330,420 350,528" fill="none" stroke="#7fb2ff" stroke-width="2.5" stroke-dasharray="7 6"/>
+<text x="420" y="660" fill="#7fb2ff" font-size="14" font-weight="700">motor only for net-positive work</text>
+<text x="420" y="677" fill="#9aa3b2" font-size="12">stairs up ~35 of 98 J/step; uphill 15–30 Nm</text>
+<text x="420" y="692" fill="#9aa3b2" font-size="12">downhill: regen ~20 Wh back per 500 m</text>
+<text x="420" y="707" fill="#9aa3b2" font-size="12">base model: damper, no motor</text>
+
+<!-- ===================== SITTING FIGURE (tendon_sketch geometry, scaled) ===================== -->
+<g transform="translate(700,250) scale(0.8)">
+<line x1="140" y1="800" x2="840" y2="800" stroke="#3a4250" stroke-width="3"/>
+<line x1="527" y1="800" x2="686" y2="800" stroke="#c9ced8" stroke-width="16" stroke-linecap="round" opacity=".5"/>
+<line x1="560" y1="752" x2="631.6" y2="484.8" stroke="#c9ced8" stroke-width="58" stroke-linecap="round" opacity=".4"/>
+<line x1="631.6" y1="484.8" x2="365.5" y2="413.5" stroke="#c9ced8" stroke-width="92" stroke-linecap="round" opacity=".4"/>
+<line x1="365.5" y1="413.5" x2="313.4" y2="118.1" stroke="#c9ced8" stroke-width="125" stroke-linecap="round" opacity=".3"/>
+<circle cx="292.5" cy="-0.1" r="48" fill="none" stroke="#c9ced8" stroke-width="3" opacity=".8"/>
+<g stroke="#fff" stroke-linecap="round"><line x1="365.5" y1="413.5" x2="631.6" y2="484.8" stroke-width="6"/><line x1="631.6" y1="484.8" x2="560" y2="752" stroke-width="6"/><line x1="560" y1="752" x2="527" y2="800" stroke-width="3"/><line x1="560" y1="752" x2="686" y2="800" stroke-width="3"/><line x1="365.5" y1="413.5" x2="307.1" y2="82.6" stroke-width="4" stroke-dasharray="10 6"/></g>
+<circle cx="365.5" cy="413.5" r="7" fill="#fff"/>
+<!-- dock: back panel, green -->
+<line x1="300.1" y1="399.7" x2="254.2" y2="116.4" stroke="#5fd4a8" stroke-width="10" stroke-linecap="round" filter="url(#glow)"/>
+<!-- crazy creek strap -->
+<line x1="259.5" y1="158.1" x2="574.1" y2="469.4" stroke="#f2b84b" stroke-width="3"/>
+<text x="420" y="200" fill="#f2b84b" font-size="18" font-weight="700">Crazy Creek strap 94 N</text>
+<text x="420" y="221" fill="#9aa3b2" font-size="15">holds the 10° recline</text>
+<!-- lift tendon OFF -->
+<path d="M262,170 Q250,330 300,420 L340,470" fill="none" stroke="#6b7380" stroke-width="3" stroke-dasharray="7 6"/>
+<text x="232" y="250" fill="#6b7380" font-size="16" text-anchor="end" font-weight="700">lift tendon OFF</text>
+<text x="232" y="270" fill="#6b7380" font-size="14" text-anchor="end">(it would push you back)</text>
+<!-- seat cup + strut -->
+<path d="M311.5,445.5 Q369.5,483.5 431.5,451.5" fill="none" stroke="#5fd4a8" stroke-width="12" stroke-linecap="round" filter="url(#glow)"/>
+<line x1="367.5" y1="459.5" x2="338.4" y2="800" stroke="#f2b84b" stroke-width="8" stroke-linecap="round"/>
+<circle cx="338.4" cy="796" r="9" fill="#f2b84b"/>
+<line x1="350.3" y1="660.5" x2="359.7" y2="550.9" stroke="#f2b84b" stroke-width="4" marker-end="url(#ay)"/>
+<text x="318" y="590" fill="#f2b84b" font-size="19" text-anchor="end" font-weight="700">strut 472 N, 69%</text>
+<text x="318" y="612" fill="#9aa3b2" font-size="15" text-anchor="end">seat cup 400 cm²: 15 kPa</text>
+<text x="318" y="632" fill="#9aa3b2" font-size="15" text-anchor="end">(was 250 cm², 24 kPa)</text>
+<!-- sit leaf spring along thigh shell -->
+<path d="M420,402 l12,-14 l12,14 l12,-14 l12,14 l12,-14 l12,14 l12,-14 l12,14 l12,-14 l12,14" fill="none" stroke="#5fd4a8" stroke-width="4" filter="url(#glow)" transform="rotate(15 420 402)"/>
+<text x="420" y="320" fill="#5fd4a8" font-size="18" font-weight="700">sit leaf spring 350 N</text>
+<text x="420" y="341" fill="#9aa3b2" font-size="15">28 Nm/knee; stores 44 J sitting down,</text>
+<text x="420" y="360" fill="#9aa3b2" font-size="15">gives ~40 J back standing up</text>
+<!-- knee arc, tendon, cam -->
+<path d="M645.8,431.7 A55 55 0 0 1 684.7,499.1" fill="none" stroke="#5fd4a8" stroke-width="8" stroke-linecap="round" filter="url(#glow)"/>
+<circle cx="631.6" cy="484.8" r="10" fill="#18202a" stroke="#7fb2ff" stroke-width="3"/>
+<path d="M459.4,393.2 L643,438.2 A48 48 0 0 1 675.6,503.9 L628.2,613.3" fill="none" stroke="#ff6b6b" stroke-width="4"/>
+<circle cx="628.2" cy="613.3" r="6" fill="#ff6b6b"/>
+<rect x="443.4" y="382.2" width="32" height="22" rx="4" fill="#18202a" stroke="#ff6b6b" stroke-width="3" transform="rotate(15 459.4 393.2)"/>
+<text x="700" y="410" fill="#ff6b6b" font-size="18" font-weight="700">cam clutch: 426 N</text>
+<text x="700" y="431" fill="#9aa3b2" font-size="15">LOCKS WITH POWER OFF</text>
+<text x="700" y="451" fill="#9aa3b2" font-size="15">(spring 350 + cam 76 N)</text>
+<!-- hamstring off -->
+<path d="M380,470 L560,520 L590,600" fill="none" stroke="#6b7380" stroke-width="3" stroke-dasharray="7 6"/>
+<text x="470" y="560" fill="#6b7380" font-size="15" font-weight="700">hamstring band OFF</text>
+<!-- pads -->
+<text x="700" y="640" fill="#5fd4a8" font-size="16" font-weight="700">pads ≤ 15 kPa</text>
+<text x="700" y="660" fill="#9aa3b2" font-size="14">below kneecap 100 cm²: 14 kPa</text>
+<text x="700" y="678" fill="#9aa3b2" font-size="14">calf 12, thigh front 12</text>
+<text x="700" y="696" fill="#9aa3b2" font-size="14">silicone + spacer + TPU lattice</text>
+<!-- CoM -->
+<circle cx="410.8" cy="350.5" r="10" fill="#5fd4a8" stroke="#0e1116" stroke-width="3"/>
+<line x1="410.8" y1="350.5" x2="410.8" y2="800" stroke="#5fd4a8" stroke-width="2" stroke-dasharray="6 6"/>
+<text x="560" y="840" fill="#9aa3b2" font-size="16" text-anchor="middle">bones carry compression, tendons carry pull</text>
+</g>
+</svg>
+<div class="c">
+<div class="k"><span class="g">Build first (no motors, ~4.4 kg, ~$1,300):</span> Dock 0.7 kg; M1 Knee/Seat 2.9 kg (sit anywhere, 28 Nm stand-up spring); M2 Back/Lift 0.35 kg (60 Nm, ~12 kg lighter box); M3 Hip bands 0.35 kg (published −7% walking); running band 50 g (−6.4% running).</div>
+<div class="k"><span class="v">Then upgrades:</span> smart clutches (+0.3 kg, ~$600: electroadhesive, fail open); M4 ankle (+0.9 kg, −7% walking); M5 shoulder (+1.6 kg); couplings appear when modules dock: hamstring, calf, squat differential, shoulder-back.</div>
+<div class="k"><span class="bl">One motor (P1, ~6.7 kg, ~$3,000):</span> only for stairs up, uphill and heavy lifts. Stoop lift goes from 60 to <b>110 Nm rated / 154 Nm peak</b> (box ~22 / 31 kg lighter). A second motor adds almost nothing: the thigh pad caps it near 160 Nm.</div>
+</div>
+</div></body></html>
