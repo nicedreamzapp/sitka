@@ -1,0 +1,7 @@
+# macOS
+.DS_Store
+# OpenSCAD backups / caches
+*.scad.bak
+*.csg
+# Node
+node_modules/

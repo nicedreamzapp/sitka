@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Run + Sit Exo — Concept v2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --bg:#0e1116; --card:rgba(255,255,255,.05); --line:rgba(255,255,255,.12); --txt:#e6e9ef; --dim:#9aa3b2; --acc:#5fd4a8; --acc2:#f2b84b; --red:#ff6a5c; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--txt); font:15px/1.5 -apple-system, system-ui, sans-serif; }
+  .page { max-width:1040px; margin:0 auto; padding:28px 24px 40px; }
+  h1 { font-size:26px; margin:0 0 4px; }
+  .sub { color:var(--dim); margin:0 0 22px; }
+  .grid { display:grid; grid-template-columns: 1.1fr 1fr; gap:18px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px 18px; }
+  .card h2 { font-size:15px; margin:0 0 10px; color:var(--acc); letter-spacing:.02em; }
+  .card p { margin:0 0 8px; }
+  .modes { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; text-align:center; }
+  .modes > div { font-size:13px; color:var(--dim); }
+  .modes b { display:block; color:var(--txt); font-size:14px; }
+  .modes .nm { display:block; color:var(--acc2); font-size:12px; margin-top:2px; }
+  .feat p { margin:0 0 9px; }
+  .feat b { color:var(--acc2); }
+  .full { grid-column:1 / -1; }
+  .note { color:var(--dim); font-size:13px; }
+  table { width:100%; border-collapse:collapse; font-size:13.5px; }
+  td { padding:5px 0; border-bottom:1px solid var(--line); }
+  td:last-child { text-align:right; color:var(--acc2); font-weight:600; }
+  a { color:#8fd0ff; }
+  svg text { fill:var(--dim); font-size:12px; font-family:inherit; }
+  @media (max-width:760px){ .grid{grid-template-columns:1fr;} .modes{grid-template-columns:repeat(2,1fr);} }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Run + Sit Exoskeleton</h1>
+  <p class="sub">Concept v2, October 21, 2026. Motorized knees that help you walk, hike and run, then lock at the angle you pick so you can sit anywhere. Numbers on this page come from the models in this folder.</p>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Side view, chair mode (drawn to scale)</h2>
+      <svg id="hero" viewBox="0 0 440 420" width="100%"></svg>
+    </div>
+
+    <div class="card">
+      <h2>How it works</h2>
+      <p>A small robot-joint motor sits at each knee. While you walk, hike or run it adds torque as your knee works, the way Dnsys and Hypershell units help today.</p>
+      <p>When you stop, it offers you a seat. Tap once and the motors bend your knees to the angle you picked, a steel pawl drops into a toothed ring, and a pad folds under each thigh. Your weight goes through the locked frame into your heels.</p>
+      <p>The <b>pawl</b> holds the seat, not the motor. A chair-mode hold is about 142 Nm per knee, three times the motor's peak, and the pawl does it for zero watts.</p>
+      <p class="note">Hard safety rule: the lock only engages when both feet and the motion sensor say you're standing still. Never at a walk, never at a run.</p>
+    </div>
+
+    <div class="card full">
+      <h2>Four lock angles</h2>
+      <div class="modes" id="modes"></div>
+      <p class="note" style="margin-top:10px">Figures are drawn from the same geometry as the CAD: shank leaned forward until the seat sits over the heel (capped at 35°). The amber number is the knee torque the lock carries for a 130 kg, 95th-percentile man, balanced and static.</p>
+    </div>
+
+    <div class="card feat">
+      <h2>New things nobody sells yet</h2>
+      <p><b>Seat offer.</b> It notices you've stopped for a second or two and gives a soft buzz. One tap and you're sitting.</p>
+      <p><b>Downhill braking.</b> On descents and stairs going down, the motors brake your knees so your quads work less. It also recovers a little charge, though only a few watts (see below).</p>
+      <p><b>Fall catch.</b> If it senses a stumble, both knees go to full torque and heavy damping in a few milliseconds. That buys time; it cannot hold a falling adult by itself.</p>
+      <p><b>Place memory.</b> It remembers the angle you like at each spot, like the shop bench or the lift line, and suggests it.</p>
+    </div>
+
+    <div class="card">
+      <h2>The numbers so far</h2>
+      <table>
+        <tr><td>Chair hold per knee (130 kg, balanced)</td><td>142 Nm</td></tr>
+        <tr><td>Lock design load (one leg, × 1.5)</td><td>507 Nm</td></tr>
+        <tr><td>Weight per leg / total worn</td><td>2.9 kg / 7.2 kg</td></tr>
+        <tr><td>Battery</td><td>2 × 97 Wh</td></tr>
+        <tr><td>Running (conservative)</td><td>~2.8 h</td></tr>
+        <tr><td>Hiking uphill, 25 Nm assist</td><td>~4.2 h</td></tr>
+        <tr><td>Best downhill regen</td><td>~3.7 W</td></tr>
+        <tr><td>Prototype one, parts</td><td>$3,759</td></tr>
+        <tr><td>Prototype one, all in</td><td>~$6,400</td></tr>
+      </table>
+      <p class="note" style="margin-top:8px">Open <a href="run_sit_exo_viewer.html">the 3D viewer</a> to see it built and worn. The README covers what does not close yet.</p>
+    </div>
+  </div>
+</div>
+<script>
+// Same geometry as run_sit_exo.scad / seat_torque_model.mjs (95th-pct man, Winter fractions)
+const H = 1874, Lt = .245 * H, Ls = .246 * H, sPad = .65 * Lt, ankleH = 80, foot = .152 * H;
+const R = Math.PI / 180;
+const lean = th => Math.min(35, Math.atan2(sPad * Math.sin(th * R), Ls + sPad * Math.cos(th * R)) / R);
+const trunkFor = { 0: 0, 25: 4, 60: 10, 90: 18, 120: 32 };
+const NM = { 25: 44, 60: 102, 90: 142, 120: 168 };   // seat_torque_model.mjs, balanced
+const NS = 'http://www.w3.org/2000/svg';
+function el(tag, a, parent) { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); parent.appendChild(e); return e; }
+
+// draws a side-view figure; x forward to the right, ground at gy; scale k px/mm
+function figure(svg, th, ox, gy, k, opts = {}) {
+  const phi = th > 0 ? lean(th) : 0, hip = th - phi;
+  const A = [ox, gy - ankleH * k];
+  const K = [A[0] + Ls * Math.sin(phi * R) * k, A[1] - Ls * Math.cos(phi * R) * k];
+  const P = [K[0] - Lt * Math.sin(hip * R) * k, K[1] - Lt * Math.cos(hip * R) * k];
+  const tr = trunkFor[th] ?? 0, tl = .30 * H * k;
+  const S = [P[0] + tl * Math.sin(tr * R), P[1] - tl * Math.cos(tr * R)];
+  const hd = .065 * H * k;
+  const body = '#c9ced8', w = opts.w || 1;
+  el('line', { x1: 0, y1: gy, x2: svg.viewBox.baseVal.width, y2: gy, stroke: '#3a4250', 'stroke-width': 2 }, svg);
+  // body
+  el('line', { x1: P[0], y1: P[1], x2: S[0], y2: S[1], stroke: body, 'stroke-width': 5 * w, 'stroke-linecap': 'round' }, svg);
+  el('circle', { cx: S[0] + hd * .4 * Math.sin(tr * R), cy: S[1] - hd * 1.1, r: hd, fill: 'none', stroke: body, 'stroke-width': 2.5 * w }, svg);
+  const arm = [S[0] + .19 * H * k * Math.sin((tr + 30 + th * .2) * R), S[1] + .19 * H * k * Math.cos((tr + 30 + th * .2) * R)];
+  el('line', { x1: S[0], y1: S[1] + 4 * w, x2: arm[0], y2: arm[1], stroke: body, 'stroke-width': 3 * w, 'stroke-linecap': 'round' }, svg);
+  el('line', { x1: P[0], y1: P[1], x2: K[0], y2: K[1], stroke: body, 'stroke-width': 6 * w, 'stroke-linecap': 'round' }, svg);
+  el('line', { x1: K[0], y1: K[1], x2: A[0], y2: A[1], stroke: body, 'stroke-width': 5 * w, 'stroke-linecap': 'round' }, svg);
+  el('line', { x1: A[0] - 50 * k, y1: gy - 4 * w, x2: A[0] + (foot - 70) * k, y2: gy - 4 * w, stroke: body, 'stroke-width': 5 * w, 'stroke-linecap': 'round' }, svg);
+  // exo: thigh rail, shank rail, stirrup, knee motor, pad
+  const off = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+  const tr0 = off(K, P, .2), tr1 = off(K, P, .85);
+  el('line', { x1: tr0[0], y1: tr0[1], x2: tr1[0], y2: tr1[1], stroke: '#5fd4a8', 'stroke-width': 3.5 * w, 'stroke-linecap': 'round' }, svg);
+  const sr1 = off(K, A, .95);
+  el('line', { x1: K[0], y1: K[1], x2: sr1[0], y2: sr1[1], stroke: '#5fd4a8', 'stroke-width': 3.5 * w, 'stroke-linecap': 'round' }, svg);
+  el('line', { x1: A[0], y1: A[1], x2: A[0], y2: gy - 1, stroke: '#5fd4a8', 'stroke-width': 3 * w }, svg);
+  el('rect', { x: A[0] - 50 * k, y: gy - 3, width: (foot - 20) * k, height: 3, rx: 1.5, fill: '#5fd4a8' }, svg);
+  if (th > 0) {   // pad under the thigh at the CoP, perpendicular offset below the thigh line
+    const c = off(K, P, sPad / Lt), dx = P[0] - K[0], dy = P[1] - K[1], L = Math.hypot(dx, dy), nx = -dy / L, ny = dx / L;
+    const sgn = ny > 0 ? 1 : -1, d = 9 * w;
+    const a = [c[0] - dx / L * 26 * w + nx * d * sgn, c[1] - dy / L * 26 * w + ny * d * sgn], b = [c[0] + dx / L * 26 * w + nx * d * sgn, c[1] + dy / L * 26 * w + ny * d * sgn];
+    el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: '#f2b84b', 'stroke-width': 6 * w, 'stroke-linecap': 'round' }, svg);
+  }
+  el('circle', { cx: K[0], cy: K[1], r: 9 * w, fill: '#18202a', stroke: th > 0 ? '#ff6a5c' : '#5fd4a8', 'stroke-width': 2.5 * w }, svg);
+  el('circle', { cx: K[0], cy: K[1], r: 3 * w, fill: th > 0 ? '#ff6a5c' : '#5fd4a8' }, svg);
+  // belt + battery
+  el('rect', { x: P[0] - 22 * w, y: P[1] - 12 * w, width: 20 * w, height: 18 * w, rx: 4, fill: '#2a3340', stroke: '#f2b84b', 'stroke-width': 2 }, svg);
+  return { P, K, A, phi };
+}
+
+// hero: chair mode, labelled
+{
+  const svg = document.getElementById('hero');
+  const f = figure(svg, 90, 230, 392, 0.19, { w: 1.6 });
+  const L = (x1, y1, x2, y2, t1, t2, tx, ty) => { el('line', { x1, y1, x2, y2, stroke: '#4a5363' }, svg);
+    const a = el('text', { x: tx, y: ty }, svg); a.textContent = t1; if (t2) { const b = el('text', { x: tx, y: ty + 15 }, svg); b.textContent = t2; } };
+  L(f.P[0] - 22, f.P[1], 80, 150, 'Battery + brain', 'on the belt (2 × 97 Wh)', 14, 140);
+  const pc = [f.K[0] + (f.P[0] - f.K[0]) * (sPad / Lt), f.K[1] + (f.P[1] - f.K[1]) * (sPad / Lt) + 12];
+  const sm = [(f.K[0] + f.A[0]) / 2 + 4, (f.K[1] + f.A[1]) / 2];
+  L(pc[0], pc[1], 150, 300, 'Fold-down thigh pad', '(the "seat")', 40, 316);
+  L(f.K[0] + 10, f.K[1] - 8, 340, 120, 'Knee motor', '+ steel pawl lock', 330, 100);
+  L(sm[0], sm[1], 350, 290, 'Shin rail →', 'heel stirrup', 352, 296);
+  L(f.A[0] + 30, 390, 350, 362, 'Foot sensors', '', 352, 356);
+}
+// the four mode icons
+{
+  const box = document.getElementById('modes');
+  for (const [n, th, d] of [['Perch', 25, 'a slight lean for long lines'], ['Half-sit', 60, 'like a bar stool'], ['Chair', 90, 'a full seat'], ['Deep squat', 120, 'for work low to the ground']]) {
+    const div = document.createElement('div');
+    const svg = document.createElementNS(NS, 'svg'); svg.setAttribute('viewBox', '0 0 140 170'); svg.setAttribute('width', '128');
+    div.appendChild(svg); box.appendChild(div);
+    figure(svg, th, 72, 160, 0.072);
+    const t = el('text', { x: 6, y: 16 }, svg); t.textContent = th + '°';
+    div.insertAdjacentHTML('beforeend', `<b>${n}</b>${d}<span class="nm">${NM[th]} Nm per knee</span>`);
+  }
+}
+</script>
+</body>
+</html>

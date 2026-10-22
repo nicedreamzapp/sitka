@@ -1,0 +1,193 @@
+
+##############################################################################
+# node seat_torque_model.mjs
+##############################################################################
+=== SEAT MODE — knee torque to hold a 95th-percentile US man ===
+Person: 130.3 kg (NHANES 95th), 1.874 m (NHANES 95th) — both marginals, paired on purpose
+Thigh 0.459 m, shank 0.461 m (Winter fractions), pad CoP 0.298 m from knee (EST 65% of thigh)
+Load per leg, both legs sharing, 100% of mass above the shanks: 566 N
+
+Mode        knee  bal.shank  hip ht   M balanced  M worst   x1.5 drop  x2 one-leg  LOCK DESIGN (xSF1.5)
+Perch         25°     9.8°   0.98 m      44 Nm     71 Nm     107 Nm      143 Nm     214 Nm
+Half-sit      60°    23.0°   0.87 m     102 Nm    146 Nm     220 Nm      293 Nm     439 Nm
+Chair         90°    32.9°   0.72 m     142 Nm    169 Nm     253 Nm      338 Nm     507 Nm
+Deep squat   120°    35.0°*  0.50 m     168 Nm    169 Nm     253 Nm      338 Nm     507 Nm
+  * shank lean capped at the EST ankle limit — the pad sits behind the heel, feet must take the rest
+
+=== CAN THE MOTOR HOLD IT? ===
+Chair, balanced, static: 142 Nm per knee.
+CubeMars AK10-9 V2.0 KV100: 18 Nm rated / 48 Nm peak → 3.0x its PEAK. No.
+CubeMars AK80-64 KV80: 48 Nm rated / 120 Nm peak → 3.0x its RATED. No — and at 23 rpm it cannot follow a running knee anyway.
+Holding 48 Nm on the AK10-9 alone burns 92 W per knee as heat — minutes, not hours.
+VERDICT: the seat is held by a MECHANICAL lock. The motor only positions the knee so the lock can drop in.
+
+=== LOCK SIZING (worst mode: Chair, 507 Nm design) ===
+Pawl on a toothed ring at r = 35 mm → tooth force 14.5 kN
+17-4PH H900, shear = 0.6 x 1310 MPa (handbook, VERIFY) → shear area ≥ 18 mm²
+SHEAR ONLY. Contact (Hertz) and tooth-bending checks are NOT done yet; plan on 3x this area until they are.
+So: e.g. two pawl teeth, each 10 mm wide x 3 mm engaged. The lock itself is small.
+
+=== THIGH UPRIGHT (the part that IS hard) ===
+Design moment 507 Nm at yield 503 MPa (7075-T6, VERIFY) → section modulus ≥ 1008 mm³
+One lateral 7075 bar 8 mm thick needs to be 28 mm deep → 0.28 kg per 450 mm thigh upright.
+A single 25x22 mm roll-wrapped carbon tube (Z ≈ 614 mm³) would see 826 MPa — beyond what we can count on from a roll-wrapped tube. Carbon tubes must go bilateral or much bigger.
+
+##############################################################################
+# node gait_assist_model.mjs
+##############################################################################
+=== HOW MUCH OF THE KNEE CAN ONE AK10-9 CARRY? ===
+
+-- median man, 87.4 kg --
+Activity                                         bio peak   AK10-9 48 Nm peak   18 Nm rated
+Level walk (peak, Winter ~0.5 Nm/kg, UNVERIFIED)    44 Nm     110 %              41 %
+Stair ascent (Riener 2002 via review)               93 Nm      52 %              19 %
+Stair descent (Riener 2002 via review)              80 Nm      60 %              22 %
+Run 3.5 m/s, midstance (Schache 2011)              273 Nm      18 %               7 %
+
+-- 95th pct man, 130.3 kg --
+Activity                                         bio peak   AK10-9 48 Nm peak   18 Nm rated
+Level walk (peak, Winter ~0.5 Nm/kg, UNVERIFIED)    65 Nm      74 %              28 %
+Stair ascent (Riener 2002 via review)              138 Nm      35 %              13 %
+Stair descent (Riener 2002 via review)             120 Nm      40 %              15 %
+Run 3.5 m/s, midstance (Schache 2011)              407 Nm      12 %               4 %
+
+Reading: walking and stairs can be covered well. Running gets ~13–18% of the
+midstance knee moment from a 48 Nm peak — in the range other running exos target
+(active running exos report 3.9–14.6% metabolic savings, review claim, UNVERIFIED).
+
+=== CAN IT KEEP UP WITH A RUNNING KNEE? ===
+Terminal swing:  -4.6 W/kg / 0.53 Nm/kg → ~8.7 rad/s (497°/s)
+Initial stance:  -15.7 W/kg / 3.12 Nm/kg → ~5.0 rad/s
+(A student lab report measured ~478°/s at an unstated speed — same ballpark, weak source.)
+AK10-9 on a 21.6 V 6S bus: no-load ~25.1 rad/s; vendor rated speed 205 rpm = 21.5 rad/s at 24 V → 2.5x margin. OK.
+AK80-64 rated 23 rpm = 2.4 rad/s → 28% of the swing speed. It would FIGHT the runner. Rejected.
+
+Reflected rotor inertia: 1002 g·cm² x 9² = 0.0081 kg·m²
+Shank+foot about the knee (median man): ~0.403 kg·m² → actuator adds 2.0%. Transparent enough.
+Backdrive torque 0.8 Nm (vendor) — the wearer feels this when unpowered.
+
+=== FALL CATCH — what it can and cannot do ===
+87.4 kg: a hard single-leg catch is running-class load ~273 Nm; one AK10-9 gives 48 Nm = 18%.
+130.3 kg: a hard single-leg catch is running-class load ~407 Nm; one AK10-9 gives 48 Nm = 12%.
+So "fall catch" = both knees go to peak torque + high damping in a few ms to BUY TIME and
+keep the knee from buckling fast. It does NOT hold a falling adult. The tooth lock must
+never be thrown at speed — dropping a pawl into a moving ring is how teeth break.
+
+##############################################################################
+# node energy_model.mjs
+##############################################################################
+=== BATTERY: 2 x 6S1P Molicel P45B = 2 x 97.2 Wh = 194 Wh; 165 Wh usable (85% EST); ~1.04 kg ===
+Each pack is under the FAA 100 Wh carry-on line. Runner/hiker: median US man, 87.4 kg.
+
+--- RUNNING, 3.5 m/s ---
+Assist: 48 Nm peak per knee = 17.6% of the biological midstance moment (capped by actuator peak)
+Per stride per leg: copper 11.7 J + positive 6.3 J/0.85 − regen 20.6 J x 0.85 = 1.6 J
+Strategy A — MIRROR (exo torque follows the whole knee moment, brakes AND pushes):
+  no regen credit: 58 W → 2.8 h (36 km)   ← HEADLINE (conservative)
+  with regen:      9 W → 17.7 h. The knee is a net ABSORBER in running (−1.34 vs +0.41 J/kg per stride, Schache),
+                   so on paper braking recovers ~49 W. NOT CLAIMED until a bench shows it — eta_in is a guess.
+Strategy B — PUSH-ONLY (torque only in the 0.12 s terminal-stance push, EST): 41 W → 4.0 h (51 km)
+Whether ANY knee assist lowers a runner's metabolic cost is UNPROVEN (Elliott/Herr clutch-spring exo did not).
+
+--- HIKING, 10% grade, ~5 km/h (Tobler flat speed; uphill is slower — runtime is per hour of assist) ---
+assist 15 Nm pk: UP  22 W →  7.4 h | exo lifts 10 W of 118 W climbing power (9%) | DOWN   1.5 W (regen covers part of idle) → 112.3 h
+assist 25 Nm pk: UP  40 W →  4.2 h | exo lifts 17 W of 118 W climbing power (15%) | DOWN   4.9 W (regen covers part of idle) → 33.5 h
+assist 35 Nm pk: UP  62 W →  2.7 h | exo lifts 24 W of 118 W climbing power (20%) | DOWN  13.1 W (regen < copper) → 12.7 h
+
+Downhill regen at 25 Nm: 14.6 W harvested before copper loss; net to battery 0.1 W.
+Cross-check: Donelan 2008 knee harvester measured 4.8 ± 0.8 W walking at 1.5 m/s; Wu 2022 reports ~6.5 W downhill per leg (UNVERIFIED convention).
+Best NET regen: brake at 12.5 Nm peak → 3.7 W to the battery. Harder braking turns the extra into heat (copper ∝ T²).
+One hour of descent at that setting banks ~3.7 Wh of 165 Wh usable (2.2%).
+FINDING: a low-ratio QDD knee motor is a POOR generator at hiking speeds — copper loss eats most of the
+harvest. Donelan's 4.8 W came from a purpose-built high-ratio generator. Downhill mode is worth having
+because it takes braking load off the quads, NOT because it charges the battery. Say so in the README.
+
+--- SITTING (pawl locked) ---
+Lock holds mechanically; motors off. Draw = idle 5 W → 33 h. Sitting costs almost nothing.
+(Holding the chair on motors instead would need >142 Nm per knee — impossible on this actuator; see seat_torque_model.mjs.)
+
+--- A DAY HIKE: 3 h up at 25 Nm, 2 h down at 25 Nm, 4 x 15 min seat breaks ---
+Energy: 119 + 10 + 5 = 134 Wh vs 165 Wh usable → FITS (81% of the packs).
+
+All efficiencies, stride rates and the assist profile are EST. The bench (M1) replaces them.
+
+##############################################################################
+# node mass_budget.mjs
+##############################################################################
+=== MASS BUDGET (from bom.mjs) ===
+Part                                                   where    each      line
+Knee actuator — CubeMars AK10-9 V2.0 KV100             knee    0.960 x2   1.92 kg
+Seat lock — toothed ring + pawl, 17-4PH H900           knee    0.200 x2   0.40 kg
+Pawl actuator — bistable latching solenoid             knee    0.030 x2   0.06 kg
+Pawl-engaged hall sensor + magnet                      knee    0.005 x2   0.01 kg
+Donor hinged knee brace — DonJoy (aluminium hinge)     knee    0.500 x2   1.00 kg
+Lateral uprights (finished, from B2)                   knee    0.280 x4   1.12 kg
+Heel stirrup + shoe clip                               foot    0.250 x2   0.50 kg
+Fold-down seat pad                                     thigh   0.180 x2   0.36 kg
+Fasteners, bushings, thread-locker                     knee    0.100 x1   0.10 kg
+Teensy 4.1 (SparkFun DEV-16771)                        waist   0.010 x1   0.01 kg
+CAN transceiver — Waveshare SN65HVD230                 waist   0.005 x1   0.01 kg
+IMU — Adafruit BNO085 (#4754)                          knee    0.005 x3   0.01 kg
+FSR — Interlink 402                                    foot    0.002 x8   0.02 kg
+Insole carrier + foot harness                          foot    0.030 x2   0.06 kg
+BLE / phone link — Adafruit ESP32-S3 Feather (#5477)   waist   0.010 x1   0.01 kg
+Haptic disc — Adafruit #1201                           thigh   0.002 x2   0.00 kg
+Belt tap button + big red E-STOP                       waist   0.050 x1   0.05 kg
+Harness: CAN + power cable, XT30 / JST-GH, fuse, 5 V D knee    0.250 x1   0.25 kg
+Controller enclosure (printed)                         waist   0.100 x1   0.10 kg
+Cell — Molicel P45B 21700 4.5 Ah                       waist   0.070 x12   0.84 kg
+6S BMS + nickel + pack case                            waist   0.100 x2   0.20 kg
+Hip belt — Peak Design outdoor hip belt                waist   0.200 x1   0.20 kg
+
+PER LEG: 2.91 kg   BELT: 1.42 kg   TOTAL WORN: 7.23 kg
+
+Compare (vendor / press numbers, see RESEARCH_REPORT):
+  Dnsys Z1 knee unit      ~0.68 kg per leg  (powered, no seat)
+  Hypershell X Ultra      1.8 kg total w/o battery (hip, no seat)
+  Noonee Chairless Chair  2.95 kg total     (seat, no motor)
+  Run + Sit Exo P1        2.91 kg per leg, 7.2 kg total  (both)
+
+Waist-equivalent load (distal mass weighted up): 9.3 kg — the foot stirrups alone count as 2.3 kg.
+  vs a 87.4 kg wearer: ~10.6% extra load if walking cost scales with load (EST, first-order).
+  vs a 130.3 kg wearer: ~7.1% extra load if walking cost scales with load (EST, first-order).
+Sobering cross-check: Donelan 2008's 1.6 kg knee harvester raised walking cost 19.2% just by being worn.
+Assist must beat the mass penalty before the exo helps at all. Cut the foot mass first: it is the expensive kilogram.
+
+##############################################################################
+# node bom.mjs
+##############################################################################
+A KNEE ACTUATION + SEAT LOCK     2.39 kg   $1,813.80
+B STRUCTURE                      3.08 kg   $1,413.18
+C SENSING + CONTROL              0.52 kg     $295.31
+D POWER + BELT                   1.24 kg     $236.95
+TOTAL parts, one exo            7.23 kg   $3,759.24
+
+##############################################################################
+# node project_cost.mjs
+##############################################################################
+=== 1. ONE EXO, PARTS ONLY (bom.mjs) ===
+Prototype one (P1), both legs:   $3,759
+
+=== 2. WHAT THE PARTS LIST DOES NOT INCLUDE (all EST) ===
+  Knee test stand: aluminium dummy leg, load cell + HX711, clamps    $400
+  Bench power supply 30 V / 10 A (actuator bring-up)                $120
+  Spare actuator (one will get cooked in tuning)                    $699
+  Spare lock ring + pawl set                                        $180
+  Overhead safety harness + rope + anchor for first sit tests       $250
+  Filament, foam, straps, Velcro, test fixtures                     $120
+  Shipping, duties, sales tax (~10% of parts)                       $376
+  Breakage allowance (M2–M4 exist to find failures)                 $500
+  SUBTOTAL                                                        $2,645
+
+P1 WORN AND TESTED, ALL IN:     $6,404   (labour $0 — assumes you build it)
+
+=== 3. YOU DO NOT BUILD THE WHOLE EXO FIRST ===
+  M1  one knee on a dummy-leg stand: actuator + lock + controller + stand       $1,613
+  M2  one leg, worn, walking/stairs only, no seat                                 $853
+  M3  both legs + belt + packs, running and hiking assist                       $1,880
+  M4  seat modes under an overhead harness, then free                             $500
+  (Steps overlap with the parts list; they show when the money moves, not extra money.)
+
+  The cheapest useful thing: M1, ~$1,613. It answers the two questions that
+  decide the project — does the pawl drop in cleanly at every angle under load, and does
+  the motor stay cool through a simulated hour of hiking — before anything is worn.
