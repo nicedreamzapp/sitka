@@ -16,6 +16,6 @@ Thank you for helping build an open exoskeleton. This project belongs to everyon
 
 ## How to propose a change
 - Edit the parametric `run_sit_exo.scad` (not the renders) and run `bash render_all.sh`.
-- Change prices/parts only in `bom.mjs`, then run `node bom.mjs --md > PARTS_LIST_BOM.md` and `node run_all.mjs > MODEL_OUTPUT.txt`.
+- Change parts and prices only in `parts_list.py`, then run `python3 parts_list.py` (it rewrites `PARTS_LIST.md` and `parts.csv`). The retired v2 list lives in `legacy/`.
 - Describe *why* in plain language, with the numbers that back it.
 - Small, well-explained changes are easier to accept than large opaque ones.

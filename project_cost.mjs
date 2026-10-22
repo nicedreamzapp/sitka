@@ -1,7 +1,7 @@
 // PROJECT COST — the parts list is not the project. Same honesty rule as Sky Tribe:
 // show what a BOM quietly leaves out, and the cheapest step that answers the
 // biggest question first.
-import { BOM, total } from './bom.mjs';
+import { BOM, total } from './legacy/bom.mjs';
 import { AK10_9 } from './params.mjs';
 
 const f = (n) => '$' + Math.round(n).toLocaleString('en-US');

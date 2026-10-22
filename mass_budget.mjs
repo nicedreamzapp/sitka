@@ -1,7 +1,7 @@
 // MASS BUDGET — per leg and on the belt, and what it costs the wearer to carry it.
 // Mass on the legs is NOT the same as mass on the waist: the further down the leg,
 // the more it costs to swing. Weights below are relative to the same mass at the waist.
-import { BOM, mass } from './bom.mjs';
+import { BOM, mass } from './legacy/bom.mjs';
 import { PERSON, line, fmt } from './params.mjs';
 
 // Cost multipliers vs. waist-carried mass.

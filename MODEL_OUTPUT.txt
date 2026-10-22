@@ -229,7 +229,7 @@ Sobering cross-check: Donelan 2008's 1.6 kg knee harvester raised walking cost 1
 Assist must beat the mass penalty before the exo helps at all. Cut the foot mass first: it is the expensive kilogram.
 
 ##############################################################################
-# node bom.mjs
+# node legacy/bom.mjs
 ##############################################################################
 A KNEE ACTUATION + SEAT LOCK     2.76 kg   $2,107.40
 B STRUCTURE                      4.54 kg   $1,768.18
