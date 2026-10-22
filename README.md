@@ -1,8 +1,7 @@
 # Sitka: an open-source exoskeleton that works with your body
 
-[![Watch the 90-second Sitka video](docs/sitka_video_thumbnail.png)](https://youtu.be/XvE-1hMoaXw)
 
-**▶ [Watch the 90-second video](https://youtu.be/XvE-1hMoaXw)** · **[Open the animated 3D CAD](https://nicedreamzapp.github.io/sitka/sitka_viewer.html)** (any browser or phone, no install; starts with a 6-step guided tour)
+**▶ A new 90-second video is being remade with the corrected parts-list numbers.** · **[Open the animated 3D CAD](https://nicedreamzapp.github.io/sitka/sitka_viewer.html)** (any browser or phone, no install; starts with a 6-step guided tour)
 
 Most exoskeletons fight your body with motors and metal. Sitka works with it. Your bones already carry the weight; Sitka adds what your muscles do, using springs, clutches and cables that work like tendons. A motor shows up only where your body truly needs extra energy.
 
