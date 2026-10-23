@@ -249,7 +249,9 @@ def strut_foot(pin, sd):
     return Vector((pin.x + S * math.tan(math.radians(9)) * h, pin.y + math.tan(math.radians(4)) * h, 0.019 * 1.25))
 
 
-def place_strut(pose, sd, bvh, blend=None, foot_target=None):
+def place_strut(pose, sd, bvh, blend=None, foot_target=None, xlocal=None):
+    """xlocal (animation): the strut's roll reference carried rigidly in the thigh frame while stowed, blended to
+    the world-up reference as it deploys (a stowed strut is near vertical, where world-up flips its roll)"""
     pin = W(pose, "strut_pin_" + sd)
     objs = STRUT[sd]
     if blend is None:
@@ -269,7 +271,14 @@ def place_strut(pose, sd, bvh, blend=None, foot_target=None):
     x = Vector((0, 0, 1)).cross(z)
     if x.length < 1e-6:
         x = Vector((1, 0, 0))
-    x.normalize(); y = z.cross(x)
+    x.normalize()
+    if xlocal is not None and blend < 1.0:
+        # roll from the thigh-carried reference to the world-up one in proportion to the deploy (about the axis)
+        xb = frame(pose, "thigh_" + sd).to_3x3() @ xlocal
+        xb = (xb - z * xb.dot(z)).normalized()
+        ang = math.atan2(z.dot(xb.cross(x)), xb.dot(x))
+        x = (Matrix.Rotation(ang * blend, 3, z) @ xb).normalized()
+    y = z.cross(x)
     R = Matrix((x, y, z)).transposed().to_4x4()
     # sections: tube0 at the top, tube1/tube2 slide out evenly
     ext = max(0.0, L - 0.36)
@@ -586,7 +595,24 @@ if ANIM:
             F["knee_" + sd] = K
         return {k: [list(r) for r in v] for k, v in F.items()}
 
-    SEQ = PZ.sequences()
+    if "--procedural" in argv:
+        SEQ = PZ.sequences()            # the old keyframed poses (cad/body/poses.py)
+    else:
+        # real motion capture (CMU, cad/mocap/CREDITS.md), retargeted onto the same rig: cad/mocap/sequences.py
+        sys.path.insert(0, os.path.join(CAD, "mocap"))
+        import sequences as MOCAP
+        _dom = np.load(os.path.join(CAD, "body", "stand_weights.npz"))["dom"]
+        _fl, _fr = (RIG.matrix_world @ RIG.pose.bones["foot_" + sd].head for sd in ("l", "r"))
+        SEQ = MOCAP.build(RIG, BODY, bpy, Matrix, _dom, ((_fl.x + _fr.x) / 2, (_fl.y + _fr.y) / 2),
+                          log=lambda m: print(m, flush=True))
+    # stowed-strut roll reference: the standing pose's (world-up based) roll, carried in the thigh frame
+    XLOC = {}
+    for sd in ("l", "r"):
+        _z = (W("stand", "strut_stow_" + sd) - W("stand", "strut_pin_" + sd)).normalized()
+        _x = Vector((0, 0, 1)).cross(_z).normalized()
+        XLOC[sd] = frame("stand", "thigh_" + sd).to_3x3().inverted() @ _x
+    _domv = np.load(os.path.join(CAD, "body", "stand_weights.npz"))["dom"]
+    FOOT_VIDX = {sd: np.where(np.isin(_domv, ["foot_" + sd, "ball_" + sd]))[0] for sd in ("l", "r")}
     NRES = 40
     body_bin, cab_bin, nrm_bin = bytearray(), bytearray(), bytearray()
     out = dict(nv=NV, tris=TRIS, parts=[n for n in PART_OBJS], seqs={}, cables={})
@@ -594,16 +620,23 @@ if ANIM:
     modes = {"walk": "WALK", "run": "RUN", "sitdown": "SIT", "standup": "SIT", "stoop": "LIFT"}
     for sname, frames in SEQ.items():
         seq = dict(n=len(frames), loop=frames[0]["loop"], start=nframe, states=[], parts=[], cables=[])
+        if "fps" in frames[0]:
+            seq["fps"] = round(frames[0]["fps"], 4)     # playback rate (viewer: seconds of motion = frame / fps)
         def pose_frame(fr):
             RIG.location = (0, 0, 0)
-            PZ.apply_params(RIG, fr["params"], bpy, Matrix, Vector)
+            if "apply" in fr:
+                loc = fr["apply"](RIG)      # mocap: poses the rig, returns its grounded world location
+            else:
+                PZ.apply_params(RIG, fr["params"], bpy, Matrix, Vector)
             bpy.context.view_layer.update()
             dg = bpy.context.evaluated_depsgraph_get()
             ev = BODY.evaluated_get(dg); me = ev.to_mesh()
             co = np.empty(NV * 3, dtype=np.float64); me.vertices.foreach_get("co", co); ev.to_mesh_clear()
             V = co.reshape(-1, 3)
             dz = -V[:, 2].min() + SOLE
-            if fr["ground"] == "pelvis":
+            if fr["ground"] == "mocap":
+                dx, dy, dz = (float(x) for x in loc)
+            elif fr["ground"] == "pelvis":
                 ph = RIG.pose.bones["pelvis"].head
                 dx, dy = -ph.x, -ph.y
             else:
@@ -629,7 +662,8 @@ if ANIM:
                 pp = next(p for p in MAN["parts"] if p["name"] == nm)
                 ob.matrix_world = frame("__a__", pp["seg"])
             for sd in ("l", "r"):
-                place_strut("__a__", sd, bvh, blend=fr["strut"], foot_target=FT[sd] if sname in ("sitdown", "standup") else None)
+                place_strut("__a__", sd, bvh, blend=fr["strut"], foot_target=FT[sd] if sname in ("sitdown", "standup") else None,
+                            xlocal=XLOC[sd])
             for nm, ob in PART_OBJS.items():
                 m = ob.matrix_world
                 mats.append([round(m[i][j], 5) for i in range(3) for j in range(4)])
@@ -650,6 +684,16 @@ if ANIM:
                     nrm_bin += np.clip(np.round(nn * 127), -127, 127).astype(np.int8).tobytes()
             seq["cables"].append(cabs)
             seq["states"].append(fr["states"])
+            # check line (log only): sole heights, foot pitch, strut tip heights, lowest body point
+            fz = {sd: float(V[FOOT_VIDX[sd], 2].min()) for sd in ("l", "r")}
+            sz = {sd: min((o.matrix_world @ v.co).z for o in STRUT[sd] for v in o.data.vertices) for sd in ("l", "r")}
+            fp = {}
+            for sd in ("l", "r"):
+                v = RIG.pose.bones["ball_" + sd].tail - RIG.pose.bones["foot_" + sd].head
+                r0 = RIG.data.bones["ball_" + sd].tail_local - RIG.data.bones["foot_" + sd].head_local
+                fp[sd] = math.degrees(math.atan2(v.z, v.xy.length) - math.atan2(r0.z, r0.xy.length))
+            print("CHK %s %02d sole %.4f %.4f pitch %.1f %.1f strut %.4f %.4f body %.4f" % (
+                sname, fi, fz["l"], fz["r"], fp["l"], fp["r"], sz["l"], sz["r"], V[:, 2].min()), flush=True)
             nframe += 1
         out["seqs"][sname] = seq
         print("SEQ", sname, len(frames), flush=True)
