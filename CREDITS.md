@@ -9,6 +9,7 @@ None of this starts from scratch. Here's whose work this is built on.
 | 🦵 [eliotk/OpenExo](https://github.com/eliotk/OpenExo) | Early Arduino exo with FSR + brake | GitHub user eliotk | MIT |
 | 🧊 [three.js](https://threejs.org/) | Renders the 3D viewer | three.js authors | MIT |
 | 📐 [OpenSCAD](https://openscad.org/) | Parametric CAD and the PNG renders | OpenSCAD contributors | GPL-2.0 |
+| 🏃 [CMU Graphics Lab Motion Capture Database](http://mocap.cs.cmu.edu/) | Real human motion for the 3D viewer's walk, run, sit, stand and lift (subjects 35, 86, 115; see [cad/mocap/CREDITS.md](cad/mocap/CREDITS.md)). "The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217." | Carnegie Mellon University | free for any use, credit requested |
 
 Inspiration only (no license on the repos, so no files are reused; we will ask):
 [srisura1010 — IMU-gait knee exo](https://github.com/srisura1010/Motor-Actuated-Knee-Exoskeleton-Using-IMU-Based-Gait-Detection) ·
@@ -25,6 +26,7 @@ NHANES 2015–2018 and ANSUR II (body size). Full list in `RESEARCH_REPORT_2026-
   MPFB Blender extension (GPL-3.0, used as a tool only; none of its code is in this repo).
 - Parts: **build123d** / OpenCascade (Apache-2.0 / LGPL), trimesh (MIT).
 - Viewer: **three.js r170** (MIT), bundled into `cad/viewer/sitka_viewer.bundle.js`.
+- Viewer motion: real human motion capture from the **CMU Graphics Lab Motion Capture Database** (mocap.cs.cmu.edu; the database was created with funding from NSF EIA-0196217), retargeted onto the wearer in `cad/mocap/` (clips and credits: [cad/mocap/CREDITS.md](cad/mocap/CREDITS.md)).
 
 ---
 

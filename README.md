@@ -58,3 +58,5 @@ This is a design, not a product. Every number above is computed from the open ma
 ## License and credits
 
 Open hardware and open source; see [LICENSE](LICENSE) and [CREDITS.md](CREDITS.md). Come build one with us.
+
+The viewer's walk, run, sit, stand and lift are real motion capture: "The data used in this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217." Details in [cad/mocap/CREDITS.md](cad/mocap/CREDITS.md).
