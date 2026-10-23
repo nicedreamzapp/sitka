@@ -568,7 +568,10 @@ function updateReadout() {
 // cad/viewer/sitka_anim.js) and a viewer-side "kit" sequence where the modules dock one by one.
 // =====================================================================================
 const SEQS = [['walk', 'Walk'], ['run', 'Run'], ['sitdown', 'Sit down'], ['standup', 'Stand up'], ['stoop', 'Lift'], ['kit', 'Modules dock']];
-const SEQ_FPS = { walk: 28, run: 30, sitdown: 14, standup: 14, stoop: 14 };
+// playback rate per sequence: the baked data carries its own (real motion capture, frames = seconds * fps);
+// these are the fallbacks for older procedural data files
+const SEQ_FPS_OLD = { walk: 28, run: 30, sitdown: 14, standup: 14, stoop: 14 };
+function seqFps(name) { const S = AD && AD.A.seqs[name]; return (S && S.fps) || SEQ_FPS_OLD[name]; }
 const anim = { on: false, seq: null, t: 0, playing: false, speed: 1, data: null, body: null, cables: {}, root: null };
 const animRoot = new THREE.Group(); animRoot.matrixAutoUpdate = false; animRoot.matrix.copy(ZUP); scene.add(animRoot);
 const GLOW = { load: new THREE.Color(0xff7a1a), ret: new THREE.Color(0x27e0c0), lock: new THREE.Color(0xff3344), gate: new THREE.Color(0x46a8ff), band: new THREE.Color(0x3fe0a8), strap: new THREE.Color(0xffc233) };
@@ -774,7 +777,7 @@ function phaseOf(seq) {
   const st = anim.st || {}, f = anim.frame || 0, on = k => st[k] > 0.01;
   if (seq === 'sitdown') return on('lock') ? 'Seated: the knee lock holds you, no power' : on('cc') ? 'Settling back: the straps take up' : on('sit_leaf') ? 'Sitting down: the knee spring stores energy' : 'The seat poles swing down';
   if (seq === 'standup') return on('sit_return') ? 'Standing up: the knee spring gives energy back' : on('lock') ? 'Seated, about to stand' : 'Standing: the seat poles fold away';
-  if (seq === 'stoop') return on('t3_return') ? 'Lifting: the back tendon gives energy back' : on('t3_load') ? 'Bending: the back tendon stores energy' : f < 10 ? 'Bending: tendon slack until about 35°' : 'Standing tall again';
+  if (seq === 'stoop') return on('t3_return') ? 'Lifting: the back tendon gives energy back' : on('t3_load') ? 'Bending: the back tendon stores energy' : f < (anim.n || 40) / 2 ? 'Bending: tendon slack until about 35°' : 'Standing tall again';
   if (seq === 'walk') return on('ham_l') || on('ham_r') ? 'Walking: the hamstring band slows the knee' : 'Walking: a hip band swings the leg forward';
   if (seq === 'run') return 'Running: the shin band and hip bands work';
   if (seq === 'kit') return KIT_PLAIN[anim.kitGi || 0];
@@ -831,7 +834,7 @@ function kitFrame(t) {
 }
 const KIT_LEN = KIT.length * KIT_STEP + 1.0;
 
-function seqLen(name) { return name === 'kit' ? KIT_LEN : (AD.A.seqs[name].n - (AD.A.seqs[name].loop ? 0 : 1)) / SEQ_FPS[name]; }
+function seqLen(name) { return name === 'kit' ? KIT_LEN : (AD.A.seqs[name].n - (AD.A.seqs[name].loop ? 0 : 1)) / seqFps(name); }
 async function startSeq(name) {
   if (name !== 'kit') await ensureAnim();
   anim.on = true; anim.seq = name; anim.t = 0; anim.playing = true;
@@ -870,7 +873,7 @@ function renderAnimAt(t) {
       p.obj.visible = mod === 'body' ? state.body !== 'off' : moduleVisible(mod, p.meta.requires);
       if (!glowMats.has(p.obj)) { const g = isGhost(mod, p.meta.requires); p.obj.traverse(o => { if (o.isMesh) o.material = g ? ghostMat : o.userData.baseMat; }); }
     }
-    applyAnimFrame(anim.seq, t * SEQ_FPS[anim.seq]);
+    applyAnimFrame(anim.seq, t * seqFps(anim.seq));
   }
 }
 let scrubbing = false;
