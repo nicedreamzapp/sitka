@@ -9,7 +9,8 @@ from NSF EIA-0196217."
 The BVH files in `src/` are the CMU BVH conversion (120 fps) mirrored at
 https://github.com/una-dinosauria/cmu-mocap (`data/<subject>/<trial>.bvh`). They are retargeted onto the
 MPFB rig of the Sitka wearer by `retarget.py` (direction-exact limbs, leg IK, foot-contact clean-up) and
-sequenced for the viewer by `sequences.py`. The same clips drive the Sitka promo film.
+sequenced for the viewer by `sequences.py`. Every baked frame must pass `anatomy_gate.py` (knee alignment,
+no hyperextension, no crossed legs, stance width, no feet through the floor, seamless loops) or the bake stops. The same clips drive the Sitka promo film.
 
 | Viewer sequence | Subject | Trial | CMU description | Portion used |
 |---|---|---|---|---|
@@ -17,7 +18,7 @@ sequenced for the viewer by `sequences.py`. The same clips drive the Sitka promo
 | Run | 35 | 17 | run/jog | one stride looped, 0.375-1.125 s |
 | Sit down | 86 | 09 | walking, sitting, looking, stand up | 8.45-10.8 s (turn ends, sit; feet held where they settle) |
 | Stand up | 86 | 09 | walking, sitting, looking, stand up | 23.2-25.0 s |
-| Lift (stoop) | 115 | 01 | pick up box, bend from waist | 0.35-2.15 s |
+| Lift (stoop) | 115 | 01 | pick up box, bend from waist | 0.35-2.15 s (last 0.4 s eased back into the 0.35 s stance so the replay has no seam) |
 
 The smart-brain mode model ([SMART_BRAIN.md](../../SMART_BRAIN.md)) trains and tests on the four clips above plus
 CMU trials 35_02, 35_03, 35_18, 35_19, 35_20, 86_10, 115_02 and 115_03 from the same mirror (fetched by

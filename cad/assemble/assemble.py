@@ -618,8 +618,13 @@ if ANIM:
     out = dict(nv=NV, tris=TRIS, parts=[n for n in PART_OBJS], seqs={}, cables={})
     nframe = 0
     modes = {"walk": "WALK", "run": "RUN", "sitdown": "SIT", "standup": "SIT", "stoop": "LIFT"}
+    # leg joints per frame, for the anatomy gate (cad/mocap/anatomy_gate.py): hip, knee, ankle, toe per leg
+    JOINT_BONES = [("thigh_l", 0), ("calf_l", 0), ("foot_l", 0), ("ball_l", 1), ("thigh_r", 0), ("calf_r", 0), ("foot_r", 0), ("ball_r", 1)]
+    out["joint_names"] = ["hip_l", "knee_l", "ank_l", "toe_l", "hip_r", "knee_r", "ank_r", "toe_r"]
+    GATE, JNT = {}, []
     for sname, frames in SEQ.items():
-        seq = dict(n=len(frames), loop=frames[0]["loop"], start=nframe, states=[], parts=[], cables=[])
+        seq = dict(n=len(frames), loop=frames[0]["loop"], start=nframe, states=[], parts=[], cables=[], joints=[])
+        GATE[sname] = dict(joints=[], loop=seq["loop"], foot_z={"l": [], "r": []})
         if "fps" in frames[0]:
             seq["fps"] = round(frames[0]["fps"], 4)     # playback rate (viewer: seconds of motion = frame / fps)
         def pose_frame(fr):
@@ -646,13 +651,20 @@ if ANIM:
             bpy.context.view_layer.update()
             V = V + np.array([dx, dy, dz])
             FRAMES["__a__"] = seg_frames()
+            JNT.append([[round(float(c), 4) for c in (RIG.matrix_world @ (RIG.pose.bones[b].tail if e else RIG.pose.bones[b].head))]
+                        for b, e in JOINT_BONES])
             return V
 
         if sname in ("sitdown", "standup"):
             pose_frame(frames[-1] if sname == "sitdown" else frames[0])
             FT = {sd: strut_foot(W("__a__", "strut_pin_" + sd), sd) for sd in ("l", "r")}
         for fi, fr in enumerate(frames):
+            JNT = []
             V = pose_frame(fr)
+            seq["joints"].append(JNT[-1])
+            GATE[sname]["joints"].append(JNT[-1])
+            for sd in ("l", "r"):
+                GATE[sname]["foot_z"][sd].append(float(V[FOOT_VIDX[sd], 2].min()))
             bvh = BVHTree.FromPolygons([Vector(v) for v in V], POLYS)
             body_bin += np.round(V * 10000).astype(np.int16).tobytes()
             mats = []
@@ -701,7 +713,15 @@ if ANIM:
     out["cab_b64"] = base64.b64encode(bytes(cab_bin)).decode()
     out["nrm_b64"] = base64.b64encode(bytes(nrm_bin)).decode()
     out["nres"] = NRES
-    open(os.path.join(CAD, "viewer", "sitka_anim.js"), "w").write("window.SITKA_ANIM=" + json.dumps(out, separators=(",", ":")) + ";\n")
+    js = "window.SITKA_ANIM=" + json.dumps(out, separators=(",", ":")) + ";\n"
+    sys.path.insert(0, os.path.join(CAD, "mocap"))
+    import anatomy_gate as AG
+    if not AG.gate({k: dict(joints=v["joints"], loop=v["loop"], foot_z={sd: np.array(z) for sd, z in v["foot_z"].items()})
+                    for k, v in GATE.items()}, log=lambda m: print(m, flush=True)):
+        open("/tmp/sitka_anim.rejected.js", "w").write(js)
+        print("ANIM REJECTED by the anatomy gate: cad/viewer/sitka_anim.js left as it was (the rejected bake: /tmp/sitka_anim.rejected.js)", flush=True)
+        sys.exit(1)
+    open(os.path.join(CAD, "viewer", "sitka_anim.js"), "w").write(js)
     print("ANIM OK", nframe, "frames", round(len(body_bin) / 1e6, 1), "MB body", flush=True)
     sys.exit(0)
 

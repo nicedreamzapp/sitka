@@ -140,9 +140,9 @@ The same rules run in the viewer (`brain/sitka_brain.js`, `RULES`).
 |---|---|---|---|---|
 | Walk | WALK 100% | WALK 100% | 100% | stance clutch locked 36% of each stride per side, no vetoes |
 | Run | RUN 100% | RUN 100% | 100% | all clutches open |
-| Sit down | SIT 85%, STAND 15% | SIT 100% | 85% | the first 0.35 s the model is unsure (34%) of the bent, still start pose, so the hub stays in STAND with everything open |
-| Stand up | SIT 74%, STAND 26% | SIT 65%, STAND 31%, WALK 4% | 91% | motor assists 30% of the clip; one short motor veto (0.14 s) as the model hesitates at the top |
-| Lift (stoop) | LIFT 62%, STAND 38% | LIFT 62%, STAND 38% | 89% | the 120 ms agreement delay; motor assists while the trunk rises |
+| Sit down | SIT 73%, LIFT 27% | SIT 100% | 73% | the first 0.64 s, trunk folding forward over still-straight legs, reads as a lift; no clutch or motor acts in that time. (Before the 10/30 leg retarget fix the start pose was a 43° crouch, which read as SIT 85%.) |
+| Stand up | SIT 75%, STAND 25% | SIT 65%, STAND 31%, WALK 4% | 90% | motor assists 30% of the clip; one short motor veto (0.14 s) as the model hesitates at the top |
+| Lift (stoop) | LIFT 63%, STAND 37% | LIFT 62%, STAND 38% | 90% | the 120 ms agreement delay; motor assists while the trunk rises |
 
 **Honest limits:** the viewer plays the same source clips the model trained on (retargeted onto the Sitka wearer, so not a fair test); the held-out clips are the same three CMU subjects; the insole model is a geometric guess; nobody has worn sensors yet.
 

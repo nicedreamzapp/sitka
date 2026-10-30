@@ -20,6 +20,7 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from bvh import BVH, AX as AX_  # noqa: E402
+import anatomy as AN  # noqa: E402
 
 SRC = os.path.join(HERE, "src")
 
@@ -147,6 +148,9 @@ class Clip:
             yaw = -math.degrees(math.atan2(v[0], -v[1]))        # rotate travel onto -Y
         self.yaw = yaw
         Rz = _rz(yaw)
+        # each source leg's own length (CMU skeletons are not symmetric: 115_01's right leg is 1.5 % shorter)
+        self.leg_len = {sd: (np.linalg.norm(b.offset[I[s + "Leg"]]) + np.linalg.norm(b.offset[I[s + "Foot"]])) * b.scale
+                        for sd, s in (("l", "Left"), ("r", "Right"))}
         self.R = np.einsum("ab,jfbc->jfac", Rz, b.Rs)
         self.P = np.einsum("ab,jfb->jfa", Rz, b.Ps)
         self.dur = (b.nf - 1) * b.dt
@@ -283,10 +287,18 @@ class Target:
         self.use_pitch_fix = False
         self.pitch_trim = {"l": 0.0, "r": 0.0}   # calibrated per shot: planted feet flat on the ground
         self.side_dz = {"l": 0.0, "r": 0.0}   # per-foot grounding trim (calibrated per shot)
+        self.foot_dir0 = {}
+        for sd in ("l", "r"):
+            v = np.array(rig.data.bones["ball_" + sd].tail_local) - np.array(rig.data.bones["foot_" + sd].head_local)
+            self.foot_dir0[sd] = v / np.linalg.norm(v)
         self.len = {}
         for b in ("thigh_l", "calf_l", "thigh_r", "calf_r", "upperarm_l", "lowerarm_l", "upperarm_r", "lowerarm_r"):
             bn = rig.data.bones[b]
             self.len[b] = float(np.linalg.norm(np.array(bn.tail_local) - np.array(bn.head_local)))
+
+    POLE_SRC_MM = (0.015, 0.05)   # source knee offset (m) below which the mocap knee has no say in the bend plane
+    REACH = 0.999                 # the straightest a leg gets (~5 deg knee bend) before the pelvis drops
+    POLE_MAX_DEG = 6.0            # most the mocap knee may turn the bend plane off the leg's forward direction
 
     ARM_BONES = ("clavicle_l", "upperarm_l", "lowerarm_l", "hand_l", "clavicle_r", "upperarm_r", "lowerarm_r", "hand_r")
 
@@ -316,6 +328,9 @@ class Target:
                "ank_l": P[I["LeftFoot"]], "ank_r": P[I["RightFoot"]],
                "knee_l": P[I["LeftLeg"]], "knee_r": P[I["RightLeg"]],
                "hip_l": P[I["LeftUpLeg"]], "hip_r": P[I["RightUpLeg"]]}
+        # how straight each source leg is (hip-ankle distance / that leg's length): the knee bend to reproduce
+        for sd, s in (("l", "Left"), ("r", "Right")):
+            pos["ext_" + sd] = np.array([np.linalg.norm(P[I[s + "Foot"]] - P[I[s + "UpLeg"]]) / clp.leg_len[sd]])
         if self.contact_fix:
             pos["ank_l"] = pos["ank_l"] + clp.fix_at("l", t)
             pos["ank_r"] = pos["ank_r"] + clp.fix_at("r", t)
@@ -480,6 +495,24 @@ class Target:
         hips = {sd: (pel @ np.linalg.inv(rest_p) @ self.rest["thigh_" + sd])[:3, 3] for sd in ("l", "r")}
         m_arm = 0.5 * (hips["l"] + hips["r"])
         T = pos["mid_hip"] - m_arm + np.array([0.0, 0.0, self.oz]) + self.shift
+        # reach: when an ankle target is further than the straight leg (the source leg is a little shorter, or
+        # the grounding lifted the body), the pelvis drops just enough instead of the foot leaving the floor
+        drop = 0.0
+        self.ext_dz = {}
+        for sd in ("l", "r"):
+            lat = np.array([(1 if sd == "l" else -1) * self.lat, 0.0, 0.0])
+            v = pos["ank_" + sd] + lat + np.array([0.0, 0.0, self.oz + self.side_dz[sd]]) + self.shift - T - hips[sd]
+            Lt = self.len["thigh_" + sd] + self.len["calf_" + sd]
+            L = Lt * self.REACH
+            h2 = v[0] * v[0] + v[1] * v[1]
+            r2 = L * L - h2
+            if r2 > 0 and v[2] < 0:
+                drop = max(drop, -v[2] - math.sqrt(r2))
+            # how far the hip would have to move up for this leg to be exactly as straight as the source leg
+            # (read by the grounding calibration in sequences.py, which sets the root height from it)
+            dt = min(float(pos["ext_" + sd][0]) if "ext_" + sd in pos else 1.0, self.REACH) * Lt
+            self.ext_dz[sd] = (math.sqrt(dt * dt - h2) + v[2]) if dt * dt > h2 and v[2] < 0 else 0.0
+        T = T - np.array([0.0, 0.0, drop])
         self.ik_err = 0.0
         for sd in ("l", "r"):
             h = hips[sd]
@@ -491,12 +524,7 @@ class Target:
             d = min(max(d0, abs(L1 - L2) + 1e-3), (L1 + L2) * 0.9995)
             self.ik_err = max(self.ik_err, d0 - d)
             u = v / d0
-            # bend plane from the mocap knee
-            ks = pos["knee_" + sd] - 0.5 * (pos["hip_" + sd] + pos["ank_" + sd])
-            pole = ks - u * np.dot(ks, u)
-            if np.linalg.norm(pole) < 1e-4:
-                pole = np.array([0.0, -1.0, 0.0]) - u * np.dot([0.0, -1.0, 0.0], u)
-            pole /= np.linalg.norm(pole)
+            pole = self._knee_pole(rots, pos, sd, u)
             x = (L1 * L1 - L2 * L2 + d * d) / (2 * d)
             y = math.sqrt(max(L1 * L1 - x * x, 0.0))
             knee = h + u * x + pole * y
@@ -505,6 +533,46 @@ class Target:
                 old = rots[b] @ np.linalg.inv(self.rest[b][:3, :3]) @ self.d0[b]
                 rots[b] = _rot_between(old, new) @ rots[b]
         return T
+
+    def _knee_pole(self, rots, pos, sd, u):
+        """the direction the knee bends to (unit, perpendicular to the hip->ankle line u).
+
+        The knee is a hinge that tracks over the toes, so the bend plane is anchored on the leg's own forward
+        direction (the bisector of the pelvis heading and the foot heading). The mocap knee only steers it
+        when the source leg is clearly bent, and never more than POLE_MAX_DEG sideways.
+
+        Why: CMU skeletons have unequal left/right leg lengths (115_01: the right leg is 1.5 % shorter than the
+        left, which sets the scale), so the Sitka leg must bend ~19 deg to reach an ankle that the subject's
+        locked-straight leg puts closer. The old pole was the source knee's offset from the hip-ankle line,
+        which on a straight source leg is a few mm of marker noise: the forced bend went backwards
+        (hyperextended), sideways (bowed/knocked) and flipped frame to frame - the knee buckle and crossed
+        shin at the end of the stoop."""
+        fp = rots["pelvis"] @ np.linalg.inv(self.rest["pelvis"][:3, :3]) @ FWD
+        fp[2] = 0.0; fp /= max(np.linalg.norm(fp), 1e-9)
+        ff = rots["foot_" + sd] @ np.linalg.inv(self.rest["foot_" + sd][:3, :3]) @ self.foot_dir0[sd]
+        lf = AN.leg_forward(fp, ff)
+        anat = lf - u * np.dot(lf, u)
+        if np.linalg.norm(anat) < 1e-3:              # leg along the heading: bend up/forward
+            anat = np.array([0.0, 0.0, 1.0]) - u * u[2]
+        anat /= np.linalg.norm(anat)
+        ks = pos["knee_" + sd] - 0.5 * (pos["hip_" + sd] + pos["ank_" + sd])
+        src = ks - u * np.dot(ks, u)
+        m = np.linalg.norm(src)
+        w = min(1.0, max(0.0, (m - self.POLE_SRC_MM[0]) / (self.POLE_SRC_MM[1] - self.POLE_SRC_MM[0])))
+        w = w * w * (3 - 2 * w)
+        if m < 1e-6 or w <= 0.0:
+            return anat
+        p = w * src / m + (1 - w) * anat
+        if np.linalg.norm(p) < 1e-6:
+            return anat
+        p /= np.linalg.norm(p)
+        phi = math.atan2(np.dot(np.cross(anat, p), u), np.dot(anat, p))
+        if abs(phi) > math.pi / 2:                   # a backwards bend (hyperextension) never comes from the source
+            return anat
+        lim = math.radians(self.POLE_MAX_DEG)
+        phi = max(-lim, min(lim, phi))
+        side = np.cross(u, anat)
+        return anat * math.cos(phi) + side * math.sin(phi)
 
     def fk(self, rots, only=None):
         """armature-space pose matrices (and the bases that produce them)"""

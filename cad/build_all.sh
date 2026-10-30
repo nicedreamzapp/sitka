@@ -9,7 +9,9 @@ cd /tmp
 BLENDER_USER_RESOURCES="$CAD/.blender" $BL -b -noaudio --python-exit-code 1 --python "$CAD/body/make_body.py" > /tmp/sitka_body.log 2>&1
 "$CAD/.venv/bin/python" "$CAD/parts/build_parts.py" > /tmp/sitka_parts.log 2>&1
 $BL -b --factory-startup -noaudio --python-exit-code 1 --python "$CAD/assemble/assemble.py" -- --no-render > /tmp/sitka_asm.log 2>&1
-$BL -b --factory-startup -noaudio --python-exit-code 1 --python "$CAD/assemble/assemble.py" -- --anim > /tmp/sitka_anim.log 2>&1
+# --anim runs the anatomy gate (cad/mocap/anatomy_gate.py) on every frame and exits 1 without writing on a fail
+$BL -b --factory-startup -noaudio --python-exit-code 1 --python "$CAD/assemble/assemble.py" -- --anim > /tmp/sitka_anim.log 2>&1 \
+  || { grep -A 30 "ANATOMY GATE (" /tmp/sitka_anim.log; echo "animation bake failed (log: /tmp/sitka_anim.log)"; exit 1; }
 "$CAD/.venv/bin/python" "$CAD/viewer/build_viewer.py"
 if [ "$1" = "render" ]; then
   $BL -b --factory-startup -noaudio --python-exit-code 1 --python "$CAD/assemble/assemble.py" -- --samples=128 > /tmp/sitka_render.log 2>&1

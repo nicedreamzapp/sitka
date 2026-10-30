@@ -7,7 +7,8 @@ Same motion choices as the Sitka promo film (sitka-video/blender/shots_v4.py):
   sitdown  CMU 86_09  yaw 90, clip 8.45-10.8 s  (the film's 7.3 s start walks in and turns; the viewer starts
                       as the turn ends and the sit begins; the feet are held where they settle at 9.0 s)
   standup  CMU 86_09  yaw 90, clip 23.2-25.0 s
-  stoop    CMU 115_01 "pick up box, bend from waist", clip 0.35-2.15 s
+  stoop    CMU 115_01 "pick up box, bend from waist", clip 0.35-2.15 s, the last 0.4 s eased back into the 0.35 s
+           pose so the Lift program's replay has no seam
 Look settings as the film: relaxed arms (per-category ranges), finger curl 1.0, neck gain 0.6, planted-foot pitch
 fix, wide-hip stance (lat_gain 1.4), seated hands resting on the thighs (0.85, 0.10, 0.08).
 
@@ -66,6 +67,20 @@ class FeetLocked:
         return rots, pos
 
 
+class Settle:
+    """the clip played as is, then eased back into its own t_ref pose over [a, b] (rotations slerped, IK targets
+    lerped). The Lift program replays the stoop back to back: 115_01's subject stands back up ~3 cm further
+    forward over the feet than he started, so without this the replay snaps the hips back at the seam."""
+    def __init__(self, inner, t_ref, a, b):
+        self.inner, self.t_ref, self.a, self.b = inner, t_ref, a, b
+
+    def state(self, tg, t):
+        A = self.inner.state(tg, t)
+        if t <= self.a:
+            return A
+        return RT.blend(A, self.inner.state(tg, self.t_ref), ramp(t, self.a, self.b))
+
+
 C86 = None
 
 
@@ -78,12 +93,14 @@ def specs():
     run = RT.Loop(RT.clip("35_17"), a=0.375, T=0.75, w=0.08)
     S = {
         "walk": dict(track=walk, t0=0.0, t1=walk.T, n=27, loop=True, arms="walk", group="walk"),
-        "run": dict(track=run, t0=0.0, t1=run.T, n=24, loop=True, arms="run", group="run"),
+        # lat: CMU 35_17 runs with a crossover gait (each foot lands up to 4 cm past the body's midline); on the
+        # wider Sitka hips and thigh shells that reads as crossed legs, so the run's feet go 5 cm further out
+        "run": dict(track=run, t0=0.0, t1=run.T, n=24, loop=True, arms="run", group="run", lat=0.05),
         "sitdown": dict(track=FeetLocked(Clipped(C86), 9.0), t0=8.45, t1=10.8, n=36, loop=False, arms="sit", hands=hands, calm=calm,
                         group="sit", strut=lambda t: ramp(t, 8.45, 9.7)),
         "standup": dict(track=FeetLocked(Clipped(C86), 9.0), t0=23.2, t1=25.0, n=28, loop=False, arms="sit", hands=hands, calm=calm,
                         group="sit", strut=lambda t: 1.0 - ramp(t, 23.75, 24.5)),     # the film's SIT2_DEPLOY stow
-        "stoop": dict(track=Clipped(RT.clip("115_01")), t0=0.35, t1=2.15, n=37, loop=False, arms="lift", group="stoop"),
+        "stoop": dict(track=Settle(Clipped(RT.clip("115_01")), 0.35, 1.75, 2.15), t0=0.35, t1=2.15, n=37, loop=False, arms="lift", group="stoop"),
     }
     for k, s in S.items():
         dur = s["t1"] - s["t0"]
@@ -101,6 +118,7 @@ def build(rig, body, bpy, Matrix, dom, foot_ref_xy, log=print):
     FOOT = {sd: np.where(np.isin(dom, ["foot_" + sd, "ball_" + sd]))[0] for sd in ("l", "r")}
     S = specs()
     CAL = {}        # group -> (pitch_trim, side_dz)
+    ROOT = {}       # group -> root height offset (m): planted knees bend like the source's
     CURVE = {}      # sequence -> per-frame planted-foot trims
     for k, s_ in S.items():
         s_["name"] = k
@@ -109,8 +127,14 @@ def build(rig, body, bpy, Matrix, dom, foot_ref_xy, log=print):
         a = ARMS[s["arms"]]
         tg.abd_range, tg.swing_max, tg.elbow_range = a["abd"], a["swing"], a["elbow"]
         tg.arm_calm = s["calm"](t) if "calm" in s else 0.0
+        tg.lat = s.get("lat", 0.0)
         pt, sz = CAL.get(s["group"], ({"l": 0.0, "r": 0.0}, {"l": 0.0, "r": 0.0}))
-        tg.pitch_trim, tg.side_dz = dict(pt), dict(sz)
+        # grounding: sz lifts each ankle so its sole sits on the floor; the root (pelvis) height is calibrated
+        # separately (ROOT) so the planted legs bend as much as the subject's did. Before, the root stayed at the
+        # mocap height while the ankles were lifted 1.5-6 cm, which folded every standing knee 17-43 deg.
+        root = ROOT.get(s["group"], 0.0)
+        tg.oz = root
+        tg.pitch_trim, tg.side_dz = dict(pt), {sd: sz[sd] - root for sd in ("l", "r")}
         cv = CURVE.get(s["name"])
         if cv is not None:       # per-frame planted-foot trims (sit / stand / stoop)
             for sd in ("l", "r"):
@@ -155,14 +179,17 @@ def build(rig, body, bpy, Matrix, dom, foot_ref_xy, log=print):
         CAL[g] = ({"l": 0.0, "r": 0.0}, {"l": 0.0, "r": 0.0})
         for it in range(3):
             FP = {"l": [], "r": []}
+            EX = []
             for k in names:
                 s = S[k]
                 ts = np.arange(s["t0"], s["t1"] + 1e-6, 1 / 60.0)
                 rec = {"l": [], "r": []}
+                exd = {"l": [], "r": []}
                 for t in ts:
                     _, V, B = sample(s, t)
                     for sd in ("l", "r"):
                         rec[sd].append(foot_info(V, B, sd))
+                        exd[sd].append(tg.ext_dz[sd])
                 for sd in ("l", "r"):
                     A = np.array(rec[sd])
                     v = np.zeros(len(A)); v[1:] = np.linalg.norm(np.diff(A[:, :2], axis=0), axis=1) * 60
@@ -172,6 +199,7 @@ def build(rig, body, bpy, Matrix, dom, foot_ref_xy, log=print):
                         # short stances (running): the foot's lowest tenth of the samples is its contact
                         sel = A[:, 2] <= np.percentile(A[:, 2], 10)
                     FP[sd].append(A[sel])
+                    EX.append(np.array(exd[sd])[sel])
             pt, sz = CAL[g]
             for sd in ("l", "r"):
                 A = np.concatenate(FP[sd]) if FP[sd] else np.zeros((0, 4))
@@ -182,7 +210,11 @@ def build(rig, body, bpy, Matrix, dom, foot_ref_xy, log=print):
                     pt[sd] = float(np.clip(np.median(A[:, 3]), -30, 30))
                 else:
                     sz[sd] += SOLE - float(np.median(A[:, 2]))
-            log("CAL %s pass %d pitch %s side_dz %s planted %s" % (g, it, {k: round(v, 1) for k, v in pt.items()},
+            if it >= 1:
+                ex = np.concatenate(EX) if EX else np.zeros(0)
+                if len(ex):
+                    ROOT[g] = ROOT.get(g, 0.0) + float(np.median(ex))
+            log("CAL %s pass %d root %.4f pitch %s side_dz %s planted %s" % (g, it, ROOT.get(g, 0.0), {k: round(v, 1) for k, v in pt.items()},
                 {k: round(v, 4) for k, v in sz.items()}, {sd: sum(len(a) for a in FP[sd]) for sd in FP}))
 
     # ---------------------------------------------------------- per-frame planted-foot trims (feet that stay down)

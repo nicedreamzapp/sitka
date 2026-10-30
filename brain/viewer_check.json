@@ -34,14 +34,14 @@
  {
   "seq": "sitdown",
   "called": {
-   "STAND": 15.1,
-   "SIT": 84.9
+   "LIFT": 26.9,
+   "SIT": 73.1
   },
   "truth": {
    "SIT": 100.0
   },
-  "agree": 84.9,
-  "agree_raw": 98.3,
+  "agree": 73.1,
+  "agree_raw": 78.2,
   "veto": 0,
   "lockL": 0,
   "lockR": 0,
@@ -51,20 +51,20 @@
  {
   "seq": "standup",
   "called": {
-   "SIT": 73.6,
-   "STAND": 26.4
+   "SIT": 74.7,
+   "STAND": 25.3
   },
   "truth": {
    "SIT": 64.8,
    "STAND": 30.8,
    "WALK": 4.4
   },
-  "agree": 91.2,
-  "agree_raw": 96.7,
+  "agree": 90.1,
+  "agree_raw": 97.8,
   "veto": 7.7,
   "lockL": 0,
   "lockR": 0,
-  "motor": 29.7,
+  "motor": 30.8,
   "vetoes": {
    "motor: model under 80%": 7
   }
@@ -72,15 +72,15 @@
  {
   "seq": "stoop",
   "called": {
-   "STAND": 38.5,
-   "LIFT": 61.5
+   "STAND": 37.4,
+   "LIFT": 62.6
   },
   "truth": {
    "LIFT": 61.5,
    "STAND": 38.5
   },
-  "agree": 89.0,
-  "agree_raw": 100.0,
+  "agree": 90.1,
+  "agree_raw": 98.9,
   "veto": 0,
   "lockL": 0,
   "lockR": 0,
