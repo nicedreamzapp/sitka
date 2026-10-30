@@ -11,3 +11,5 @@ cad/.blender/
 __pycache__/
 cad/step/sitka_assembly_*.step
 cad/step/
+# extra CMU clips for the mode model (brain/fetch_mocap.sh)
+brain/mocap_extra/

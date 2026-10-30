@@ -1,0 +1,90 @@
+[
+ {
+  "seq": "walk",
+  "called": {
+   "WALK": 100
+  },
+  "truth": {
+   "WALK": 100.0
+  },
+  "agree": 100.0,
+  "agree_raw": 100.0,
+  "veto": 0,
+  "lockL": 35.7,
+  "lockR": 35.7,
+  "motor": 0,
+  "vetoes": {}
+ },
+ {
+  "seq": "run",
+  "called": {
+   "RUN": 100
+  },
+  "truth": {
+   "RUN": 100.0
+  },
+  "agree": 100.0,
+  "agree_raw": 100.0,
+  "veto": 0,
+  "lockL": 0,
+  "lockR": 0,
+  "motor": 0,
+  "vetoes": {}
+ },
+ {
+  "seq": "sitdown",
+  "called": {
+   "STAND": 15.1,
+   "SIT": 84.9
+  },
+  "truth": {
+   "SIT": 100.0
+  },
+  "agree": 84.9,
+  "agree_raw": 98.3,
+  "veto": 0,
+  "lockL": 0,
+  "lockR": 0,
+  "motor": 0,
+  "vetoes": {}
+ },
+ {
+  "seq": "standup",
+  "called": {
+   "SIT": 73.6,
+   "STAND": 26.4
+  },
+  "truth": {
+   "SIT": 64.8,
+   "STAND": 30.8,
+   "WALK": 4.4
+  },
+  "agree": 91.2,
+  "agree_raw": 96.7,
+  "veto": 7.7,
+  "lockL": 0,
+  "lockR": 0,
+  "motor": 29.7,
+  "vetoes": {
+   "motor: model under 80%": 7
+  }
+ },
+ {
+  "seq": "stoop",
+  "called": {
+   "STAND": 38.5,
+   "LIFT": 61.5
+  },
+  "truth": {
+   "LIFT": 61.5,
+   "STAND": 38.5
+  },
+  "agree": 89.0,
+  "agree_raw": 100.0,
+  "veto": 0,
+  "lockL": 0,
+  "lockR": 0,
+  "motor": 23.1,
+  "vetoes": {}
+ }
+]

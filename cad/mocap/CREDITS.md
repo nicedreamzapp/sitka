@@ -18,3 +18,7 @@ sequenced for the viewer by `sequences.py`. The same clips drive the Sitka promo
 | Sit down | 86 | 09 | walking, sitting, looking, stand up | 8.45-10.8 s (turn ends, sit; feet held where they settle) |
 | Stand up | 86 | 09 | walking, sitting, looking, stand up | 23.2-25.0 s |
 | Lift (stoop) | 115 | 01 | pick up box, bend from waist | 0.35-2.15 s |
+
+The smart-brain mode model ([SMART_BRAIN.md](../../SMART_BRAIN.md)) trains and tests on the four clips above plus
+CMU trials 35_02, 35_03, 35_18, 35_19, 35_20, 86_10, 115_02 and 115_03 from the same mirror (fetched by
+`brain/fetch_mocap.sh`, not committed).

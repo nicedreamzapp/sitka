@@ -183,6 +183,40 @@ html.compact .lbl{font-size:10.5px;padding:2px 7px;max-width:40vw;overflow:hidde
 #loading .bar{width:180px;height:6px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden}
 #loading .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#e0743c,#ffd06b);transition:width .2s}
 #loading span{color:var(--mut);font-size:11.5px}
+/* smart-brain HUD: live mode readout on simulated sensors (brain/brain_hud.js) */
+#brain{position:fixed;left:calc(var(--sal) + var(--gap));top:calc(var(--sat) + 8px + var(--tap) + 10px);z-index:3;width:212px;padding:8px 11px 9px;border-radius:16px;
+  display:none;font-size:11.5px;line-height:1.3;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+#brain.show{display:block}
+#ctl:not(.closed) ~ #brain{left:calc(var(--sal) + var(--gap) + 310px)}
+html.land #ctl:not(.closed) ~ #brain{left:calc(var(--sal) + var(--gap) + min(300px,38vw) + 10px)}
+html.compact:not(.land) #ctl:not(.closed) ~ #brain,html.compact:not(.land) #info:not(.closed) ~ #brain{display:none}
+#brain .bh{display:flex;align-items:baseline;justify-content:space-between;gap:6px;color:var(--mut);font-size:10px;letter-spacing:.6px;text-transform:uppercase;font-weight:700}
+#brain .bh span{letter-spacing:0;text-transform:none;font-weight:600;color:#ffc89e}
+#brain .bm{display:flex;align-items:baseline;gap:7px;margin-top:3px}
+#brain .bm b{font-size:17px;font-weight:800;letter-spacing:.4px;color:#fff}
+#brain .bm small{color:var(--mut);font-size:11px;font-weight:600}
+#brain .bm span{margin-left:auto;color:#ffd06b;font-weight:700;font-size:12px;white-space:nowrap}
+#brain .bp{color:var(--mut);font-size:11px;min-height:14px}
+#brain .bg{display:grid;grid-template-columns:1fr auto;gap:2px 8px;margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,.1)}
+#brain .bg span{color:var(--mut)}
+#brain .bg b{font-weight:700;text-align:right;color:var(--ink)}
+#brain .bg b.lk{color:#ff8a5c}
+#brain .bg b.on{color:#27e0c0}
+#brain .ins{display:flex;gap:4px;align-items:center}
+#brain .ins i{width:34px;height:5px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden}
+#brain .ins i b{display:block;height:100%;width:0;background:linear-gradient(90deg,#46a8ff,#7fd0ff)}
+#brain .bv{min-height:0;color:#ff6b6b;font-weight:700;font-size:11px}
+#brain .bv:empty{display:none}
+#brain.veto{border-color:rgba(255,80,80,.85);box-shadow:0 0 0 1px rgba(255,80,80,.5),0 0 14px rgba(255,60,60,.35)}
+#brain .bf{margin-top:5px;color:rgba(255,255,255,.42);font-size:9.5px;line-height:1.3}
+#brain.mini .bp,#brain.mini .bg,#brain.mini .bf{display:none}
+#brain .bh,#brain .bg span{white-space:nowrap}
+html.compact #brain{width:190px;font-size:10.5px;padding:7px 10px 8px}
+html.compact #brain .bh{font-size:9px;letter-spacing:.3px}
+html.compact #brain .bh span{font-size:9.5px}
+html.compact #brain .bm b{font-size:15px}
+html.compact #brain .bf{display:none}
+html.touring #brain{display:none}
 </style></head>
 <body>
 <div id="stage"></div>
@@ -220,6 +254,20 @@ html.compact .lbl{font-size:10.5px;padding:2px 7px;max-width:40vw;overflow:hidde
   <div class="bd" id="infoBody"></div>
   <div class="ver" id="ver"></div>
 </aside>
+<div class="glass" id="brain" aria-label="Smart brain, simulated" title="Tap to shrink">
+  <div class="bh">Smart brain <span>simulated sensors</span></div>
+  <div class="bm"><b id="bMode">STAND</b><small id="bModeP"></small><span id="bConf"></span></div>
+  <div class="bp" id="bPhase"></div>
+  <div class="bg">
+    <span>Knee clutch L</span><b id="bCL">OPEN</b>
+    <span>Knee clutch R</span><b id="bCR">OPEN</b>
+    <span>Insoles L / R</span><span class="ins"><i><b id="bIL"></b></i><i><b id="bIR"></b></i></span>
+    <span>Motor</span><b id="bMot">off</b>
+    <span>Seat lock</span><b id="bCam">free</b>
+  </div>
+  <div class="bv" id="bVeto"></div>
+  <div class="bf">IMUs and insoles are simulated from the motion capture, not a real device. Model <span id="bSize"></span> weights, 1 s window, 50 Hz. Safety rules have the final say.</div>
+</div>
 <button class="glass" id="peek" aria-label="Show details"><span class="ph" id="peekPh"></span><span id="peekTxt">Tap Walk, Sit or Lift to watch how it works.</span><i></i></button>
 
 <nav class="glass" id="dock" aria-label="Main">
@@ -240,6 +288,9 @@ html.compact .lbl{font-size:10.5px;padding:2px 7px;max-width:40vw;overflow:hidde
   <div class="tnav"><button id="tBack">Back</button><button id="tNext">Next</button></div>
 </section>
 <div class="glass" id="tip"></div>
-<script>window.SITKA_BUILD="20261023-0645"</script>
-<script src="cad/viewer/sitka_viewer.bundle.js?v=20261023-0645"></script>
+<script>window.SITKA_BUILD="20261030-0246"</script>
+<script src="cad/viewer/sitka_viewer.bundle.js?v=20261030-0246"></script>
+<script src="brain/sitka_brain.js?v=20261030-0246"></script>
+<script src="brain/mode_model.js?v=20261030-0246"></script>
+<script src="brain/brain_hud.js?v=20261030-0246"></script>
 </body></html>

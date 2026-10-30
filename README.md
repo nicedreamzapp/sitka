@@ -40,6 +40,7 @@ These are counted part by part from the CAD, and much of the cost is still estim
 - **[TENDON_CONCEPT.md](TENDON_CONCEPT.md):** the seat physics: tendon tension, pad pressures, why the pole sits under the hip
 - **[kinetics_sketch.html](kinetics_sketch.html)** and **[tendon_sketch.html](tendon_sketch.html):** side-view force diagrams
 - **[BUILD_RIGHT_FIRST_TIME.md](BUILD_RIGHT_FIRST_TIME.md):** the measurement and test gates every part passes before it's made
+- **[SMART_BRAIN.md](SMART_BRAIN.md):** the smart tier's tiny on-board model (IMUs + insoles call the mode 50 times a second, plain safety rules have the final say), trained on simulated sensors from motion capture; the viewer shows its live mode readout while Walk, Run, Sit or Lift plays
 
 ## The CAD
 
