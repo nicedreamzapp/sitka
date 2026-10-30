@@ -11,7 +11,7 @@ Named after the Sitka spruce: strong, light, and it bends without breaking.
 
 | | How | Numbers (design targets, not yet measured on a prototype) |
 |---|---|---|
-| **Sit anywhere** | A light carbon pole under each hip carries most of your weight. A carbon sit spring at each knee catches you and gives the energy back when you stand. A mechanical clutch holds you with the power off. | Pole carries **69%** of seated weight; spring stores **44 J** per knee and returns about **40 J** |
+| **Sit anywhere** | A light carbon pole under each hip carries most of your weight. A carbon sit spring at each knee catches you and gives the energy back when you stand. A mechanical clutch holds you with the power off. | Pole carries **70%** of seated weight; spring stores **44 J** per knee and returns about **40 J** |
 | **Lean back** | Two straps hold you, like a camp chair you wear. | About **94 N** per strap at 10° recline |
 | **Lift** | A passive tendon along your back stores energy as you bend. | A **15 kg** box feels about **12 kg** lighter, with no motor |
 | **Walk and run** | Elastic bands link hips, knees and ankles the way your hamstrings and calves do. | Published passive devices: **−6 to −8%** effort |
@@ -26,11 +26,11 @@ Every module works alone and gets smarter when combined. Cross-joint "tendons" (
 
 | Kit | Mass | Parts cost, prototype one | Per set, batch of 10 (EST) |
 |---|---|---|---|
-| **Start here: Seat + Back** (Dock, knee seat, back lift), no motors | 6.3 kg | $2,671 | $1,925 |
-| + hips and running band | 6.5 kg | $2,730 | $1,985 |
-| + smart clutches | 7.0 kg | $3,297 | $2,552 |
-| + one motor | 9.0 kg | $4,571 | $3,760 |
-| Full body (+ ankles, shoulders, couplings) | 10.3 kg | $5,049 | $4,138 |
+| **Start here: Seat + Back** (Dock, knee seat, back lift), no motors | 6.7 kg | $2,850 | $2,071 |
+| + hips and running band | 6.9 kg | $2,909 | $2,131 |
+| + smart clutches | 7.3 kg | $3,476 | $2,697 |
+| + one motor | 9.3 kg | $4,750 | $3,906 |
+| Full body (+ ankles, shoulders, couplings) | 10.6 kg | $5,227 | $4,283 |
 
 These are counted part by part from the CAD, and much of the cost is still estimate (one-off machining). The earlier "about $1,300 and 4.4 kg" was a top-down target for the hips-included kit; PARTS_LIST.md explains the gap and the path back toward about 4.8 kg.
 
@@ -47,10 +47,11 @@ These are counted part by part from the CAD, and much of the cost is still estim
 - **[sitka_viewer.html](sitka_viewer.html):** animated 3D viewer built for phones and desktop: a 6-step guided tour, one-tap Walk / Sit / Lift, plain-English part names, labels on demand, plus an Advanced menu with every pose, module toggle and the explode view
 - `cad/`: build123d source, STEP per part (in the release download), STL for printed parts (`cad/stl/`), GLB per pose (`cad/glb/`), renders (`cad/renders/`). The full standing assembly STEP (270 MB) is attached to the [latest release](https://github.com/nicedreamzapp/sitka/releases) as a .gz.
 - The wearer is a CC0 MakeHuman/MPFB body.
+- Every build (`cad/build_all.sh`) runs two gates on every baked frame and every static pose: the anatomy gate (the motion stands like a human) and the connection gate (`cad/assemble/connection_gate.py`: every part touches the part it hangs on, every cable ends on its anchor, nothing sinks into the wearer, the struts plant on the floor and stow in their clips).
 
 ## Status, honestly
 
-This is a design, not a product. Every number above is computed from the open math or taken from published research, and it still needs bench tests and a prototype. Known gaps: the walking-spring timing (a spring engaged mid-swing could trip you, so every walking clutch must fail open), long-sit comfort beyond 30 minutes, and a few CAD fit issues (the belt edge at the hip crease when seated, foam sink in some poses, placeholder shoes). The older parts list (`legacy/PARTS_LIST_BOM.md`) and the model output (`MODEL_OUTPUT.txt`, `*.mjs`) describe the earlier rigid design and are kept as the physics baseline the new one was checked against.
+This is a design, not a product. Every number above is computed from the open math or taken from published research, and it still needs bench tests and a prototype. Known gaps: the walking-spring timing (a spring engaged mid-swing could trip you, so every walking clutch must fail open), long-sit comfort beyond 30 minutes, seat pressure under the sit bone (25 kPa average on the cup, and a peak an air-cell insert still has to bring down on a pressure map, see TENDON_CONCEPT.md section 6), and a few CAD limits (the skinned body mesh folds through itself in a deep stoop, placeholder shoes). The older parts list (`legacy/PARTS_LIST_BOM.md`) and the model output (`MODEL_OUTPUT.txt`, `*.mjs`) describe the earlier rigid design and are kept as the physics baseline the new one was checked against.
 
 ## How the video was made
 

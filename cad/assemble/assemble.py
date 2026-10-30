@@ -186,29 +186,57 @@ def tube_mesh(name, pts, radius=None, w=None, t=None, normals=None, mat_name="ca
     return ob
 
 
-# ------------------------------------------------------------------ strut (3 telescoping carbon sections + foot)
+# ------------------------------------------------------------------ strut (rod-end eye + 5 telescoping carbon sections + foot)
+# Five 0.20 m sections (24/21/18/15/12 mm x 1.2 mm wall) instead of three 0.32 m: stowed it is 0.28 m from the pin to
+# the foot, so it stays above the calf's reach behind the thigh in a running swing (SEAT_SITBONE.md, strut section)
+SECTIONS = [(0.024, 0.0216), (0.021, 0.0186), (0.018, 0.0156), (0.015, 0.0126), (0.012, 0.0096)]
+SEC_L, STAG, OVERLAP, FOOT_R = 0.20, 0.012, 0.040, 0.016
+E0 = 0.024                      # tube0 starts this far below the hinge pin (rod-end eye + shank)
+L_STOW = E0 + 4 * STAG + SEC_L + 0.010       # pin -> foot centre, all sections slid in (0.282 m)
+L_MAX = L_STOW + 4 * (SEC_L - STAG - OVERLAP)  # every joint out to its 40 mm overlap (0.874 m)
+STRUT_AXIS = {sd: Vector(ANCH["strut_axis_" + sd]["axis"]) for sd in ("l", "r")}
+
+
 def strut_objs():
     objs = []
-    for k, (od, idd) in enumerate(((0.024, 0.021), (0.020, 0.017), (0.016, 0.013))):
-        bpy.ops.mesh.primitive_cylinder_add(vertices=32, radius=od / 2, depth=0.32, location=(0, 0, 0.16))
+    for k, (od, idd) in enumerate(SECTIONS):
+        bpy.ops.mesh.primitive_cylinder_add(vertices=32, radius=od / 2, depth=SEC_L, location=(0, 0, SEC_L / 2))
         o = bpy.context.active_object; o.name = f"strut_tube{k}"
         bpy.ops.object.transform_apply(location=True)
         o.data.materials.append(MATS["carbon_gloss"])
         for poly in o.data.polygons: poly.use_smooth = True
         o.data.set_sharp_from_angle(angle=math.radians(50))
         objs.append(o)
-    # twist-lock collars
-    for k, od in enumerate((0.0275, 0.0235)):
-        bpy.ops.mesh.primitive_cylinder_add(vertices=32, radius=od / 2, depth=0.022, location=(0, 0, 0.011))
+    # twist-lock collars, one per joint
+    for k, (od, idd) in enumerate(SECTIONS[:-1]):
+        bpy.ops.mesh.primitive_cylinder_add(vertices=32, radius=od / 2 + 0.0018, depth=0.020, location=(0, 0, 0.010))
         o = bpy.context.active_object; o.name = f"strut_collar{k}"
         bpy.ops.object.transform_apply(location=True)
         o.data.materials.append(MATS["accent"]); objs.append(o)
         for poly in o.data.polygons: poly.use_smooth = True
         o.data.set_sharp_from_angle(angle=math.radians(50))
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=32, ring_count=16, radius=0.019, location=(0, 0, 0))
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=32, ring_count=16, radius=FOOT_R, location=(0, 0, 0))
     o = bpy.context.active_object; o.name = "strut_foot"; o.scale = (1, 1, 1.25)
     bpy.ops.object.transform_apply(scale=True)
     o.data.materials.append(MATS["rubber"]); objs.append(o)
+    for poly in o.data.polygons: poly.use_smooth = True
+    # rod-end eye on the tube top: housing ring (hole along local x = the hinge pin), spherical ball, threaded shank
+    # into tube0. The ball takes the 9 deg splay and the stow/deploy roll the pin plane does not (high-misalignment
+    # rod end, cone spacers on the pin)
+    bm = bmesh.new()
+    bmesh.ops.create_cone(bm, cap_ends=True, segments=24, radius1=0.006, radius2=0.006, depth=E0 + 0.012 - 0.008,
+                          matrix=Matrix.Translation((0, 0, 0.008 + (E0 + 0.004) / 2)))
+    bmesh.ops.create_uvsphere(bm, u_segments=24, v_segments=12, radius=0.0068)
+    bpy.ops.mesh.primitive_torus_add(major_radius=0.0094, minor_radius=0.0030, major_segments=32, minor_segments=12)
+    to = bpy.context.active_object
+    to.data.transform(Matrix.Rotation(math.pi / 2, 4, 'Y'))       # hole axis -> local x
+    bm.from_mesh(to.data)
+    bpy.data.objects.remove(to, do_unlink=True)
+    me = bpy.data.meshes.new("strut_rodend")
+    bm.to_mesh(me); bm.free()
+    o = bpy.data.objects.new("strut_rodend", me)
+    bpy.context.scene.collection.objects.link(o)
+    o.data.materials.append(MATS["alu"]); objs.append(o)
     for poly in o.data.polygons: poly.use_smooth = True
     for o in objs:
         for c in list(o.users_collection):
@@ -224,9 +252,13 @@ for sd in ("l", "r"):
         o.name = o.name + "_" + sd
         o["module"], o["group"], o["seg"] = "basic", "strut", "thigh_" + sd
         o["mat"] = "carbon_gloss"
-        o["label"] = "Telescoping carbon strut 24/20/16 (5.2 kN)" if o.name.startswith("strut_tube0") else ""
+        o["label"] = ("Telescoping carbon strut, 5 sections 24-12 mm (2.8 kN at 0.65 m)" if o.name.startswith("strut_tube0") else
+                      "Rod-end eye on the hinge pin" if o.name.startswith("strut_rodend") else "")
+        if o.name.startswith("strut_rodend"):
+            o["mat"] = "alu"
         PART_OBJS[o.name] = o
     STRUT[sd] = objs
+STRUT_NAMES = {o.name for sd in STRUT for o in STRUT[sd]}
 
 
 def M4(a):
@@ -245,8 +277,8 @@ def W(pose, key, extra=None):
 def strut_foot(pin, sd):
     # foot on the floor, tilted 4 deg back and splayed 9 deg out (TENDON_CONCEPT section 2)
     S = 1 if sd == "l" else -1
-    h = pin.z - 0.019 * 1.25
-    return Vector((pin.x + S * math.tan(math.radians(9)) * h, pin.y + math.tan(math.radians(4)) * h, 0.019 * 1.25))
+    h = pin.z - FOOT_R * 1.25
+    return Vector((pin.x + S * math.tan(math.radians(9)) * h, pin.y + math.tan(math.radians(4)) * h, FOOT_R * 1.25))
 
 
 def place_strut(pose, sd, bvh, blend=None, foot_target=None, xlocal=None):
@@ -259,13 +291,23 @@ def place_strut(pose, sd, bvh, blend=None, foot_target=None, xlocal=None):
     stow = W(pose, "strut_stow_" + sd)
     dst = (stow - pin).normalized()
     if blend <= 0.0:
-        L, d = 0.36, dst
+        L, d = L_STOW, dst
     else:
         foot_t = foot_target or strut_foot(pin, sd)
         ddp = (foot_t - pin)
-        Lf = min(0.86, ddp.length)
-        d = (dst * (1 - blend) + ddp.normalized() * blend).normalized()
-        L = 0.36 + (Lf - 0.36) * blend
+        Lf = min(L_MAX, ddp.length)
+        # swing about the hinge pin from the stowed line toward the planted direction; the part of the planted
+        # direction out of the pin's plane (the rod end's misalignment) is blended in over the swing
+        axw = (frame(pose, "thigh_" + sd).to_3x3() @ STRUT_AXIS[sd]).normalized()
+        ddn = ddp.normalized()
+        alpha = math.asin(max(-1.0, min(1.0, ddn.dot(axw))))
+        dpl = (ddn - axw * ddn.dot(axw)).normalized()
+        d0 = (dst - axw * dst.dot(axw)).normalized()
+        theta = math.atan2(axw.dot(d0.cross(dpl)), d0.dot(dpl))
+        d = Matrix.Rotation(theta * blend, 3, axw) @ d0
+        ab = alpha * min(1.0, max(0.0, (blend - 0.8) / 0.2)) ** 2      # the ball tilts only as the foot plants
+        d = (d * math.cos(ab) + axw * math.sin(ab)).normalized()
+        L = L_STOW + (Lf - L_STOW) * blend
     foot = pin + d * L
     z = (foot - pin).normalized()
     x = Vector((0, 0, 1)).cross(z)
@@ -280,14 +322,21 @@ def place_strut(pose, sd, bvh, blend=None, foot_target=None, xlocal=None):
         x = (Matrix.Rotation(ang * blend, 3, z) @ xb).normalized()
     y = z.cross(x)
     R = Matrix((x, y, z)).transposed().to_4x4()
-    # sections: tube0 at the top, tube1/tube2 slide out evenly
-    ext = max(0.0, L - 0.36)
-    offs = [0.0, 0.018 + ext / 2, 0.036 + ext]
-    for k in range(3):
+    # sections: tube0 at the top (below the rod-end eye), tubes 1-4 slide out evenly; foot centre lands at L
+    ext = max(0.0, L - L_STOW)
+    n = len(SECTIONS)
+    offs = [E0 + k * STAG + ext * k / (n - 1) for k in range(n)]
+    for k in range(n):
         objs[k].matrix_world = Matrix.Translation(pin) @ R @ Matrix.Translation((0, 0, offs[k]))
-    objs[3].matrix_world = Matrix.Translation(pin) @ R @ Matrix.Translation((0, 0, offs[0] + 0.32 - 0.011))
-    objs[4].matrix_world = Matrix.Translation(pin) @ R @ Matrix.Translation((0, 0, offs[1] + 0.32 - 0.011))
-    objs[5].matrix_world = Matrix.Translation(pin) @ R @ Matrix.Translation((0, 0, offs[2] + 0.32 + 0.010))
+    for k in range(n - 1):
+        objs[n + k].matrix_world = Matrix.Translation(pin) @ R @ Matrix.Translation((0, 0, offs[k] + SEC_L - 0.010))
+    objs[2 * n - 1].matrix_world = Matrix.Translation(pin) @ R @ Matrix.Translation((0, 0, offs[-1] + SEC_L + 0.010))
+    # rod-end eye: hole axis as close to the hinge pin as the tube allows (the ball takes the rest)
+    ax = frame(pose, "thigh_" + sd).to_3x3() @ STRUT_AXIS[sd]
+    xe = ax - z * ax.dot(z)
+    xe = xe.normalized() if xe.length > 1e-6 else x
+    Re = Matrix((xe, z.cross(xe), z)).transposed().to_4x4()
+    objs[2 * len(SECTIONS)].matrix_world = Matrix.Translation(pin) @ Re
     return L
 
 
@@ -398,10 +447,10 @@ def routes(pose, mode=None, cc=None):
                                                 "harness_low_" + sd, "harness_belt_" + sd],
                       module="basic", mat="fabric", w=0.045, t=0.007, how="conform", off=0.0045,
                       label="Shoulder harness (Dock)" if sd == "l" else ""))
-        R.append(dict(name="panelstrap_" + sd, pts=["panelstrap_top_" + sd, "panelstrap_belt_" + sd], module="basic",
-                      mat="fabric", w=0.038, t=0.003, how="conform", off=0.0125, label=""))
-        R.append(dict(name="cupstrap_" + sd, pts=["cupstrap_belt_" + sd, "cupstrap_" + sd], module="basic",
-                      mat="fabric", w=0.030, t=0.003, how="conform", off=0.004, label="Seat-cup strap to the belt" if sd == "l" else ""))
+        # spine link: a rigid 11 mm carbon link, pinned at the belt and at the panel (replaces the panel straps). The panel
+        # pose is solved from it each frame (panel_fit), so its length never changes
+        R.append(dict(name="spine_link_" + sd, pts=["spine_belt_" + sd, "spine_panel_" + sd], module="basic", mat="carbon",
+                      r=0.0055, how="taut", label="Spine link (pinned both ends)" if sd == "l" else ""))
         if ccd:
             R.append(dict(name="crazycreek_" + sd, pts=["cc_panel_" + sd, "cc_belt_" + sd, "cc_thigh_" + sd], module="basic", mat="fabric",
                           w=0.025, t=0.0025, how="conform", segs=[0.006, 0.017], label="Crazy Creek strap (94 N at 10 deg recline)", state="taut 94 N"))
@@ -428,6 +477,105 @@ def routes(pose, mode=None, cc=None):
         R.append(dict(name="running_band", pts=["runband_l", "runband_r"], module="basic", mat="latex", r=0.005,
                       how="taut", label="Running band, shin to shin (-6.4% running)", state="RUN only"))
     return R
+
+
+def end_keys(rt):
+    if rt.get("kind") == "t1":
+        return ["t1_manifold_" + rt["side"], "t1_shin_" + rt["side"]]
+    return [rt["pts"][0], rt["pts"][-1]]
+
+
+PART_SEG = {p["name"]: p["seg"] for p in MAN["parts"]}
+
+# ------------------------------------------------------------------ back panel on the spine links
+# The panel is not glued to one vertebra: it lies on the back (liner + harness) and its lower edge hangs on two short
+# rigid spine links (ball-jointed both ends), pinned to the belt. Per pose / frame the panel pose (3 rotations about its
+# lower pivot + 3 translations, relative to the chest bone) is solved so the liner keeps the gap to the skin it has
+# standing, with both link lengths held (Nelder-Mead, warm-started frame to frame). Logged: worst liner-gap change and
+# the link length error.
+_d = np.load(os.path.join(CAD, "body", "mesh_stand.npz"))
+_F = [list(q) for q in _d["Q"]] + [list(t) for t in _d["T"]]
+_BVH_STAND = BVHTree.FromPolygons([Vector(v) for v in _d["V"]], _F)
+_lv = PART_OBJS["back_panel_liner"].data.vertices
+PANEL_Q = [_lv[i].co.copy() for i in range(0, len(_lv), max(1, len(_lv) // 220))]
+_Ch0 = M4(FRAMES["stand"]["chest"])
+
+
+def _sdist(bvh, p):
+    loc, nor, idx, dist = bvh.find_nearest(p)
+    return (p - loc).dot(nor) if loc is not None else 1.0
+
+
+PANEL_DREF = [_sdist(_BVH_STAND, _Ch0 @ q) for q in PANEL_Q]
+SP_B = {sd: Vector(ANCH["spine_belt_" + sd]["p"]) for sd in ("l", "r")}
+SP_P = {sd: Vector(ANCH["spine_panel_" + sd]["p"]) for sd in ("l", "r")}
+P_MID = (SP_P["l"] + SP_P["r"]) / 2
+_Pv0 = M4(FRAMES["stand"]["pelvis"])
+SPINE_L = {sd: ((_Ch0 @ SP_P[sd]) - (_Pv0 @ SP_B[sd])).length for sd in ("l", "r")}
+PANEL_STATE = {"bg": None}
+PANEL_LOG = []
+
+
+def _nelder_mead(f, x0, steps, iters=260, tol=1e-9):
+    n = len(x0)
+    pts = [list(x0)] + [[x0[j] + (steps[j] if j == i else 0.0) for j in range(n)] for i in range(n)]
+    val = [f(p) for p in pts]
+    for _ in range(iters):
+        order = sorted(range(n + 1), key=lambda k: val[k])
+        pts, val = [pts[k] for k in order], [val[k] for k in order]
+        if abs(val[-1] - val[0]) < tol:
+            break
+        c = [sum(p[j] for p in pts[:-1]) / n for j in range(n)]
+        xr = [c[j] + (c[j] - pts[-1][j]) for j in range(n)]; fr = f(xr)
+        if fr < val[0]:
+            xe = [c[j] + 2 * (c[j] - pts[-1][j]) for j in range(n)]; fe = f(xe)
+            pts[-1], val[-1] = (xe, fe) if fe < fr else (xr, fr)
+        elif fr < val[-2]:
+            pts[-1], val[-1] = xr, fr
+        else:
+            xc = [c[j] + 0.5 * (pts[-1][j] - c[j]) for j in range(n)]; fc = f(xc)
+            if fc < val[-1]:
+                pts[-1], val[-1] = xc, fc
+            else:
+                for k in range(1, n + 1):
+                    pts[k] = [pts[0][j] + 0.5 * (pts[k][j] - pts[0][j]) for j in range(n)]
+                    val[k] = f(pts[k])
+    k = min(range(n + 1), key=lambda k: val[k])
+    return pts[k], val[k]
+
+
+def panel_fit(pk, bvh, warm=None, label=None):
+    Pv, Ch = frame(pk, "pelvis"), frame(pk, "chest")
+    Bw = {sd: Pv @ SP_B[sd] for sd in ("l", "r")}
+
+    def place(x):
+        R = (Matrix.Rotation(math.radians(x[2]), 4, 'Z') @ Matrix.Rotation(math.radians(x[1]), 4, 'Y') @
+             Matrix.Rotation(math.radians(x[0]), 4, 'X'))
+        # rotate about the lower pivot (P_MID), then shift, all in the chest bone's frame
+        return Ch @ Matrix.Translation(Vector(x[3:6])) @ Matrix.Translation(P_MID) @ R @ Matrix.Translation(-P_MID)
+
+    def cost(x):
+        F = place(x)
+        c = 0.0
+        for q, dr in zip(PANEL_Q, PANEL_DREF):
+            d = _sdist(bvh, F @ q)
+            e = d - dr
+            c += e * e + (3000.0 * (d + 0.001) ** 2 if d < -0.001 else 0.0) + (4.0 * (abs(e) - 0.010) ** 2 if abs(e) > 0.010 else 0.0)
+        c /= len(PANEL_Q)
+        for sd in ("l", "r"):
+            c += 400.0 * (((F @ SP_P[sd]) - Bw[sd]).length - SPINE_L[sd]) ** 2
+        c += 1e-6 * (x[0] ** 2 + x[1] ** 2 + x[2] ** 2) + 1e-3 * (x[3] ** 2 + x[4] ** 2 + x[5] ** 2)
+        return c
+
+    x0 = warm or [0.0] * 6
+    x, c = _nelder_mead(cost, x0, [3.0, 3.0, 3.0, 0.006, 0.006, 0.006])
+    x, c = _nelder_mead(cost, x, [0.8, 0.8, 0.8, 0.0015, 0.0015, 0.0015])
+    F = place(x)
+    FRAMES.setdefault(pk, {})["panel"] = [list(r) for r in F]
+    gaps = [_sdist(bvh, F @ q) - dr for q, dr in zip(PANEL_Q, PANEL_DREF)]
+    lens = max(abs(((F @ SP_P[sd]) - Bw[sd]).length - SPINE_L[sd]) for sd in ("l", "r"))
+    PANEL_LOG.append((label or pk, max(abs(v) for v in x[:3]), math.sqrt(sum(v * v for v in x[3:6])), max(abs(g) for g in gaps), lens))
+    return x
 
 
 # ------------------------------------------------------------------ main loop
@@ -623,7 +771,7 @@ if ANIM:
     out["joint_names"] = ["hip_l", "knee_l", "ank_l", "toe_l", "hip_r", "knee_r", "ank_r", "toe_r"]
     GATE, JNT = {}, []
     for sname, frames in SEQ.items():
-        seq = dict(n=len(frames), loop=frames[0]["loop"], start=nframe, states=[], parts=[], cables=[], joints=[])
+        seq = dict(n=len(frames), loop=frames[0]["loop"], start=nframe, states=[], parts=[], cables=[], joints=[], strut=[])
         GATE[sname] = dict(joints=[], loop=seq["loop"], foot_z={"l": [], "r": []})
         if "fps" in frames[0]:
             seq["fps"] = round(frames[0]["fps"], 4)     # playback rate (viewer: seconds of motion = frame / fps)
@@ -668,11 +816,11 @@ if ANIM:
             bvh = BVHTree.FromPolygons([Vector(v) for v in V], POLYS)
             body_bin += np.round(V * 10000).astype(np.int16).tobytes()
             mats = []
+            PANEL_STATE["bg"] = panel_fit("__a__", bvh, warm=PANEL_STATE["bg"] if fi > 0 else None, label=f"{sname} f{fi:02d}")
             for nm, ob in PART_OBJS.items():
-                if nm.startswith("strut"):
+                if nm in STRUT_NAMES:
                     continue
-                pp = next(p for p in MAN["parts"] if p["name"] == nm)
-                ob.matrix_world = frame("__a__", pp["seg"])
+                ob.matrix_world = frame("__a__", PART_SEG[nm])
             for sd in ("l", "r"):
                 place_strut("__a__", sd, bvh, blend=fr["strut"], foot_target=FT[sd] if sname in ("sitdown", "standup") else None,
                             xlocal=XLOC[sd])
@@ -680,15 +828,18 @@ if ANIM:
                 m = ob.matrix_world
                 mats.append([round(m[i][j], 5) for i in range(3) for j in range(4)])
             seq["parts"].append(mats)
+            seq["strut"].append(round(float(fr["strut"]), 4))
             cabs = []
             for rt in routes("__a__", mode=modes[sname], cc=fr["cc"]):
                 pts, normals = route_path("__a__", rt, bvh, report=False)
                 rp, idx = resample(pts, NRES)
                 spec = out["cables"].setdefault(rt["name"], dict(module=rt["module"], requires=rt.get("requires", ""),
                                                                  mat=rt["mat"], r=rt.get("r", 0), w=rt.get("w", 0), t=rt.get("t", 0),
-                                                                 label=rt.get("label", "")))
+                                                                 label=rt.get("label", ""), end_keys=end_keys(rt)))
                 c = np.array([tuple(p) for p in rp])
                 cabs.append(dict(name=rt["name"], o=len(cab_bin) // 2))
+                if end_keys(rt) != spec["end_keys"]:
+                    cabs[-1]["k"] = end_keys(rt)
                 cab_bin += np.round(c * 10000).astype(np.int16).tobytes()
                 if normals is not None:
                     nn = np.array([tuple(normals[i]) for i in idx])
@@ -713,6 +864,10 @@ if ANIM:
     out["cab_b64"] = base64.b64encode(bytes(cab_bin)).decode()
     out["nrm_b64"] = base64.b64encode(bytes(nrm_bin)).decode()
     out["nres"] = NRES
+    mx = max(PANEL_LOG, key=lambda r: r[3])
+    print("PANEL FIT %d frames: worst liner-gap change %.1f mm (%s), spine link length error max %.2f mm, panel off the chest bone "
+          "up to %.0f deg / %.0f mm" % (len(PANEL_LOG), mx[3] * 1000, mx[0], max(r[4] for r in PANEL_LOG) * 1000,
+                                       max(r[1] for r in PANEL_LOG), max(r[2] for r in PANEL_LOG) * 1000), flush=True)
     js = "window.SITKA_ANIM=" + json.dumps(out, separators=(",", ":")) + ";\n"
     sys.path.insert(0, os.path.join(CAD, "mocap"))
     import anatomy_gate as AG
@@ -739,6 +894,8 @@ for pose in POSES:
     scene.collection.objects.link(bodyob)
     bvh = BVHTree.FromPolygons([v.co.copy() for v in bodyob.data.vertices], [list(pl.vertices) for pl in bodyob.data.polygons])
     BODY.hide_render = True
+    panel_fit(pose, bvh)
+    POSE_JSON.setdefault("frames", {})[pose] = {k: [list(r) for r in M4(v)] for k, v in FRAMES[pose].items()}
     POSE_JSON["parts"][pose] = {}
     for p in MAN["parts"]:
         ob = PART_OBJS.get(p["name"])
@@ -782,7 +939,9 @@ for pose in POSES:
         scene.collection.objects.link(ob)
         cab_objs.append(ob)
         POSE_JSON["cables"][pose][rt["name"]] = dict(module=rt["module"], state=rt.get("state", ""),
-                                                     pts=[list(map(float, p)) for p in pts[::3]])
+                                                     pts=[list(map(float, p)) for p in pts[::3]],
+                                                     ends=[list(map(float, pts[0])), list(map(float, pts[-1]))],
+                                                     end_keys=end_keys(rt), half=rt.get("r") or rt.get("t", 0.003) / 2)
 
     # fit check: every rigid part vs the posed body
     for name, ob in PART_OBJS.items():
@@ -860,6 +1019,8 @@ POSE_JSON["poses"] = {p: dict(label=PZ.POSES[p]["label"], mode=PZ.POSES[p]["mode
 POSE_JSON["parts_meta"] = {n: dict(module=o.get("module"), group=o.get("group"), label=o.get("label"), mat=o.get("mat"))
                            for n, o in PART_OBJS.items()}
 json.dump(POSE_JSON, open(os.path.join(CAD, "build", "poses.json"), "w"))
+REPORT += ["%-6s PANEL off the chest bone %.1f deg / %.1f mm, liner-gap change max %.1f mm, spine link length error %.2f mm" % (
+    pk, b, g * 1000, dr * 1000, dl * 1000) for pk, b, g, dr, dl in PANEL_LOG]
 open(os.path.join(CAD, "build", "fit_report.txt"), "w").write("\n".join(REPORT) + "\n")
 print("\n".join(REPORT))
 print("ASSEMBLY OK")

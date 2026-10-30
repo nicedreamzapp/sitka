@@ -4,6 +4,21 @@ Wearer: **130.3 kg / 1.874 m** (NHANES 95th pct, `params.mjs`). Statics reuse `t
 (free ankle, old exo masses, so slightly conservative). Numbers are **per leg** unless noted.
 Pressures and limits are first-order estimates; anything marked EST or VERIFY is not yet sourced or measured.
 
+## UPDATE 2026-10-30: the hinge really is under the sit bone now
+
+The CAD had drifted from this concept: its strut hinge sat on the seat cup's outer edge, **11 cm outside the sit bone**,
+so the strut levered the cup off the bone with **54 Nm** that one strap to the belt could not hold. Rerun with the
+geometry measured in the CAD chair pose (`node seat_sitbone_model.mjs`, full write-up in section 6):
+
+- Hinge straight under the sit bone: the strut line passes **8 mm** from it (was 105 mm); moment about the bone **4 Nm** (was 54).
+- Sagittal numbers barely move: chair at 10 deg recline **33 Nm** knee, **483 N** strut, **70%** share, **11 cm** room behind
+  (the table below used a hinge AT the hip joint; the real one is 16 cm below it).
+- Seat pressure is **not** fixed by the move: **25 kPa** average on a **242 cm2** seated footprint (the 15 kPa in KINETICS.md
+  used 400 cm2 of curved surface), and on an even-tissue model the peak gets worse (**~86 kPa**, now under the sit bone,
+  was ~67 kPa on the outer edge; EST). Geometry cannot fix it; an air-cell insert under the sit bone has to be proven on a
+  pressure map. Plan 10-20 min sits until then.
+- The strut became 5 shorter sections so it stows above the calf in a running swing: buckling **2.8 kN** at 0.65 m (was 5.2).
+
 ## VERDICT
 
 - **It closes, but only with the strut moved.** With the old tripod strut geometry it does not close.
@@ -176,6 +191,58 @@ Pressures and limits are first-order estimates; anything marked EST or VERIFY is
 - **Hinge alignment**: a single-axis hinge on a rolling-gliding knee moves the arc a few mm. The tendon stays tangent, so the moment arm changes little, but shell pistoning adds to the migration risk. Bench-check it.
 - **Forward lean**: leaning forward at the table moves your weight forward and **raises** knee load (34 → 48+ Nm). The app should coach the recline. Haptics can warn when the tendon load sensor passes ~500 N.
 - **All tissue limits here are EST or from memory.** Measure with a pressure-mapping liner (e.g. a Tekscan-type sensor) before sits longer than 10 min.
+
+## 6. Hinge under the sit bone, laced cup, spine link (2026-10-30, `seat_sitbone_model.mjs`)
+
+Physics checked first, then the CAD. Geometry from the CAD chair pose; per leg; EST marks as above.
+
+**Sagittal (tripod, foot 4 deg back):**
+
+| Chair mode | Hinge | Knee | Tendon | Strut | Share | Room behind | Tip-back |
+|---|---|---|---|---|---|---|---|
+| Upright | old (cup edge) | 45 Nm | 567 N | 344 N | 50% | 17 cm | 13 deg |
+| Upright | **new (sit bone)** | **47 Nm** | **589 N** | **323 N** | **47%** | **20 cm** | **15 deg** |
+| 10 deg recline | old | 30 Nm | 379 N | 514 N | 75% | 9 cm | 7 deg |
+| 10 deg recline | **new** | **33 Nm** | **413 N** | **483 N** | **70%** | **11 cm** | **9 deg** |
+
+- Grip needed at the foot stays **0.07** (tan 4 deg). Half-sit and squat at recline keep **10 cm** of room behind.
+- The old hinge's 9 cm room at recline broke the 10 cm rule; the new one meets it.
+
+**Frontal (chair, recline): where the push lands.**
+
+| | Old: cup outer edge | New: under the sit bone |
+|---|---|---|
+| Strut push | 513 N up, 81 N in | 482 N up, 76 N in |
+| Strut line off the sit bone | **105 mm** outside | **8 mm** inside |
+| Moment rolling the cup off the bone | **54 Nm** | **4 Nm** |
+| Held by | one strap to the belt: **~900 N** needed (it floated) | laced bridge + webbing tab: **32 N** on the tab |
+| Cup average pressure | 21 kPa on 301 cm2 | 25 kPa on 242 cm2 |
+| Peak, even-tissue rigid-cup model (EST) | ~67 kPa on the OUTER edge (trochanter) | ~86 kPa on the INNER edge (sit bone) |
+
+- **Nothing joins the two cups.** Each strut's 76 N inward push now acts at its sit bone, so the two cups squeeze the
+  pelvis between them, as in section 2. No crossbar, no yoke behind the seat.
+- **Pressure is the open problem, and the move does not solve it.** The sit bone is 6.3 cm off the midline and the cup's
+  inner edge reaches only 2.2 cm past it before the two cups touch (they come within 10 mm in the sit-down motion), so the
+  load cannot be centred on the cup. A stiffer, narrower cup does not help either (~76 kPa at 10 cm wide). The fix is an
+  air-cell insert under the sit bone (immersion pulls the peak toward the average), proven on a pressure map (prototype
+  test 1 in KINETICS.md). Plan 10-20 min sits until then.
+- **Lacing load:** stand-up drag 0.4 x 614 N = **246 N** (EST) over 6 cord runs = **41 N per run, 82 N per grommet**;
+  3 mm polyester cord ~1.5 kN (EST).
+
+**Strut stowage.** A straight tube from a hinge under the sit bone cannot lie along the outer thigh (the chord would
+cut through it). It stows down the back of the thigh toward the outside, in a clip at each end. In the running pose the
+calf folds against the back of the thigh from ~0.30 m below the hip, so the stowed strut must end above that:
+
+| Strut | Stowed | Clears the calf (run pose) | Buckling at 0.65 / 0.86 m |
+|---|---|---|---|
+| 3 x 0.32 m, 24/20/16 x 1.5 | 0.39 m | no, 56 mm into it | 5.2 / 3.0 kN |
+| **5 x 0.20 m, 24/21/18/15/12 x 1.2** | **0.28 m** | **yes** | **2.8 / 1.6 kN** (5.9x / 3.4x the 472 N load; SF 1.6 on the 1 kN design load at full reach) |
+
+**Spine link (stoop).** Two 25 mm rigid links, ball-jointed, from the panel's lower edge to the belt, replace the panel
+straps. They carry the lift tendon's pull on the panel down to the belt: **300 N per link** at a 90 deg stoop passive,
+**770 N** at the P1 peak, ~8 N when upright. With straps only that load went through the shoulders and down the spine.
+The links hold a fixed length, so in a deep stoop the panel slides up to ~10 cm along the back rather than lifting off
+(the back skin lengthens in flexion, Schober test, VERIFY); the CAD solves the panel's pose on the links every frame.
 
 ## Files
 

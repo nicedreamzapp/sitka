@@ -11,7 +11,7 @@ Three honest reasons for the gap:
 
 1. **The label was wrong.** The 4.4 kg / $1,300 figure in KINETICS.md is the Basic tier (Dock + Knee/Seat + Back/Lift + Hip + running band), not "Seat + Back". Seat + Back alone was about 3.9 kg / $1,200 in that same plan.
 2. **The old numbers were top-down targets, this list is bottom-up.** KINETICS.md budgeted the padding at +0.15 kg and the Dock at 0.7 kg. The CAD's pads alone (graded lattice, gel and spacer mesh on every contact, sized for 15 kPa) come to about 1.2 kg, and a real padded belt, harness and webbing are another 1.1 kg.
-3. **Prototype one pays one-off prices.** About {starter_est} of the starter cost is estimate, mostly one-off CNC of the knee metal (hinges, arcs, spool, clevis). The branded sprag clutches chosen for the power-off seat lock are a real price, about $300 a pair (budget ones are about $20 each, fine for the bench).
+3. **Prototype one pays one-off prices.** About {starter_est} of the starter cost is estimate, mostly one-off CNC of the knee metal (hinges, arcs, spool, strut fork). The branded sprag clutches chosen for the power-off seat lock are a real price, about $300 a pair (budget ones are about $20 each, fine for the bench).
 
 {MASS_TABLE}
 
@@ -50,7 +50,7 @@ Three honest reasons for the gap:
 3. **Print** the shells, cups, pads and brackets while the metal is out (about {starter_print_h} hours for the starter).
 4. **Make the springs.** Laminate the glass leaves, then bench-test the sit leaf's force curve and 10^5 cycles before it goes on a person (gate 2 in KINETICS.md).
 5. **Build one knee on the bench:** hinge, arms, arc and yoke, clutch in its housing, then splice the T1 line from the clutch over the arc to the anchor below the kneecap. **Proof-test it to 3.6 kN of line pull.** Then the second knee.
-6. **Build the Dock:** belt, panel, harness, seat cups with their clevises, struts and the Crazy Creek straps.
+6. **Build the Dock:** belt, panel, harness, seat cups laced to the thigh cuffs, strut forks and rod ends, struts, the spine links and the Crazy Creek straps.
 7. **First sits:** pressure-map the seat cup and the pad below the kneecap, then sit 10, 30 and 60 minutes with shifts (gate 1).
 8. **Add the back:** lift leaf, whiffletree and the two lift lines to the thigh cuffs; stoop and squat lifts with 15 kg (gate 3).
 9. **Then upgrade one module at a time:** hip bands and the running band, then the smart clutches (bench them wet and dry at 375 N first), then the motor, then ankle and shoulder.

@@ -87,10 +87,10 @@ printed(D, B, "Back panel (carries the straps, ports and later the motor)", "bac
 printed(D, B, "Back panel pad", "back_panel_liner, spacer mesh + 6 mm lattice", 1, "back_panel_liner", "TPU", 0.15, SET_LINER,
         "split like the panel")
 printed(D, B, "Lumbar plate (stiffens the belt at the spine)", "lumbar_plate", 1, "lumbar_plate", "PAHT", 1.0, SET_SHELL)
-printed(D, B, "Seat cup under each sit bone (400 cm2)", "seat_cup_l/r, 18 x 24 cm cup, takes 607 N", 2, "seat_cup", "PAHT", 1.0,
-        SET_SHELL, "bench-proof at 1.5 x 607 N before wearing; v2 = carbon layup using the print as the plug")
-printed(D, B, "Seat cup cushion (gel + lattice, 15 kPa target)", "seat_cup_liner_l/r, 15 mm graded lattice under a 3 mm gel sheet", 2,
-        "seat_cup_liner", "TPU", 0.20, SET_LINER)
+printed(D, B, "Seat cup under each sit bone (242 cm2 seated footprint)", "seat_cup_l/r, 16 x 19 cm seated, takes 614 N", 2, "seat_cup", "PAHT", 1.0,
+        SET_SHELL, "bench-proof at 1.5 x 614 N before wearing; v2 = carbon layup using the print as the plug")
+printed(D, B, "Seat cup cushion (gel + lattice; 25 kPa average, needs an air-cell insert under the sit bone)", "seat_cup_liner_l/r, 15 mm graded lattice under a 3 mm gel sheet", 2,
+        "seat_cup_liner", "TPU", 0.20, SET_LINER, "air-cell insert under the sit bone to be proven on a pressure map (SEAT_SITBONE.md)")
 printed(D, B, "Belt side clips", "belt_sideclip_l/r", 2, "belt_sideclip", "PAHT", 0.7, SET_STRONG)
 metal(D, B, "Cable ports, ball-end into keyhole (6 per Dock)", "port_knee/hip/shoulder_l/r, quick-release terminal, 3.6 kN proof", 6,
       "port_knee", "SS", 1.0, "waterjet or wire-EDM keyhole plate, then pocket", 18,
@@ -102,9 +102,18 @@ buy(D, B, "Belt buckle, aluminium cobra type", "belt_buckle, 38 mm", 1, "alumini
     "EST: cobra buckles sell for about $25 to $35")
 buy(D, B, "Shoulder harness with sternum strap", "harness_l/r + sternum_strap, 7 cm wide, 17 kPa at lift peak", 1, "nylon + spacer mesh",
     "off the shelf backpack harness, sewn to the panel", 250, 40, "EST: replacement backpack harness")
-buy(D, B, "Webbing: Crazy Creek straps, panel straps, seat-cup straps", "crazycreek_l/r (94 N at 10 deg), panelstrap_l/r, cupstrap_l/r; 25 to 38 mm polyester, low stretch",
-    1, "polyester webbing", "about 5 m, cut, heat-sealed, bar-tacked", 120, 30,
+buy(D, B, "Webbing: Crazy Creek straps", "crazycreek_l/r (94 N at 10 deg); 25 mm polyester, low stretch",
+    1, "polyester webbing", "about 3 m, cut, heat-sealed, bar-tacked", 80, 20,
     "EST: polyester webbing about $1.5 to $3 per yard")
+buy(D, B, "Spine link pair, panel to belt (replaces the panel straps)", "spine_link_l/r: 25 mm between centres, 11 mm carbon tube, M6 ball joint each end; 300 N per link passive lift, 770 N at the P1 peak",
+    2, "carbon tube + steel ball joints", "tube bonded into two M6 ball joints (angle joints, DIN 71802 style)", 40, 14,
+    "EST: M6 ball joints about $4 to $8 each; rating VERIFY (typically several kN)", cad="spine_link")
+metal(D, B, "Spine link pivot brackets (panel and belt)", "spine_pivot_panel_l/r + spine_pivot_belt_l/r, M6 pin each", 4, "spine_pivot_panel", "AL", 0.8,
+      "CNC 7075 or a bought aluminium clevis bracket", 15, "must be metal: up to 770 N per link at the P1 lift peak")
+buy(D, B, "Seat-cup lacing kit: grommets, cord, webbing tab", "cup_eyelets/cuff_eyelets/shell_eyelets (9 grommets per side), cup_lacing (3 mm cord), cup_bridge (18 mm tab)", 2,
+    "brass grommets + polyester cord + webbing", "set 9 mm grommets in the printed cup, cuff and shell; zigzag lace the cup to the cuff, bar-tack the tab",
+    30, 9, "EST: grommet kit about $10, 3 mm cord about $0.30 per ft; 41 N per cord run at stand-up drag (SEAT_SITBONE.md)",
+    cad="cup_eyelets, cuff_eyelets, shell_eyelets, cup_lacing, cup_bridge")
 buy(D, B, "Cam buckles and ladder locks for the Dock straps", "8 pieces", 8, "aluminium / acetal", "off the shelf", 12, 3.5, "EST")
 buy(D, B, "D-rings for the Crazy Creek strap at the thigh", "dring_cc_l/r", 2, "aluminium", "off the shelf, 25 mm", 6, 1.5, "EST")
 buy(D, B, "Silicone gel sheet, 3 mm, fabric backed (seat cups)", "skin layer of the seat-cup stack", 1, "silicone gel",
@@ -153,13 +162,17 @@ add(K, B, "Sit leaf spring (350 N near-constant, 44 J)", "sit_leaf_l/r, tapered 
     mass_est=True, cost_est=True, cad="sit_leaf")
 metal(K, B, "Leaf root clamp with preload knob (250 to 400 N)", "sit_leaf_root_l/r", 2, "sit_leaf_root", "AL", 0.7,
       "CNC 7075", 40, "must be metal: the leaf's root bending moment and the preload screw")
-buy(K, B, "Telescoping carbon strut, 3 sections, one-way lock, rubber foot", "strut_tube0..2 24/20/16 x 1.5 mm, 0.36 m stowed to 0.86 m; 472 N, buckles at 5.2 kN",
-    2, "roll-wrapped 3K carbon tube", "three tubes cut to 0.32 m, bushed, twist-lock collars, pivoting rubber cane tip",
-    300, 85, "tubes about $15 to $20 each (https://aws.robu.in/?p=894416 lists 24 x 22 x 1000 mm); cane tip $18.95 (legacy list); lock EST",
-    cost_est=True, cad="strut_tube0-2, strut_collar0-1, strut_foot")
-metal(K, B, "Strut hinge (ball clevis on the seat cup)", "strut_clevis_l/r, sagittal fold + 9 deg splay", 2, "strut_clevis", "AL", 0.6,
-      "CNC 7075 with a bought stainless rod-end ball", 60, "must be metal: the strut's 472 N push goes through it into the cup")
-printed(K, B, "Strut stow clip", "strut_clip_l/r", 2, "strut_clip", "PAHT", 0.7, SET_STRONG)
+buy(K, B, "Telescoping carbon strut, 5 sections, one-way lock, rubber foot", "strut_tube0..4 24/21/18/15/12 x 1.2 mm, 0.28 m stowed to 0.87 m; 483 N, buckles at 2.8 kN at 0.65 m",
+    2, "roll-wrapped 3K carbon tube", "five tubes cut to 0.20 m, bushed, four twist-lock collars, pivoting rubber cane tip; stowed short so it clears the calf in a running swing",
+    290, 95, "tubes about $10 to $20 each (https://aws.robu.in/?p=894416 lists 24 x 22 x 1000 mm); cane tip $18.95 (legacy list); locks EST",
+    cost_est=True, cad="strut_tube0-4, strut_collar0-3, strut_foot")
+metal(K, B, "Strut hinge under the sit bone: fork, 8 mm pin, cone spacers", "strut_fork_l/r + strut_hingepin_l/r; fold about the pin, 9 deg splay in the rod end", 2, None, "AL", 0.7,
+      "CNC 7075 fork on the cup, 17-4PH pin", 60, "must be metal: the strut's 483 N push goes through it into the sit bone",
+      cad="strut_fork + strut_hingepin", mass_g=vol("strut_fork") * RHO["AL"] * 0.7 + vol("strut_hingepin") * RHO["SS"])
+buy(K, B, "High-misalignment rod end on the strut top", "strut_rodend_l/r, 8 mm bore, +-16 deg (the gate checks the swing stays inside it)", 2,
+    "steel / PTFE liner", "threaded into the top tube's bonded insert", 35, 25, "EST: high-misalignment rod ends about $15 to $35 (VERIFY angle and load)",
+    cad="strut_rodend")
+printed(K, B, "Strut stow clips, top (on the cup) and bottom (on the cuff)", "strut_clip_hi_l/r + strut_clip_l/r, C-saddles", 4, "strut_clip", "PAHT", 0.7, SET_STRONG)
 buy(K, B, "Knee seat tendon T1 + backup strap line", "t1_tendon_l/r: 1/8 in (3.2 mm) 12-strand Dyneema; production: Vectran or SK99 (low creep)",
     1, "Dyneema SK75 (bench) / Vectran", "spliced eyes; about 25 ft covers T1, the backup lines and practice splices",
     15, 0.47 * 25, "https://www.fisheriessupply.com/samson-rope-blue-amsteel-blue/872007006030 ($0.47/ft, 1/8 in)",
@@ -214,8 +227,9 @@ buy(C, F, "Hamstring band (hip + knee coupling, 3 N/mm)", "hamstring_band_l/r, 1
     cad="hamstring_band")
 printed(C, F, "Band guide 40 mm behind the knee axis", "knee_guide_l/r, with a 623 bearing pulley", 2, "knee_guide", "PAHT", 0.8, SET_STRONG)
 buy(C, F, "Coupling D-rings", "dring_ham_l/r, dring_ham_calf_l/r", 4, "aluminium", "off the shelf", 3, 1.5, "EST")
-buy(C, F, "Calf band line (knee + ankle, needs M4)", "calf_band_l/r", 1, "Dyneema SK75", "spliced", 5, 0.47 * 6,
+buy(C, F, "Calf band line (knee + ankle, needs M4)", "calf_band_l/r, from a D-ring on the thigh cuff (dring_calf_l/r)", 1, "Dyneema SK75", "spliced", 5, 0.47 * 6,
     "https://www.fisheriessupply.com/samson-rope-blue-amsteel-blue/872007006030", cost_est=False, cad="calf_band")
+buy(C, F, "Calf band D-rings on the thigh cuff", "dring_calf_l/r", 2, "aluminium", "off the shelf, riveted to the cuff", 6, 1.5, "EST", cad="dring_calf")
 
 # ================================================================ SMART CLUTCH UPGRADE
 SM = "Smart-clutch upgrade"
@@ -247,6 +261,8 @@ buy(PW, P, "Dog clutches pick left, right or both (solenoid + steel dogs)", "p1_
     "CNC dogs (EST $60) + Intertec ITS-LX-2218 latching solenoid (about $54)", 80, 114,
     "solenoid: https://rapidonline.com/intertec-its-lx-2218-12vdc-10mm-4n-de-energised-20n-bi-directional-solenoid-50-2909; dogs EST",
     cad="p1_dogclutch")
+printed(PW, P, "Bowden end stop on the clutch housing", "bowden_stop_l/r, the housing ferrule seats in it", 2, "bowden_stop", "PAHT", 0.8, SET_STRONG,
+        "brass ferrule cup pressed in")
 buy(PW, P, "Bowden cables, hub to knee manifold", "bowden_l/r, efficiency 0.68 to 0.79, 551 N motor side", 2,
     "PTFE-lined housing + 7x19 stainless inner", "motorcycle-clutch style housing, swaged ends", 80, 30, "EST", cad="bowden")
 buy(PW, P, "Battery, 97 Wh (under the FAA 100 Wh line), 6S1P Molicel P45B", "p1_battery", 6, "Li-ion 21700 cell", "spot-welded pack",

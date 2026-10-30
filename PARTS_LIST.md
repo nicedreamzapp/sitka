@@ -16,11 +16,11 @@ How to read it:
 
 | Tier | What you get | Mass | Cost, prototype one | of which EST | Cost, batch of 10 sets (EST) | Earlier top-down target (KINETICS.md) |
 |---|---|---|---|---|---|---|
-| **Seat + Back starter (Dock + M1 + M2)** | Sit anywhere, stand-up help, passive lift | **6.31 kg** | **$2,671** | $2,048 | $1,925 | ~3.9 kg, ~$1,200 (Dock 0.7 + M1 2.9 + M2 0.35) |
-| **B: Basic passive (+ Hip + running band)** | Adds the walking and running bands | **6.52 kg** | **$2,730** | $2,084 | $1,985 | ~4.4 kg, ~$1,300 |
-| **S: Smart (+ EA clutches, sensors)** | Springs switch on at the right moment, fail open | **6.96 kg** | **$3,297** | $2,536 | $2,552 | ~4.7 kg, ~$1,900 |
-| **P1: One motor** | Stairs, hills, heavy lifts | **8.95 kg** | **$4,571** | $3,059 | $3,760 | ~6.7 kg, ~$3,000 |
-| **Full body (+ ankle, shoulder, couplings)** | Everything | **10.25 kg** | **$5,049** | $3,503 | $4,138 | ~9.4 kg, ~$4,100 |
+| **Seat + Back starter (Dock + M1 + M2)** | Sit anywhere, stand-up help, passive lift | **6.66 kg** | **$2,850** | $2,214 | $2,071 | ~3.9 kg, ~$1,200 (Dock 0.7 + M1 2.9 + M2 0.35) |
+| **B: Basic passive (+ Hip + running band)** | Adds the walking and running bands | **6.87 kg** | **$2,909** | $2,250 | $2,131 | ~4.4 kg, ~$1,300 |
+| **S: Smart (+ EA clutches, sensors)** | Springs switch on at the right moment, fail open | **7.30 kg** | **$3,476** | $2,702 | $2,697 | ~4.7 kg, ~$1,900 |
+| **P1: One motor** | Stairs, hills, heavy lifts | **9.29 kg** | **$4,750** | $3,225 | $3,906 | ~6.7 kg, ~$3,000 |
+| **Full body (+ ankle, shoulder, couplings)** | Everything | **10.58 kg** | **$5,227** | $3,672 | $4,283 | ~9.4 kg, ~$4,100 |
 
 Batch of 10 = metal parts at 45% of the one-off price (setup spread over 10 sets, EST); everything else unchanged.
 
@@ -28,38 +28,38 @@ Batch of 10 = metal parts at 45% of the one-off price (setup spread over 10 sets
 
 | Module | Tier | Parts | Mass | Cost | of which EST | Printed PAHT-CF | Printed TPU | Print time (EST) |
 |---|---|---|---|---|---|---|---|---|
-| Dock (hub) | Basic | 32 | 2.07 kg | $463 | $390 | 529 g | 334 g | 52 h |
-| Knee + Seat (M1) | Basic | 59 | 3.87 kg | $2,086 | $1,561 | 940 g | 458 g | 86 h |
-| Back / Lift (M2) | Basic | 15 | 0.37 kg | $122 | $97 | 162 g | 77 g | 15 h |
-| Hip (M3) | Basic | 5 | 0.16 kg | $39 | $36 | 26 g | 0 g | 2 h |
-| Couplings (bands) | Basic, Full body | 12 | 0.15 kg | $54 | $30 | 5 g | 0 g | 0 h |
+| Dock (hub) | Basic | 40 | 2.15 kg | $554 | $486 | 504 g | 300 g | 49 h |
+| Knee + Seat (M1) | Basic | 63 | 4.10 kg | $2,169 | $1,631 | 1039 g | 520 g | 95 h |
+| Back / Lift (M2) | Basic | 15 | 0.41 kg | $126 | $97 | 188 g | 94 g | 17 h |
+| Hip (M3) | Basic | 5 | 0.16 kg | $38 | $36 | 22 g | 0 g | 1 h |
+| Couplings (bands) | Basic, Full body | 14 | 0.16 kg | $57 | $33 | 5 g | 0 g | 0 h |
 | Smart-clutch upgrade | Smart | 21 | 0.44 kg | $567 | $452 | 0 g | 0 g | 2 h |
-| One-motor power (P1) | Power (P1) | 15 | 1.99 kg | $1,274 | $523 | 0 g | 0 g | 0 h |
+| One-motor power (P1) | Power (P1) | 17 | 1.99 kg | $1,275 | $523 | 2 g | 0 g | 0 h |
 | Ankle (M4) | Full body | 13 | 0.53 kg | $252 | $244 | 55 g | 0 g | 4 h |
-| Shoulder (M5) | Full body | 12 | 0.67 kg | $192 | $170 | 189 g | 32 g | 14 h |
-| **All modules** | | 184 | **10.25 kg** | **$5,049** | $3,503 | 1906 g | 902 g | 175 h |
+| Shoulder (M5) | Full body | 12 | 0.64 kg | $188 | $170 | 155 g | 32 g | 12 h |
+| **All modules** | | 200 | **10.58 kg** | **$5,227** | $3,672 | 1970 g | 945 g | 181 h |
 
 
 ## 3. Did it reconcile with the README? No, and here is why
 
 The README and KINETICS.md said the starter costs **about $1,300** and weighs **about 4.4 kg**. Counting every part in the CAD gives:
 
-- **Seat + Back starter (Dock + Knee/Seat + Back/Lift): 6.31 kg, $2,671** for prototype one, about **$1,925** per set in a batch of 10 (EST).
-- **Full body (every module, one motor): 10.25 kg, $5,049** for prototype one, about **$4,138** in a batch of 10.
+- **Seat + Back starter (Dock + Knee/Seat + Back/Lift): 6.66 kg, $2,850** for prototype one, about **$2,071** per set in a batch of 10 (EST).
+- **Full body (every module, one motor): 10.58 kg, $5,227** for prototype one, about **$4,283** in a batch of 10.
 
 Three honest reasons for the gap:
 
 1. **The label was wrong.** The 4.4 kg / $1,300 figure in KINETICS.md is the Basic tier (Dock + Knee/Seat + Back/Lift + Hip + running band), not "Seat + Back". Seat + Back alone was about 3.9 kg / $1,200 in that same plan.
 2. **The old numbers were top-down targets, this list is bottom-up.** KINETICS.md budgeted the padding at +0.15 kg and the Dock at 0.7 kg. The CAD's pads alone (graded lattice, gel and spacer mesh on every contact, sized for 15 kPa) come to about 1.2 kg, and a real padded belt, harness and webbing are another 1.1 kg.
-3. **Prototype one pays one-off prices.** About $2,048 of the starter cost is estimate, mostly one-off CNC of the knee metal (hinges, arcs, spool, clevis). The branded sprag clutches chosen for the power-off seat lock are a real price, about $300 a pair (budget ones are about $20 each, fine for the bench).
+3. **Prototype one pays one-off prices.** About $2,214 of the starter cost is estimate, mostly one-off CNC of the knee metal (hinges, arcs, spool, strut fork). The branded sprag clutches chosen for the power-off seat lock are a real price, about $300 a pair (budget ones are about $20 each, fine for the bench).
 
 | Where the starter's mass is | Mass |
 |---|---|
-| Printed shells, cups and brackets (PAHT-CF) | 1.63 kg |
-| Metal: hinges, arcs, arms, clamps, clevises, ports | 1.24 kg |
-| Pads: TPU lattice, gel sheet, spacer mesh | 1.20 kg |
-| Belt, harness, webbing, buckles | 1.12 kg |
-| Struts (carbon tube, lock, foot) | 0.60 kg |
+| Printed shells, cups and brackets (PAHT-CF) | 1.73 kg |
+| Metal: hinges, arcs, arms, clamps, clevises, ports | 1.29 kg |
+| Pads: TPU lattice, gel sheet, spacer mesh | 1.24 kg |
+| Belt, harness, webbing, buckles | 1.22 kg |
+| Struts (carbon tube, lock, foot) | 0.65 kg |
 | Clutches, cleats, lines, leaves, fasteners | 0.52 kg |
 
 **Path back down (EST, not designed yet):** carbon layup shells at 1.5 mm instead of 3 mm printed PAHT-CF (about -0.45 kg), lighter lattice or EVA in the short-hold pads (about -0.5 kg), pocketed metal (about -0.3 kg) and a lighter belt and harness (about -0.3 kg) would bring the starter to roughly **4.8 kg**. Batch pricing brings it to roughly **$1,900**. The README now quotes this list, not the old target.
@@ -68,15 +68,16 @@ Three honest reasons for the gap:
 
 | Make | Parts (pieces) | Mass, full body | Cost, full body |
 |---|---|---|---|
-| **PRINT** | 58 | 2.87 kg | $250 |
-| **METAL** | 34 | 1.47 kg | $1,655 |
-| **BUY** | 92 | 5.92 kg | $3,144 |
+| **PRINT** | 62 | 2.98 kg | $259 |
+| **METAL** | 38 | 1.53 kg | $1,715 |
+| **BUY** | 100 | 6.08 kg | $3,253 |
 
 **What must be metal, and the load that decides it.** The rule: anything the knee tendon load passes through, anything a line turns on, and anything that holds a spring root. Those parts see the 426 N sitting tension every sit, and they are sized for the **3.6 kN proof load** (the 190 Nm strut-lost catch times 1.5, from TENDON_CONCEPT.md). PAHT-CF creeps under constant load and a cable groove in plastic wears and cuts.
 
 | Part | Module | Material | Why it must be metal (the load) |
 |---|---|---|---|
 | Cable ports, ball-end into keyhole (6 per Dock) | Dock (hub) | 17-4PH H900 stainless | carries the full tendon proof load of 3.6 kN |
+| Spine link pivot brackets (panel and belt) | Dock (hub) | 7075-T6 aluminium | up to 770 N per link at the P1 lift peak |
 | Hinge arms, thigh side | Knee + Seat (M1) | 7075-T6 aluminium | carries the knee couple, 34 Nm sitting and up to 190 Nm if the strut is lost (205 MPa, SF 2.5) |
 | Hinge arms, shin side | Knee + Seat (M1) | 7075-T6 aluminium | same couple as the thigh arms |
 | Geared bicentric knee hinge (hub pair per knee) | Knee + Seat (M1) | 7075-T6 aluminium | carries the arc reaction of 602 N sitting and about 3.4 kN in a strut-lost catch |
@@ -84,7 +85,7 @@ Three honest reasons for the gap:
 | Clutch spool, shaft and release dog | Knee + Seat (M1) | 7075-T6 aluminium | the tendon load passes straight through it |
 | Tendon fairlead | Knee + Seat (M1) | 7075-T6 aluminium | metal preferred: 426 N line turning on it |
 | Leaf root clamp with preload knob (250 to 400 N) | Knee + Seat (M1) | 7075-T6 aluminium | the leaf's root bending moment and the preload screw |
-| Strut hinge (ball clevis on the seat cup) | Knee + Seat (M1) | 7075-T6 aluminium | the strut's 472 N push goes through it into the cup |
+| Strut hinge under the sit bone: fork, 8 mm pin, cone spacers | Knee + Seat (M1) | 7075-T6 aluminium | the strut's 483 N push goes through it into the sit bone |
 | Lift leaf root clamp + ON/OFF switch | Back / Lift (M2) | 7075-T6 aluminium | leaf root bending, 600 N total line pull |
 | Hub drum, 25 mm spool | One-motor power (P1) | 7075-T6 aluminium | 720 N line pull at rated torque |
 | Ankle clutch ratchet, pawl and spring set | Ankle (M4) | 17-4PH H900 stainless | the calf spring load passes through the pawl |
@@ -98,17 +99,18 @@ Three honest reasons for the gap:
 
 | Module | PAHT-CF | TPU 95A HF | PETG | Filament cost | Printer hours (EST) | Parts over 256 mm |
 |---|---|---|---|---|---|---|
-| Dock (hub) | 529 g | 334 g | 0 g | $73 | 52 h | back panel + pad (split or H2D) |
-| Knee + Seat (M1) | 940 g | 458 g | 0 g | $123 | 86 h | thigh shells + pads (split or H2D) |
-| Back / Lift (M2) | 162 g | 77 g | 0 g | $21 | 15 h | none |
-| Hip (M3) | 26 g | 0 g | 0 g | $3 | 2 h | none |
+| Dock (hub) | 504 g | 300 g | 0 g | $68 | 49 h | back panel + pad (split or H2D) |
+| Knee + Seat (M1) | 1039 g | 520 g | 0 g | $137 | 95 h | thigh shells + pads (split or H2D) |
+| Back / Lift (M2) | 188 g | 94 g | 0 g | $25 | 17 h | none |
+| Hip (M3) | 22 g | 0 g | 0 g | $2 | 1 h | none |
 | Couplings (bands) | 5 g | 0 g | 0 g | $1 | 0 h | none |
 | Smart-clutch upgrade | 0 g | 0 g | 60 g | $1 | 2 h | none |
+| One-motor power (P1) | 2 g | 0 g | 0 g | $0 | 0 h | none |
 | Ankle (M4) | 55 g | 0 g | 0 g | $6 | 4 h | none |
-| Shoulder (M5) | 189 g | 32 g | 0 g | $22 | 14 h | none |
-| **All** | **1906 g** | **902 g** | 60 g | **$250** | **175 h** | |
+| Shoulder (M5) | 155 g | 32 g | 0 g | $18 | 12 h | none |
+| **All** | **1970 g** | **945 g** | 60 g | **$259** | **181 h** | |
 
-- **Seat + Back starter: about 1.6 kg of PAHT-CF and 0.9 kg of TPU, about 152 printer hours** (about a week on one printer). The whole body is about 175 hours.
+- **Seat + Back starter: about 1.7 kg of PAHT-CF and 0.9 kg of TPU, about 161 printer hours** (about a week on one printer). The whole body is about 181 hours.
 - Hours are EST at about 15 g/h for PAHT-CF on strong settings and 20 g/h for TPU lattice.
 - **Print sets** used in the tables:
   - **A (shell):** PAHT-CF (or PA12-CF), 0.4 hardened nozzle, 0.2 mm layers, wall printed solid (6 to 8 perimeters), filament dried 80 C for 8 h.
@@ -122,10 +124,10 @@ Three honest reasons for the gap:
 
 1. **Scan and fit.** Scan the wearer's legs, hips and back with a phone. Fit the shells in `cad/parts/` to the scan and rebuild, so every pad lands where the physics says.
 2. **Order the long-lead parts first:** the metal (send the STEP files from the release to three job shops), the sprag clutches, carbon tubes, line and gel sheet.
-3. **Print** the shells, cups, pads and brackets while the metal is out (about 152 hours for the starter).
+3. **Print** the shells, cups, pads and brackets while the metal is out (about 161 hours for the starter).
 4. **Make the springs.** Laminate the glass leaves, then bench-test the sit leaf's force curve and 10^5 cycles before it goes on a person (gate 2 in KINETICS.md).
 5. **Build one knee on the bench:** hinge, arms, arc and yoke, clutch in its housing, then splice the T1 line from the clutch over the arc to the anchor below the kneecap. **Proof-test it to 3.6 kN of line pull.** Then the second knee.
-6. **Build the Dock:** belt, panel, harness, seat cups with their clevises, struts and the Crazy Creek straps.
+6. **Build the Dock:** belt, panel, harness, seat cups laced to the thigh cuffs, strut forks and rod ends, struts, the spine links and the Crazy Creek straps.
 7. **First sits:** pressure-map the seat cup and the pad below the kneecap, then sit 10, 30 and 60 minutes with shifts (gate 1).
 8. **Add the back:** lift leaf, whiffletree and the two lift lines to the thigh cuffs; stoop and squat lifts with 15 kg (gate 3).
 9. **Then upgrade one module at a time:** hip bands and the running band, then the smart clutches (bench them wet and dry at 375 N first), then the motor, then ankle and shoulder.
@@ -134,39 +136,42 @@ Every gate before a part is worn is in [BUILD_RIGHT_FIRST_TIME.md](BUILD_RIGHT_F
 
 ## 7. Every part, by module
 
-### Dock (hub): 2.07 kg, $463
+### Dock (hub): 2.15 kg, $554
 
 | Part (plain name) | Technical / CAD | Qty | Make | Material | Process | Mass ea (g) | Unit | Line | Source |
 |---|---|---|---|---|---|---|---|---|---|
-| Back panel (carries the straps, ports and later the motor) | back_panel, 600 cm2 contoured plate | 1 | **PRINT** | PAHT-CF (or PA12-CF) | print set A (shell); 279 x 277 mm: print as two halves with a bolted lap joint on a 256 mm bed, one piece on an H2D | 234 EST | $25.52 | $25.52 | filament: [link](https://www.gigaparts.com/bambu-lab-paht-cf-black-carbon-fiber-reinforced-paht-3d-printer-filament-1-75mm-1kg-spool.html) |
-| Back panel pad | back_panel_liner, spacer mesh + 6 mm lattice | 1 | **PRINT** | TPU 95A HF | print set C (lattice pad); split like the panel | 93 EST | $4.16 | $4.16 | filament: [link](https://3dprintingusa.com/collections/bambu-lab-tpu) |
+| Back panel (carries the straps, ports and later the motor) | back_panel, 600 cm2 contoured plate | 1 | **PRINT** | PAHT-CF (or PA12-CF) | print set A (shell); 279 x 277 mm: print as two halves with a bolted lap joint on a 256 mm bed, one piece on an H2D | 250 EST | $27.27 | $27.27 | filament: [link](https://www.gigaparts.com/bambu-lab-paht-cf-black-carbon-fiber-reinforced-paht-3d-printer-filament-1-75mm-1kg-spool.html) |
+| Back panel pad | back_panel_liner, spacer mesh + 6 mm lattice | 1 | **PRINT** | TPU 95A HF | print set C (lattice pad); split like the panel | 99 EST | $4.44 | $4.44 | filament: [link](https://3dprintingusa.com/collections/bambu-lab-tpu) |
 | Lumbar plate (stiffens the belt at the spine) | lumbar_plate | 1 | **PRINT** | PAHT-CF (or PA12-CF) | print set A (shell) | 46 EST | $4.99 | $4.99 | filament: [link](https://www.gigaparts.com/bambu-lab-paht-cf-black-carbon-fiber-reinforced-paht-3d-printer-filament-1-75mm-1kg-spool.html) |
-| Seat cup under each sit bone (400 cm2) | seat_cup_l/r, 18 x 24 cm cup, takes 607 N | 2 | **PRINT** | PAHT-CF (or PA12-CF) | print set A (shell); bench-proof at 1.5 x 607 N before wearing; v2 = carbon layup using the print as the plug | 120 EST | $13.15 | $26.30 | filament: [link](https://www.gigaparts.com/bambu-lab-paht-cf-black-carbon-fiber-reinforced-paht-3d-printer-filament-1-75mm-1kg-spool.html) |
-| Seat cup cushion (gel + lattice, 15 kPa target) | seat_cup_liner_l/r, 15 mm graded lattice under a 3 mm gel sheet | 2 | **PRINT** | TPU 95A HF | print set C (lattice pad) | 121 EST | $5.42 | $10.83 | filament: [link](https://3dprintingusa.com/collections/bambu-lab-tpu) |
+| Seat cup under each sit bone (242 cm2 seated footprint) | seat_cup_l/r, 16 x 19 cm seated, takes 614 N | 2 | **PRINT** | PAHT-CF (or PA12-CF) | print set A (shell); bench-proof at 1.5 x 614 N before wearing; v2 = carbon layup using the print as the plug | 100 EST | $10.88 | $21.77 | filament: [link](https://www.gigaparts.com/bambu-lab-paht-cf-black-carbon-fiber-reinforced-paht-3d-printer-filament-1-75mm-1kg-spool.html) |
+| Seat cup cushion (gel + lattice; 25 kPa average, needs an air-cell insert under the sit bone) | seat_cup_liner_l/r, 15 mm graded lattice under a 3 mm gel sheet | 2 | **PRINT** | TPU 95A HF | print set C (lattice pad); air-cell insert under the sit bone to be proven on a pressure map (SEAT_SITBONE.md) | 100 EST | $4.50 | $9.00 | filament: [link](https://3dprintingusa.com/collections/bambu-lab-tpu) |
 | Belt side clips | belt_sideclip_l/r | 2 | **PRINT** | PAHT-CF (or PA12-CF) | print set B (bracket) | 5 EST | $0.50 | $1.00 | filament: [link](https://www.gigaparts.com/bambu-lab-paht-cf-black-carbon-fiber-reinforced-paht-3d-printer-filament-1-75mm-1kg-spool.html) |
 | Cable ports, ball-end into keyhole (6 per Dock) | port_knee/hip/shoulder_l/r, quick-release terminal, 3.6 kN proof | 6 | **METAL** | 17-4PH H900 stainless | waterjet or wire-EDM keyhole plate, then pocket; must be metal: carries the full tendon proof load of 3.6 kN | 8 EST | $18.00 EST | $108.00 | EST: one-off job-shop price, get 3 quotes |
 | Hip belt, padded (backpack replacement belt) | hip_belt, 300 cm2 contact, < 10 kPa | 1 | **BUY** | nylon + EVA foam | off the shelf, e.g. a Granite Gear or Osprey replacement hip belt; add the side clips | 300 EST | $60.00 EST | $60.00 | EST: backpack replacement belts sell for about $40 to $80 |
 | Belt buckle, aluminium cobra type | belt_buckle, 38 mm | 1 | **BUY** | aluminium | off the shelf (AustriAlpin Cobra style) | 55 EST | $30.00 EST | $30.00 | EST: cobra buckles sell for about $25 to $35 |
 | Shoulder harness with sternum strap | harness_l/r + sternum_strap, 7 cm wide, 17 kPa at lift peak | 1 | **BUY** | nylon + spacer mesh | off the shelf backpack harness, sewn to the panel | 250 EST | $40.00 EST | $40.00 | EST: replacement backpack harness |
-| Webbing: Crazy Creek straps, panel straps, seat-cup straps | crazycreek_l/r (94 N at 10 deg), panelstrap_l/r, cupstrap_l/r; 25 to 38 mm polyester, low stretch | 1 | **BUY** | polyester webbing | about 5 m, cut, heat-sealed, bar-tacked | 120 EST | $30.00 EST | $30.00 | EST: polyester webbing about $1.5 to $3 per yard |
+| Webbing: Crazy Creek straps | crazycreek_l/r (94 N at 10 deg); 25 mm polyester, low stretch | 1 | **BUY** | polyester webbing | about 3 m, cut, heat-sealed, bar-tacked | 80 EST | $20.00 EST | $20.00 | EST: polyester webbing about $1.5 to $3 per yard |
+| Spine link pair, panel to belt (replaces the panel straps) | spine_link_l/r: 25 mm between centres, 11 mm carbon tube, M6 ball joint each end; 300 N per link passive lift, 770 N at the P1 peak | 2 | **BUY** | carbon tube + steel ball joints | tube bonded into two M6 ball joints (angle joints, DIN 71802 style) | 40 EST | $14.00 EST | $28.00 | EST: M6 ball joints about $4 to $8 each; rating VERIFY (typically several kN) |
+| Spine link pivot brackets (panel and belt) | spine_pivot_panel_l/r + spine_pivot_belt_l/r, M6 pin each | 4 | **METAL** | 7075-T6 aluminium | CNC 7075 or a bought aluminium clevis bracket; must be metal: up to 770 N per link at the P1 lift peak | 9 EST | $15.00 EST | $60.00 | EST: one-off job-shop price, get 3 quotes |
+| Seat-cup lacing kit: grommets, cord, webbing tab | cup_eyelets/cuff_eyelets/shell_eyelets (9 grommets per side), cup_lacing (3 mm cord), cup_bridge (18 mm tab) | 2 | **BUY** | brass grommets + polyester cord + webbing | set 9 mm grommets in the printed cup, cuff and shell; zigzag lace the cup to the cuff, bar-tack the tab | 30 EST | $9.00 EST | $18.00 | EST: grommet kit about $10, 3 mm cord about $0.30 per ft; 41 N per cord run at stand-up drag (SEAT_SITBONE.md) |
 | Cam buckles and ladder locks for the Dock straps | 8 pieces | 8 | **BUY** | aluminium / acetal | off the shelf | 12 EST | $3.50 EST | $28.00 | EST |
 | D-rings for the Crazy Creek strap at the thigh | dring_cc_l/r | 2 | **BUY** | aluminium | off the shelf, 25 mm | 6 EST | $1.50 EST | $3.00 | EST |
 | Silicone gel sheet, 3 mm, fabric backed (seat cups) | skin layer of the seat-cup stack | 1 | **BUY** | silicone gel | Silipos Soft Sheer type sheet, cut to the cup outline | 120 EST | $60.00 EST | $60.00 | EST (no public price): [link](https://ortoped.ca/Silipos-Soft-Sheer-Sheeting/family-844) |
 | 3D spacer mesh, 3 to 4 mm (all pad covers) | breathable skin layer for every pad | 1 | **BUY** | polyester spacer fabric | about 2 yd, sewn into washable covers | 150 EST | $16.00 EST | $16.00 | EST: about $5 to $8 per yd (eBay spacer-mesh listings) |
 | Fasteners, heat-set inserts, thread-locker (Dock) | M4/M5 stainless, brass inserts | 1 | **BUY** | stainless / brass | kit | 60 EST | $15.00 EST | $15.00 | EST |
-| **Subtotal** | | | | | | **2.07 kg** | | **$463** | |
+| **Subtotal** | | | | | | **2.15 kg** | | **$554** | |
 
-### Knee + Seat (M1): 3.87 kg, $2,086
+### Knee + Seat (M1): 4.10 kg, $2,169
 
 | Part (plain name) | Technical / CAD | Qty | Make | Material | Process | Mass ea (g) | Unit | Line | Source |
 |---|---|---|---|---|---|---|---|---|---|
-| Thigh shell, laced | thigh_shell_l/r, contoured from a 3D scan | 2 | **PRINT** | PAHT-CF (or PA12-CF) | print set A (shell); 289 mm long: split above the knee on a 256 mm bed, one piece on an H2D; v2 = carbon layup on the print as a plug | 287 EST | $31.37 | $62.74 | filament: [link](https://www.gigaparts.com/bambu-lab-paht-cf-black-carbon-fiber-reinforced-paht-3d-printer-filament-1-75mm-1kg-spool.html) |
-| Thigh pad | thigh_liner_l/r, spacer mesh + 10 mm lattice | 2 | **PRINT** | TPU 95A HF | print set C (lattice pad); split like the shell | 153 EST | $6.87 | $13.74 | filament: [link](https://3dprintingusa.com/collections/bambu-lab-tpu) |
-| Below-kneecap pad shell (PTB, 100 cm2) | ptb_shell_l/r, patellar-tendon-bearing pad | 2 | **PRINT** | PAHT-CF (or PA12-CF) | print set A (shell) | 58 EST | $6.38 | $12.75 | filament: [link](https://www.gigaparts.com/bambu-lab-paht-cf-black-carbon-fiber-reinforced-paht-3d-printer-filament-1-75mm-1kg-spool.html) |
-| Calf pad shell (120 cm2) | calf_cuff_l/r | 2 | **PRINT** | PAHT-CF (or PA12-CF) | print set A (shell) | 67 EST | $7.33 | $14.65 | filament: [link](https://www.gigaparts.com/bambu-lab-paht-cf-black-carbon-fiber-reinforced-paht-3d-printer-filament-1-75mm-1kg-spool.html) |
-| Shin pad (gel + lattice) | shin_liner_l/r, 12 mm lattice under 3 mm gel | 2 | **PRINT** | TPU 95A HF | print set C (lattice pad) | 31 EST | $1.40 | $2.81 | filament: [link](https://3dprintingusa.com/collections/bambu-lab-tpu) |
-| Calf pad lattice | calf_liner_l/r | 2 | **PRINT** | TPU 95A HF | print set C (lattice pad) | 37 EST | $1.65 | $3.31 | filament: [link](https://3dprintingusa.com/collections/bambu-lab-tpu) |
-| Knee side pads | condyle_pad_lat/med_l/r | 4 | **PRINT** | TPU 95A HF | print set C (lattice pad) | 4 EST | $0.17 | $0.68 | filament: [link](https://3dprintingusa.com/collections/bambu-lab-tpu) |
+| Thigh shell, laced | thigh_shell_l/r, contoured from a 3D scan | 2 | **PRINT** | PAHT-CF (or PA12-CF) | print set A (shell); 289 mm long: split above the knee on a 256 mm bed, one piece on an H2D; v2 = carbon layup on the print as a plug | 313 EST | $34.18 | $68.35 | filament: [link](https://www.gigaparts.com/bambu-lab-paht-cf-black-carbon-fiber-reinforced-paht-3d-printer-filament-1-75mm-1kg-spool.html) |
+| Thigh pad | thigh_liner_l/r, spacer mesh + 10 mm lattice | 2 | **PRINT** | TPU 95A HF | print set C (lattice pad); split like the shell | 166 EST | $7.45 | $14.89 | filament: [link](https://3dprintingusa.com/collections/bambu-lab-tpu) |
+| Below-kneecap pad shell (PTB, 100 cm2) | ptb_shell_l/r, patellar-tendon-bearing pad | 2 | **PRINT** | PAHT-CF (or PA12-CF) | print set A (shell) | 73 EST | $7.95 | $15.90 | filament: [link](https://www.gigaparts.com/bambu-lab-paht-cf-black-carbon-fiber-reinforced-paht-3d-printer-filament-1-75mm-1kg-spool.html) |
+| Calf pad shell (120 cm2) | calf_cuff_l/r | 2 | **PRINT** | PAHT-CF (or PA12-CF) | print set A (shell) | 77 EST | $8.45 | $16.89 | filament: [link](https://www.gigaparts.com/bambu-lab-paht-cf-black-carbon-fiber-reinforced-paht-3d-printer-filament-1-75mm-1kg-spool.html) |
+| Shin pad (gel + lattice) | shin_liner_l/r, 12 mm lattice under 3 mm gel | 2 | **PRINT** | TPU 95A HF | print set C (lattice pad) | 39 EST | $1.74 | $3.49 | filament: [link](https://3dprintingusa.com/collections/bambu-lab-tpu) |
+| Calf pad lattice | calf_liner_l/r | 2 | **PRINT** | TPU 95A HF | print set C (lattice pad) | 42 EST | $1.88 | $3.77 | filament: [link](https://3dprintingusa.com/collections/bambu-lab-tpu) |
+| Knee side pads | condyle_pad_lat/med_l/r | 4 | **PRINT** | TPU 95A HF | print set C (lattice pad) | 6 EST | $0.29 | $1.15 | filament: [link](https://3dprintingusa.com/collections/bambu-lab-tpu) |
 | Hinge arms, thigh side | thigh_arm_lat/med_l/r, 24 x 4.8 mm strip | 4 | **METAL** | 7075-T6 aluminium | laser cut flat from 0.190 in 7075-T6 (SendCutSend lists it), the CAD joggle taken up by a printed spacer at the shell; must be metal: carries the knee couple, 34 Nm sitting and up to 190 Nm if the strut is lost (205 MPa, SF 2.5) | 61 EST | $22.00 EST | $88.00 | EST: one-off job-shop price, get 3 quotes |
 | Hinge arms, shin side | shin_arm_lat/med_l/r, 24 x 4.8 mm strip | 4 | **METAL** | 7075-T6 aluminium | laser cut flat from 0.190 in 7075-T6, same as the thigh arms; must be metal: same couple as the thigh arms | 95 EST | $26.00 EST | $104.00 | EST: one-off job-shop price, get 3 quotes |
 | Geared bicentric knee hinge (hub pair per knee) | knee_hub_lat/med_l/r, two geared plates + cover | 4 | **METAL** | 7075-T6 aluminium | CNC 7075, gear segments milled or wire-EDM; must be metal: carries the arc reaction of 602 N sitting and about 3.4 kN in a strut-lost catch | 23 EST | $70.00 EST | $280.00 | EST: one-off job-shop price, get 3 quotes |
@@ -178,18 +183,19 @@ Every gate before a part is worn is in [BUILD_RIGHT_FIRST_TIME.md](BUILD_RIGHT_F
 | Tendon fairlead | tendon_fairlead_l/r, turns T1 onto the arc | 2 | **METAL** | 7075-T6 aluminium | CNC 7075 with a polished radius (or a printed body with a stainless sheave); metal preferred: 426 N line turning on it | 19 EST | $35.00 EST | $70.00 | EST: one-off job-shop price, get 3 quotes |
 | Sit leaf spring (350 N near-constant, 44 J) | sit_leaf_l/r, tapered glass leaf, 126 mm stroke | 2 | **BUY** | unidirectional E-glass laminate (bow-limb glass) | laminate 5 to 6 strips of 0.030 in bow glass with epoxy, taper-ground, bench-tested to 10^5 cycles | 34 EST | $15.00 EST | $30.00 | glass strips: [link](https://bigjimsbowcompany.com/?p=8861) ($13 to $15 per 72 in strip); leaf price EST |
 | Leaf root clamp with preload knob (250 to 400 N) | sit_leaf_root_l/r | 2 | **METAL** | 7075-T6 aluminium | CNC 7075; must be metal: the leaf's root bending moment and the preload screw | 27 EST | $40.00 EST | $80.00 | EST: one-off job-shop price, get 3 quotes |
-| Telescoping carbon strut, 3 sections, one-way lock, rubber foot | strut_tube0..2 24/20/16 x 1.5 mm, 0.36 m stowed to 0.86 m; 472 N, buckles at 5.2 kN | 2 | **BUY** | roll-wrapped 3K carbon tube | three tubes cut to 0.32 m, bushed, twist-lock collars, pivoting rubber cane tip | 300 EST | $85.00 EST | $170.00 | tubes about $15 to $20 each ([link](https://aws.robu.in/?p=894416) lists 24 x 22 x 1000 mm); cane tip $18.95 (legacy list); lock EST |
-| Strut hinge (ball clevis on the seat cup) | strut_clevis_l/r, sagittal fold + 9 deg splay | 2 | **METAL** | 7075-T6 aluminium | CNC 7075 with a bought stainless rod-end ball; must be metal: the strut's 472 N push goes through it into the cup | 40 EST | $60.00 EST | $120.00 | EST: one-off job-shop price, get 3 quotes |
-| Strut stow clip | strut_clip_l/r | 2 | **PRINT** | PAHT-CF (or PA12-CF) | print set B (bracket) | 6 EST | $0.68 | $1.36 | filament: [link](https://www.gigaparts.com/bambu-lab-paht-cf-black-carbon-fiber-reinforced-paht-3d-printer-filament-1-75mm-1kg-spool.html) |
+| Telescoping carbon strut, 5 sections, one-way lock, rubber foot | strut_tube0..4 24/21/18/15/12 x 1.2 mm, 0.28 m stowed to 0.87 m; 483 N, buckles at 2.8 kN at 0.65 m | 2 | **BUY** | roll-wrapped 3K carbon tube | five tubes cut to 0.20 m, bushed, four twist-lock collars, pivoting rubber cane tip; stowed short so it clears the calf in a running swing | 290 EST | $95.00 EST | $190.00 | tubes about $10 to $20 each ([link](https://aws.robu.in/?p=894416) lists 24 x 22 x 1000 mm); cane tip $18.95 (legacy list); locks EST |
+| Strut hinge under the sit bone: fork, 8 mm pin, cone spacers | strut_fork_l/r + strut_hingepin_l/r; fold about the pin, 9 deg splay in the rod end | 2 | **METAL** | 7075-T6 aluminium | CNC 7075 fork on the cup, 17-4PH pin; must be metal: the strut's 483 N push goes through it into the sit bone | 48 EST | $60.00 EST | $120.00 | EST: one-off job-shop price, get 3 quotes |
+| High-misalignment rod end on the strut top | strut_rodend_l/r, 8 mm bore, +-16 deg (the gate checks the swing stays inside it) | 2 | **BUY** | steel / PTFE liner | threaded into the top tube's bonded insert | 35 EST | $25.00 EST | $50.00 | EST: high-misalignment rod ends about $15 to $35 (VERIFY angle and load) |
+| Strut stow clips, top (on the cup) and bottom (on the cuff) | strut_clip_hi_l/r + strut_clip_l/r, C-saddles | 4 | **PRINT** | PAHT-CF (or PA12-CF) | print set B (bracket) | 3 EST | $0.32 | $1.27 | filament: [link](https://www.gigaparts.com/bambu-lab-paht-cf-black-carbon-fiber-reinforced-paht-3d-printer-filament-1-75mm-1kg-spool.html) |
 | Knee seat tendon T1 + backup strap line | t1_tendon_l/r: 1/8 in (3.2 mm) 12-strand Dyneema; production: Vectran or SK99 (low creep) | 1 | **BUY** | Dyneema SK75 (bench) / Vectran | spliced eyes; about 25 ft covers T1, the backup lines and practice splices | 15 EST | $11.75 | $11.75 | [link](https://www.fisheriessupply.com/samson-rope-blue-amsteel-blue/872007006030) ($0.47/ft, 1/8 in) |
 | Backup strap cleat (catches if the clutch slips) | own cleat, set 3 mm slacker than T1, nylon line for a soft catch | 2 | **BUY** | aluminium + composite | Harken 150 Cam-Matic on 6 mm nylon double braid; VERIFY its working load against the 1.2 kN catch | 30 EST | $44.95 | $89.90 | [link](https://defender.com/en_us/harken-150-standard-cam-matic-cleat) |
 | Tendon anchor below the kneecap | shin_anchor_l/r, 3.6 kN proof | 2 | **BUY** | 316 stainless | off the shelf stainless pad eye, through-bolted with a backing plate | 12 EST | $12.00 EST | $24.00 | EST: small marine pad eyes $8 to $15 |
 | Thigh and shin straps + buckles | thigh_strap0/1, shin_strap0/1, thigh_buckle0/1 (L and R) | 2 | **BUY** | nylon webbing + aluminium cam buckles | 38 mm webbing, cut and bar-tacked; lacing for the shells | 90 EST | $25.00 EST | $50.00 | EST |
 | Silicone gel sheet, 3 mm (below-kneecap pads) | skin layer on the shear-loaded pads | 1 | **BUY** | silicone gel | cut to the PTB pad outline | 60 EST | $60.00 EST | $60.00 | EST (no public price): [link](https://ortoped.ca/Silipos-Soft-Sheer-Sheeting/family-844) |
 | Fasteners, inserts, bushings (knee) | M4/M5 12.9 and stainless, oilite bushings | 1 | **BUY** | steel / bronze | kit | 80 EST | $25.00 EST | $25.00 | EST |
-| **Subtotal** | | | | | | **3.87 kg** | | **$2,086** | |
+| **Subtotal** | | | | | | **4.10 kg** | | **$2,169** | |
 
-### Back / Lift (M2): 0.37 kg, $122
+### Back / Lift (M2): 0.41 kg, $126
 
 | Part (plain name) | Technical / CAD | Qty | Make | Material | Process | Mass ea (g) | Unit | Line | Source |
 |---|---|---|---|---|---|---|---|---|---|
@@ -199,22 +205,22 @@ Every gate before a part is worn is in [BUILD_RIGHT_FIRST_TIME.md](BUILD_RIGHT_F
 | Lumbar standoff | lumbar_standoff_l/r | 2 | **PRINT** | PAHT-CF (or PA12-CF) | print set B (bracket); line runs over a 6 mm stainless pin pressed in, not over the plastic | 11 EST | $1.16 | $2.33 | filament: [link](https://www.gigaparts.com/bambu-lab-paht-cf-black-carbon-fiber-reinforced-paht-3d-printer-filament-1-75mm-1kg-spool.html) |
 | Glute guide (100 mm lever) | glute_guide_l/r, takes the lift tendon wrap | 2 | **PRINT** | PAHT-CF (or PA12-CF) | print set B (bracket); stainless pin insert; bench-proof at 1.2 kN (the P1 peak is 800 N per side): VERIFY, CNC 7075 if it creeps | 11 EST | $1.17 | $2.35 | filament: [link](https://www.gigaparts.com/bambu-lab-paht-cf-black-carbon-fiber-reinforced-paht-3d-printer-filament-1-75mm-1kg-spool.html) |
 | Panel line guides | panel_guide_l/r | 2 | **PRINT** | PAHT-CF (or PA12-CF) | print set B (bracket) | 4 EST | $0.43 | $0.86 | filament: [link](https://www.gigaparts.com/bambu-lab-paht-cf-black-carbon-fiber-reinforced-paht-3d-printer-filament-1-75mm-1kg-spool.html) |
-| Posterior thigh cuff (lift anchor, 200 cm2) | thigh_cuff_l/r | 2 | **PRINT** | PAHT-CF (or PA12-CF) | print set A (shell) | 56 EST | $6.10 | $12.21 | filament: [link](https://www.gigaparts.com/bambu-lab-paht-cf-black-carbon-fiber-reinforced-paht-3d-printer-filament-1-75mm-1kg-spool.html) |
-| Thigh cuff pad | thigh_cuff_liner_l/r, gel + 12 mm lattice | 2 | **PRINT** | TPU 95A HF | print set C (lattice pad) | 38 EST | $1.72 | $3.44 | filament: [link](https://3dprintingusa.com/collections/bambu-lab-tpu) |
+| Posterior thigh cuff (lift anchor, 200 cm2) | thigh_cuff_l/r | 2 | **PRINT** | PAHT-CF (or PA12-CF) | print set A (shell) | 69 EST | $7.52 | $15.04 | filament: [link](https://www.gigaparts.com/bambu-lab-paht-cf-black-carbon-fiber-reinforced-paht-3d-printer-filament-1-75mm-1kg-spool.html) |
+| Thigh cuff pad | thigh_cuff_liner_l/r, gel + 12 mm lattice | 2 | **PRINT** | TPU 95A HF | print set C (lattice pad) | 47 EST | $2.10 | $4.20 | filament: [link](https://3dprintingusa.com/collections/bambu-lab-tpu) |
 | Lift tendon T3 line | t3_tendon_l/r, 1/8 in Dyneema, about 1 m each | 1 | **BUY** | Dyneema SK75 | spliced eyes | 10 EST | $3.76 | $3.76 | [link](https://www.fisheriessupply.com/samson-rope-blue-amsteel-blue/872007006030) |
 | Stainless roller pins and D-rings | 6 mm pins for the standoffs, dring_t3_l/r | 1 | **BUY** | 316 stainless / aluminium | off the shelf | 30 EST | $12.00 EST | $12.00 | EST |
-| **Subtotal** | | | | | | **0.37 kg** | | **$122** | |
+| **Subtotal** | | | | | | **0.41 kg** | | **$126** | |
 
-### Hip (M3): 0.16 kg, $39
+### Hip (M3): 0.16 kg, $38
 
 | Part (plain name) | Technical / CAD | Qty | Make | Material | Process | Mass ea (g) | Unit | Line | Source |
 |---|---|---|---|---|---|---|---|---|---|
-| Hip-flexor standoff (60 mm lever) | m3_standoff_l/r | 2 | **PRINT** | PAHT-CF (or PA12-CF) | print set B (bracket); stainless pin insert | 13 EST | $1.41 | $2.81 | filament: [link](https://www.gigaparts.com/bambu-lab-paht-cf-black-carbon-fiber-reinforced-paht-3d-printer-filament-1-75mm-1kg-spool.html) |
+| Hip-flexor standoff (60 mm lever) | m3_standoff_l/r | 2 | **PRINT** | PAHT-CF (or PA12-CF) | print set B (bracket); stainless pin insert | 11 EST | $1.22 | $2.44 | filament: [link](https://www.gigaparts.com/bambu-lab-paht-cf-black-carbon-fiber-reinforced-paht-3d-printer-filament-1-75mm-1kg-spool.html) |
 | Hip-flexor spring element (14 N/mm, 300 N at 20 deg) | m3_band_l/r: webbing in series with a steel extension spring | 2 | **BUY** | music-wire spring + polyester webbing | a 14 N/mm, 30 mm-travel extension spring sewn into a 20 mm webbing band; latex is far too soft for this rate | 60 EST | $15.00 EST | $30.00 | EST: industrial extension springs $5 to $12 |
 | D-rings and slides for the hip bands | dring_m3_l/r | 1 | **BUY** | aluminium | off the shelf | 15 EST | $6.00 EST | $6.00 | EST |
-| **Subtotal** | | | | | | **0.16 kg** | | **$39** | |
+| **Subtotal** | | | | | | **0.16 kg** | | **$38** | |
 
-### Couplings (bands): 0.15 kg, $54
+### Couplings (bands): 0.16 kg, $57
 
 | Part (plain name) | Technical / CAD | Qty | Make | Material | Process | Mass ea (g) | Unit | Line | Source |
 |---|---|---|---|---|---|---|---|---|---|
@@ -223,8 +229,9 @@ Every gate before a part is worn is in [BUILD_RIGHT_FIRST_TIME.md](BUILD_RIGHT_F
 | Hamstring band (hip + knee coupling, 3 N/mm) | hamstring_band_l/r, 126 N at 42 mm, OFF in SIT | 2 | **BUY** | latex (speargun-type rubber) + webbing | cut to length and tuned; a TheraBand strand is about 50 times too soft | 40 EST | $12.00 EST | $24.00 | EST: speargun rubber about $3 to $5 per ft |
 | Band guide 40 mm behind the knee axis | knee_guide_l/r, with a 623 bearing pulley | 2 | **PRINT** | PAHT-CF (or PA12-CF) | print set B (bracket) | 2 EST | $0.21 | $0.42 | filament: [link](https://www.gigaparts.com/bambu-lab-paht-cf-black-carbon-fiber-reinforced-paht-3d-printer-filament-1-75mm-1kg-spool.html) |
 | Coupling D-rings | dring_ham_l/r, dring_ham_calf_l/r | 4 | **BUY** | aluminium | off the shelf | 3 EST | $1.50 EST | $6.00 | EST |
-| Calf band line (knee + ankle, needs M4) | calf_band_l/r | 1 | **BUY** | Dyneema SK75 | spliced | 5 EST | $2.82 | $2.82 | [link](https://www.fisheriessupply.com/samson-rope-blue-amsteel-blue/872007006030) |
-| **Subtotal** | | | | | | **0.15 kg** | | **$54** | |
+| Calf band line (knee + ankle, needs M4) | calf_band_l/r, from a D-ring on the thigh cuff (dring_calf_l/r) | 1 | **BUY** | Dyneema SK75 | spliced | 5 EST | $2.82 | $2.82 | [link](https://www.fisheriessupply.com/samson-rope-blue-amsteel-blue/872007006030) |
+| Calf band D-rings on the thigh cuff | dring_calf_l/r | 2 | **BUY** | aluminium | off the shelf, riveted to the cuff | 6 EST | $1.50 EST | $3.00 | EST |
+| **Subtotal** | | | | | | **0.16 kg** | | **$57** | |
 
 ### Smart-clutch upgrade: 0.44 kg, $567
 
@@ -242,19 +249,20 @@ Every gate before a part is worn is in [BUILD_RIGHT_FIRST_TIME.md](BUILD_RIGHT_F
 | Controller enclosure | on the back panel, about 60 g | 1 | **PRINT** | PETG | print set D (PETG) | 60 EST | $1.38 EST | $1.38 | filament: EST (Bambu PETG HF, about $20/kg) |
 | **Subtotal** | | | | | | **0.44 kg** | | **$567** | |
 
-### One-motor power (P1): 1.99 kg, $1,274
+### One-motor power (P1): 1.99 kg, $1,275
 
 | Part (plain name) | Technical / CAD | Qty | Make | Material | Process | Mass ea (g) | Unit | Line | Source |
 |---|---|---|---|---|---|---|---|---|---|
 | Motor, CubeMars AK10-9 V3 (one, on the back) | p1_motor, 9:1 QDD, 18 Nm rated, CAN | 1 | **BUY** | actuator | off the shelf | 960 EST | $698.90 | $698.90 | [link](https://aifitlab.com/collections/cubemars-motor/products/cubemars-ak10-9-v3-0-motor) ($698.90, motor; $935 with driver at OpenELAB) |
 | Hub drum, 25 mm spool | p1_drum | 1 | **METAL** | 7075-T6 aluminium | CNC 7075; must be metal: 720 N line pull at rated torque | 71 EST | $120.00 EST | $120.00 | EST: one-off job-shop price, get 3 quotes |
 | Dog clutches pick left, right or both (solenoid + steel dogs) | p1_dogclutch_l/r | 2 | **BUY** | 17-4PH dogs + bistable solenoid | CNC dogs (EST $60) + Intertec ITS-LX-2218 latching solenoid (about $54) | 80 EST | $114.00 EST | $228.00 | solenoid: [link](https://rapidonline.com/intertec-its-lx-2218-12vdc-10mm-4n-de-energised-20n-bi-directional-solenoid-50-2909); dogs EST |
+| Bowden end stop on the clutch housing | bowden_stop_l/r, the housing ferrule seats in it | 2 | **PRINT** | PAHT-CF (or PA12-CF) | print set B (bracket); brass ferrule cup pressed in | 1 EST | $0.11 | $0.22 | filament: [link](https://www.gigaparts.com/bambu-lab-paht-cf-black-carbon-fiber-reinforced-paht-3d-printer-filament-1-75mm-1kg-spool.html) |
 | Bowden cables, hub to knee manifold | bowden_l/r, efficiency 0.68 to 0.79, 551 N motor side | 2 | **BUY** | PTFE-lined housing + 7x19 stainless inner | motorcycle-clutch style housing, swaged ends | 80 EST | $30.00 EST | $60.00 | EST |
 | Battery, 97 Wh (under the FAA 100 Wh line), 6S1P Molicel P45B | p1_battery | 6 | **BUY** | Li-ion 21700 cell | spot-welded pack | 70 | $8.75 | $52.50 | [link](https://www.batteryjunction.com/molicel-inr21700-p45b) ($8.75 each) |
 | 6S BMS, nickel strip, pack case, fuse | for the 97 Wh pack | 1 | **BUY** | electronics | kit + printed case | 100 EST | $25.00 EST | $25.00 | EST |
 | 6S balance charger | one-time | 1 | **BUY** | electronics | off the shelf | 0 EST | $45.00 EST | $45.00 | EST (legacy list) |
 | CAN transceiver + power wiring + E-stop | SN65HVD230, XT30, big red stop on the belt | 1 | **BUY** | electronics | kit | 120 EST | $45.00 EST | $45.00 | EST |
-| **Subtotal** | | | | | | **1.99 kg** | | **$1,274** | |
+| **Subtotal** | | | | | | **1.99 kg** | | **$1,275** | |
 
 ### Ankle (M4): 0.53 kg, $252
 
@@ -269,15 +277,15 @@ Every gate before a part is worn is in [BUILD_RIGHT_FIRST_TIME.md](BUILD_RIGHT_F
 | Ankle straps, heel-counter strap, fasteners |  | 2 | **BUY** | nylon webbing | sewn | 40 EST | $12.00 EST | $24.00 | EST |
 | **Subtotal** | | | | | | **0.53 kg** | | **$252** | |
 
-### Shoulder (M5): 0.67 kg, $192
+### Shoulder (M5): 0.64 kg, $188
 
 | Part (plain name) | Technical / CAD | Qty | Make | Material | Process | Mass ea (g) | Unit | Line | Source |
 |---|---|---|---|---|---|---|---|---|---|
-| Shoulder spring cassette housing | m5_cassette_l/r | 2 | **PRINT** | PAHT-CF (or PA12-CF) | print set B (bracket) | 58 EST | $6.31 | $12.61 | filament: [link](https://www.gigaparts.com/bambu-lab-paht-cf-black-carbon-fiber-reinforced-paht-3d-printer-filament-1-75mm-1kg-spool.html) |
+| Shoulder spring cassette housing | m5_cassette_l/r | 2 | **PRINT** | PAHT-CF (or PA12-CF) | print set B (bracket) | 41 EST | $4.43 | $8.86 | filament: [link](https://www.gigaparts.com/bambu-lab-paht-cf-black-carbon-fiber-reinforced-paht-3d-printer-filament-1-75mm-1kg-spool.html) |
 | Cassette spring set (Paexo-style arm support) | springs + cam + bearings inside m5_cassette | 2 | **BUY** | spring steel | off-the-shelf compression or torsion springs, tuned per wearer | 150 EST | $45.00 EST | $90.00 | EST |
 | Arm lever | m5_lever_l/r, 12 x 6 mm | 2 | **METAL** | 7075-T6 aluminium | laser-cut 7075 strip with a bearing at the pivot; must be metal: arm support torque at the pivot | 45 EST | $30.00 EST | $60.00 | EST: one-off job-shop price, get 3 quotes |
 | Arm cuff | m5_armcuff_l/r | 2 | **PRINT** | PAHT-CF (or PA12-CF) | print set A (shell) | 37 EST | $4.01 | $8.02 | filament: [link](https://www.gigaparts.com/bambu-lab-paht-cf-black-carbon-fiber-reinforced-paht-3d-printer-filament-1-75mm-1kg-spool.html) |
 | Arm cuff pad | m5_armliner_l/r | 2 | **PRINT** | TPU 95A HF | print set C (lattice pad) | 16 EST | $0.73 | $1.46 | filament: [link](https://3dprintingusa.com/collections/bambu-lab-tpu) |
 | Arm straps and fasteners |  | 2 | **BUY** | nylon webbing | sewn | 30 EST | $10.00 EST | $20.00 | EST |
-| **Subtotal** | | | | | | **0.67 kg** | | **$192** | |
+| **Subtotal** | | | | | | **0.64 kg** | | **$188** | |
 

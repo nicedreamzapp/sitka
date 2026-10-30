@@ -349,8 +349,10 @@ const SHORT = [[/^thigh_shell/, 'Thigh shell'], [/^knee_manifold/, 'Knee lock'],
   [/^t1_tendon/, 'Knee tendon'], [/^m3_band/, 'Hip band'], [/^ea_clutch/, 'Smart clutch (upgrade)']];
 const PLAIN = [
   [/^(t1_tendon)/, 'Knee tendon'], [/^t3_tendon/, 'Back tendon'], [/^m3_band/, 'Hip band'], [/^crazycreek/, 'Lean-back strap'],
-  [/^hamstring_band/, 'Hamstring band'], [/^calf_band/, 'Calf band'], [/^running_band/, 'Running band'], [/^(harness|sternum_strap|panelstrap)/, 'Shoulder harness'],
-  [/^cupstrap/, 'Seat cup strap'], [/^m4_cable/, 'Ankle cable (upgrade)'], [/^m5_lever/, 'Shoulder support (upgrade)'],
+  [/^hamstring_band/, 'Hamstring band'], [/^calf_band/, 'Calf band'], [/^running_band/, 'Running band'], [/^(harness|sternum_strap)/, 'Shoulder harness'],
+  [/^spine_(link|pivot)/, 'Spine link (panel to belt)'], [/^(cup_lacing|cup_bridge|cup_eyelets|cuff_eyelets|shell_eyelets)/, 'Seat cup lacing'],
+  [/^(strut_fork|strut_hingepin|strut_rodend)/, 'Seat pole hinge (under the sit bone)'], [/^strut_clip/, 'Seat pole stow clip'],
+  [/^bowden_stop/, 'Motor (optional upgrade)'], [/^m4_cable/, 'Ankle cable (upgrade)'], [/^m5_lever/, 'Shoulder support (upgrade)'],
   [/liner/, 'Soft liner'], [/^thigh_shell/, 'Thigh shell'], [/^thigh_cuff/, 'Back-of-thigh cuff'], [/(strap|buckle)/, 'Strap'],
   [/^(thigh|shin)_arm/, 'Knee hinge arm'], [/^(knee_manifold|mode_lever)/, 'Knee lock'], [/^tendon_fairlead/, 'Knee tendon guide'],
   [/^sit_leaf/, 'Knee spring'], [/^ea_clutch/, 'Smart clutch (upgrade)'], [/^seat_cup/, 'Seat cup'], [/^strut/, 'Seat pole'],
@@ -555,7 +557,7 @@ function updateReadout() {
     ['Knee tendon (T1)', pick('t1_tendon')],
     ['Back tendon (T3 / M2 lift leaf)', pick('t3_tendon')],
     ['Hip band (M3)', pick('m3_band')],
-    ['Seat pole (strut)', P.mode === 'SIT' ? 'deployed, 4° back, 9° out' : 'stowed along the thigh'],
+    ['Seat pole (strut)', P.mode === 'SIT' ? 'deployed under the sit bone, 4° back, 9° out' : 'stowed down the back of the thigh, clipped at both ends'],
     ['Lean-back straps (Crazy Creek)', pick('crazycreek')],
     ['Hamstring band (coupling)', state.coupling ? pick('hamstring_band') : 'not docked'],
   ];
@@ -786,11 +788,11 @@ function phaseOf(seq) {
 
 // ---------------- kit (viewer side) ----------------
 const KIT = [
-  ['Dock: back panel + hip belt, 6 cable ports', n => /^(hip_belt|belt_|lumbar_plate|back_panel|port_)/.test(n), ['harness_l', 'harness_r', 'sternum_strap', 'panelstrap_l', 'panelstrap_r', 'cupstrap_l', 'cupstrap_r', 'crazycreek_l', 'crazycreek_r']],
-  ['M1 knee / seat: shells, hinge, 80 mm arc, cam clutch, sit leaf, seat cup, strut', n => /^(thigh_|shin_|knee_(hub|arc|yoke|manifold)|condyle|mode_lever|tendon_fairlead|sit_leaf|seat_cup|strut|ptb|calf_|dring_cc|dring_t3|runband)/.test(n), ['t1_tendon_l', 't1_tendon_r']],
+  ['Dock: back panel + hip belt, 6 cable ports, spine links', n => /^(hip_belt|belt_|lumbar_plate|back_panel|port_|spine_pivot)/.test(n), ['harness_l', 'harness_r', 'sternum_strap', 'spine_link_l', 'spine_link_r', 'crazycreek_l', 'crazycreek_r']],
+  ['M1 knee / seat: shells, hinge, 80 mm arc, cam clutch, sit leaf, laced seat cup, strut', n => /^(thigh_|shin_|knee_(hub|arc|yoke|manifold)|condyle|mode_lever|tendon_fairlead|sit_leaf|seat_cup|cup_|cuff_eyelets|shell_eyelets|strut|ptb|calf_|dring_cc|dring_t3|runband)/.test(n), ['t1_tendon_l', 't1_tendon_r']],
   ['M2 back / lift: leaf, whiffletree, lift tendons', n => /^(m2_|whiffletree|panel_guide|lumbar_standoff|glute_guide)/.test(n), ['t3_tendon_l', 't3_tendon_r']],
   ['M3 hip: hip-flexor bands', n => /^(m3_|dring_m3)/.test(n), ['m3_band_l', 'm3_band_r']],
-  ['Couplings: hamstring band (appears when M1 + M3 dock)', n => /^(knee_guide|dring_ham)/.test(n), ['hamstring_band_l', 'hamstring_band_r']],
+  ['Couplings: hamstring band (appears when M1 + M3 dock)', n => /^(knee_guide|dring_ham|dring_calf)/.test(n), ['hamstring_band_l', 'hamstring_band_r']],
   ['Upgrades: stance clutches, one motor + Bowden, M4 ankle, M5 shoulder', n => /^(ea_|p1_|bowden|m4_|m5_)/.test(n), ['bowden_l', 'bowden_r', 'm5_lever_l', 'm5_lever_r', 'm4_cable_l', 'm4_cable_r', 'calf_band_l', 'calf_band_r']],
 ];
 const KIT_PLAIN = ['The hub: hip belt + back panel', 'Seat module: knee springs, locks, seat poles', 'Back module: the back tendon', 'Hip module: hip bands',

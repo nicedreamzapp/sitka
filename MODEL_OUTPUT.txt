@@ -91,6 +91,70 @@ Fallback 507 Nm at 7075-T6 yield 503 MPa (VERIFY) → Z ≥ 1008 mm³ → latera
 With the rear leg working, normal sitting puts only the KNEE LOCK column above on the rails.
 
 ##############################################################################
+# node seat_sitbone_model.mjs
+##############################################################################
+=== SEAT v3: STRUT HINGE UNDER THE SIT BONE (per leg, 130.3 kg / 1.874 m wearer) ===
+Hinge from the hip joint (CAD chair pose): old 2.0 / -13.6 cm fwd/up, new -0.3 / -15.9 cm. Foot planted 4 deg back, 9 deg out.
+
+1. SAGITTAL (tripod statics)
+Mode                    hinge  knee Nm  tendon N  strut N  share  room behind  tip-back  grip needed  strut m
+Chair, upright          old       45       567      344    50%      17 cm      13 deg       0.07    0.51
+Chair, upright          new       47       589      323    47%      20 cm      15 deg       0.07    0.49
+Chair, 10 deg recline   old       30       379      514    75%       9 cm       7 deg       0.07    0.51
+Chair, 10 deg recline   new       33       413      483    70%      11 cm       9 deg       0.07    0.49
+Half-sit, recline       old       33       413      483    70%       8 cm       5 deg       0.07    0.72
+Half-sit, recline       new       37       459      442    64%      10 cm       6 deg       0.07    0.69
+Deep squat, recline     old       33       415      524    76%       8 cm       7 deg       0.07    0.30
+Deep squat, recline     new       38       473      488    71%      10 cm       9 deg       0.07    0.28
+The hinge barely moves front-to-back (2 cm), so the sagittal numbers stay where TENDON_CONCEPT put them
+(its 34 Nm / 472 N / 69% used a hinge AT the hip joint; the real hinge is 15.9 cm below it).
+
+2. FRONTAL (chair, 10 deg recline): where the strut push lands, and what holds the cup
+old: hinge on the cup outer edge
+  strut push 513 N up, 81 N inward; its line passes 105 mm outside the sit bone
+  moment about the sit bone (rolls the cup off the bone): 53.9 Nm
+  cup load 634 N on 301 cm2 seated footprint: average 21 kPa; even-tissue peak 67 kPa across, 25 kPa along (EST, rigid-cup model)
+  peak sits on the OUTER edge (over the hip bone's trochanter, no sitting surface)
+  held only by one strap to the belt (lever ~60 mm): 898 N of strap tension to keep the cup square. Not credible; it floated.
+  inward push: 81 N per side squeezes the pelvis between the two cups (no crossbar needed), applied 11 cm outside the sit bone.
+new: hinge under the sit bone
+  strut push 482 N up, 76 N inward; its line passes 8 mm inside the sit bone
+  moment about the sit bone (rolls the cup off the bone): 4.0 Nm
+  cup load 614 N on 242 cm2 seated footprint: average 25 kPa; even-tissue peak 86 kPa across, 41 kPa along (EST, rigid-cup model)
+  NOT FIXED BY THE MOVE: on an even tissue bed the peak gets worse, not better (86 kPa), because the sit bone is 6.3 cm off the midline and the cup's inner edge can only reach 2.2 cm past it before the two cups touch (they come within 10 mm of each other in the sit-down motion). Average 25 kPa, not the 15 kPa of KINETICS (that used 400 cm2 of curved surface; the seated footprint is 242 cm2). Geometry cannot fix this: an air-cell insert under the sit bone (immersion pulls the peak toward the average) has to be proven on a pressure map; until then plan 10-20 min sits (EST).
+  peak sits on the INNER edge, under the sit bone (the body's own sitting surface)
+  laced bridge + webbing tab: tab 32 N to hold the residual moment (127 mm lever);
+  stand-up drag (friction 0.4 x 614 N, EST) 246 N over 6 cord runs = 41 N per run, 82 N per grommet.
+  3 mm polyester cord (~1.5 kN, EST) and 9 mm grommets: > 10x margin.
+  inward push: 76 N per side squeezes the pelvis between the two cups (no crossbar needed), applied at the sit bone.
+
+3. SIDEWAYS TIPPING (chair, recline): the strut feet move in with the hinges
+  plan (TENDON_CONCEPT)    feet 34 cm apart: polygon half-width 18.1 cm at the CoM, tips at 14 deg
+  old CAD                  feet 49 cm apart: polygon half-width 22.8 cm at the CoM, tips at 17 deg
+  new CAD, 9 deg splay     feet 27 cm apart: polygon half-width 15.8 cm at the CoM, tips at 12 deg
+  new, 12 deg splay        feet 32 cm apart: polygon half-width 17.4 cm at the CoM, tips at 13 deg
+  The CoM sits over the shoes, not over the strut feet, so pulling the feet in costs little side margin. Splay stays 9 deg.
+
+4. STRUT: stowed length vs the running calf, and buckling
+  Stowed from a hinge under the sit bone, a straight tube runs down the back of the thigh. In the running swing the
+  calf folds up against the back of the thigh from ~0.30 m below the hip (CAD run pose), so the stowed strut must end
+  above that: 3 x 0.32 m sections stow to 0.39 m (foot in the calf, 56 mm deep); 5 x 0.20 m stow to 0.28 m (clear).
+  0.46 m: 3 x 24/20/16 x 1.5 10425 N, 5 x 24/21/18/15/12 x 1.2 5539 N (11.7x the 472 N chair load, SF 5.5 on the 1 kN design load)
+  0.65 m: 3 x 24/20/16 x 1.5 5221 N, 5 x 24/21/18/15/12 x 1.2 2774 N (5.9x the 472 N chair load, SF 2.8 on the 1 kN design load)
+  0.86 m: 3 x 24/20/16 x 1.5 2983 N, 5 x 24/21/18/15/12 x 1.2 1585 N (3.4x the 472 N chair load, SF 1.6 on the 1 kN design load)
+  Reach: 0.874 m pin to foot (40 mm overlaps). Tubes 98 g vs 130 g; two more twist locks (+~40 g, EST).
+
+5. SPINE LINK (stoop): two 25 mm rigid links, ball-jointed, panel lower edge to the belt
+  upright / walking (panel + P1 hub weight only)      8 N compression per link
+  90 deg stoop, passive M2 (300 N per side)         300 N compression per link
+  90 deg stoop, P1 peak (770 N per side)            770 N compression per link
+  The lift tendon pulls the panel down toward its belt standoffs. With straps only, that 600-1540 N went into the
+  shoulder harness and down the spine. The links carry it panel to belt; the shoulders only locate the panel.
+  Links: 11 mm carbon tube between M6 ball joints (VERIFY rating, typically several kN): far above 770 N.
+  The links keep a fixed length, so in a deep stoop the panel slides ~10 cm up the back instead of lifting off
+  (back skin lengthens several cm in full flexion, Schober test, VERIFY). Solved per frame in the CAD (panel_fit).
+
+##############################################################################
 # node gait_assist_model.mjs
 ##############################################################################
 === HOW MUCH OF THE KNEE CAN ONE AK10-9 CARRY? ===

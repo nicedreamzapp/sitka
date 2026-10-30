@@ -70,6 +70,10 @@ Cross-joint tendons exist **only when both modules are docked**.
 ### The Dock (shared hub, required)
 
 - Back panel + hip belt + the two seat-cup frames + the Crazy Creek straps.
+- **2026-10-30:** the panel hangs on **two short rigid spine links** (ball-jointed, 25 mm) to the belt instead of straps:
+  they carry the lift tendon's 300 N per side (770 N at the P1 peak) panel to belt, not through the shoulders. Each seat
+  cup is **laced to its thigh cuff** and tabbed to the thigh shell, and its strut hinge sits **under the sit bone**
+  (TENDON_CONCEPT.md section 6).
 - **Mechanical:** the belt and panel carry tendon reactions down into the seat cups and struts (sitting) or the pelvis (walking).
 - **Cable couplers:** quick-release cable terminals (ball-end into keyhole, ≥ 3.6 kN) at 6 standard ports: L/R knee, L/R hip-back, L/R shoulder.
 - **Power/data (optional):** one 5-pin magnetic connector per port (12 V + CAN). Passive modules leave it empty.
@@ -239,7 +243,7 @@ Cross-joint tendons exist **only when both modules are docked**.
 
 | Contact | Load | Old area → new | Pressure old → **new** | Stack |
 |---|---|---|---|---|
-| **Seat cup** (sit bone) | 607 N | 250 → **400 cm²** (18 × 24 cm) | 24 → **15 kPa** | silicone + 15 mm lattice (gel/air-cell insert option, wheelchair-cushion style) |
+| **Seat cup** (sit bone) | 614 N | 250 → **400 cm²** of curved surface, but only **242 cm²** seated footprint (CAD, 2026-10-30) | 24 → **25 kPa** average, ~86 kPa even-tissue peak under the sit bone (EST) | silicone + 15 mm lattice + **air-cell insert under the sit bone** (needed, not optional: TENDON_CONCEPT.md section 6) |
 | **Below-kneecap pad** (PTB) | 140 N | 70 → **100 cm²** | 20 → **14 kPa** | silicone + 12 mm lattice |
 | Calf pad | 144 N | 96 → **120 cm²** | 15 → **12 kPa** | spacer + 10 mm lattice |
 | Thigh front pad | 140 N | 100 → **120 cm²** | 14 → **12 kPa** | spacer + 10 mm lattice |

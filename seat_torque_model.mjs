@@ -37,7 +37,10 @@ const EXO_THIGH = perLeg('thigh') + perLeg('knee') / 2;
 const EXO_SHANK = perLeg('shank') + perLeg('ankle') + perLeg('knee') / 2;
 const EXO_FOOT = perLeg('foot');
 
-export function tripod(mode, { rearLeg = mode.rear, massKg = PERSON.mass95, stature = PERSON.stature95 } = {}) {
+// hingeAt: [dx, dy] of the strut hinge from the hip joint (x forward, y up), overriding rearHingeFrac (used by
+//   seat_sitbone_model.mjs for the strut under the sit bone). tiltDeg: plant the strut foot at this tilt back
+//   from vertical instead of the friction search.
+export function tripod(mode, { rearLeg = mode.rear, massKg = PERSON.mass95, stature = PERSON.stature95, hingeAt = null, tiltDeg = null } = {}) {
   const Lt = PERSON.thighFrac * stature, Ls = PERSON.shankFrac * stature;
   const th = mode.knee * R, phi = mode.phi * R, tr = mode.trunk * R;
   const A = [0, ANKLE_H];
@@ -46,7 +49,7 @@ export function tripod(mode, { rearLeg = mode.rear, massKg = PERSON.mass95, stat
   const Hip = add(K, mul(tdir, Lt));
   const padFrac = mode.padFrac ?? SEAT.padCoPFrac;
   const Pad = add(K, mul(tdir, padFrac * Lt));
-  const Hr = add(K, mul(tdir, SEAT.rearHingeFrac * Lt));
+  const Hr = hingeAt ? add(add(K, mul(tdir, Lt)), hingeAt) : add(K, mul(tdir, SEAT.rearHingeFrac * Lt));
   const hat = add(Hip, [SEAT.hatCoMAboveHip * Math.sin(tr), SEAT.hatCoMAboveHip * Math.cos(tr)]);
   const thighC = add(K, mul(tdir, (1 - 0.4095) * Lt));            // de Leva COM 0.4095 from the hip
   const shankC = add(K, mul(sub(A, K), 0.4395));                   // de Leva COM 0.4395 from the knee
@@ -74,7 +77,10 @@ export function tripod(mode, { rearLeg = mode.rear, massKg = PERSON.mass95, stat
   let rear = null;
   if (rearLeg) {
     let back = SEAT.rearBackMax, Rf, u, mu;
-    for (; back > 0.05; back -= 0.005) {
+    if (tiltDeg !== null) {
+      Rf = [Hr[0] - Math.tan(tiltDeg * R) * Hr[1], 0]; back = heelX - Rf[0];
+      u = mul(sub(Hr, Rf), 1 / norm(sub(Hr, Rf))); mu = Math.abs(u[0] / u[1]);
+    } else for (; back > 0.05; back -= 0.005) {
       Rf = [heelX - back, 0]; u = mul(sub(Hr, Rf), 1 / norm(sub(Hr, Rf))); mu = Math.abs(u[0] / u[1]);
       if (mu <= SEAT.rearMuDesign) break;
     }
