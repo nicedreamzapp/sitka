@@ -7,6 +7,12 @@ Most exoskeletons fight your body with motors and metal. Sitka works with it. Yo
 
 Named after the Sitka spruce: strong, light, and it bends without breaking.
 
+## New: the hybrid build plan (November 2026)
+
+A full audit found the sitting physics sound, but several drawn parts not ready to wear. The next round builds a **sit-only "Sitka Seat" from proven, bought parts**: a locking gas-spring knee, latex bands, crutch-tube struts, a hinged brace frame, bicycle-saddle seats and an air cushion. It comes to about **$420 to $560 and 3.2 to 3.8 kg**, against $2,850 and 6.66 kg as listed today.
+
+**[See the plan, every part and every price (phone friendly)](https://nicedreamzapp.github.io/sitka/plan.html)** · [HYBRID_PLAN.md](HYBRID_PLAN.md)
+
 ## What it does
 
 | | How | Numbers (design targets, not yet measured on a prototype) |
